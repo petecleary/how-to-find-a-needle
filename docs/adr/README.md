@@ -2,7 +2,7 @@
 
 Working decisions for building **How to Find a Needle**.
 
-> **Private.** This folder is gitignored on purpose. These ADRs are working documents for the build. Once the build is complete, they will be rewritten as public, learner-facing ADRs (see [ADR-0001](0001-record-architecture-decisions.md)).
+> **Working documents.** These ADRs are committed on the build branch while the talk is built. Once the build is complete, they will be rewritten as public, learner-facing ADRs (see [ADR-0001](0001-record-architecture-decisions.md)).
 
 - [architecture.md](architecture.md): system overview (the "what").
 - [roadmap.md](roadmap.md): build phases, tasks and acceptance criteria (the "when").

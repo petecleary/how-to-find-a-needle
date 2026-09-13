@@ -2,22 +2,43 @@
 
 From today's cleaned-up scaffold to a finished, teachable demo. Each phase lists its tasks, the ADRs they implement, the acceptance criteria that mark it done, and the open questions to resolve along the way.
 
-> Private working document (see [ADR-0001](0001-record-architecture-decisions.md)). The repo is one finished codebase on `main`; phases are a build order, not branches learners check out.
+> Working document on the build branch (see [ADR-0001](0001-record-architecture-decisions.md)). The repo is one finished codebase on `main`; phases are a build order, not branches learners check out.
 
 **Order:** Data → Search APIs (stages 1–4, 6) → Frontend → AI stages (7–8) with their UI → Finish & publish → *optional* Stage 5 BGE-M3, always last.
 
 **Rules for every phase**
 - Build passes with **0 warnings** (`TreatWarningsAsErrors`).
 - Unit tests pass. Integration tests pass for every stage implemented so far.
+- The README's "Getting started" works from a clean clone for everything built so far.
 - An ADR moves to **Accepted** only when its acceptance criteria are met and verified.
 - Update [architecture.md](architecture.md) if anything built differs from the plan, and update the ADR first.
+- Treat the ADRs as reference during the build: update one only when a decision actually changes.
+
+## Priorities (4-week build and rehearsal)
+
+If time runs short, cut from the bottom up. Anyone building, human or agent, follows this order.
+
+| Priority | Scope |
+|---|---|
+| **Must** (the talk works) | Data and ontology; Stages 1–4 and 6; Stage 7 with streaming; demo screen; talk mode with stage explanations; golden-query tests for stages 1–6; README "Getting started" |
+| **Should** | Stage 8 pedagogy; glossary with hover terms; ADR pages; CI |
+| **Could** | ~500-product growth; OpenAI providers; public ADR rewrite; OpenAPI drift check in CI; Stage 5 BGE-M3 (always last) |
+
+**Weekly shape**
+
+| Week | Focus |
+|---|---|
+| 1 | Phase 1 (data, ontology, seeding) and Phase 2 through Stage 3 (vector) |
+| 2 | Stage 4 (hybrid) and Stage 6 (ontology); Phase 3 UI scaffold with the demo screen |
+| 3 | Phase 4 (Stages 7–8 streaming) and talk mode with content |
+| 4 | **Protected:** rehearsals, polish, and fixing what rehearsal exposes |
 
 ---
 
 ## Phase 0 — Clean-up ✅ (done)
 
 - Removed unused packages (Redis output caching, `Aspire.Hosting.JavaScript`, `Aspire.Npgsql` in the AppHost); patched the `Microsoft.OpenApi` vulnerability via `Microsoft.AspNetCore.OpenApi` 10.0.12.
-- `.gitignore`: keep `appsettings.Development.json`; ignore downloaded models except their README; `docs/adr/` stays private.
+- `.gitignore`: keep `appsettings.Development.json`; ignore downloaded models except their README; `docs/adr/` was initially ignored and is now tracked on the build branch.
 - Removed the dead Datafiniti CSV import; the API fails fast without its connection string; removed `UseFileServer`; tidied template comments.
 - Fixed the models README (correct files and paths for Nomic and BGE-M3).
 
@@ -57,12 +78,16 @@ From today's cleaned-up scaffold to a finished, teachable demo. Each phase lists
     - Every golden-query product ID exists.
     - Every product category is a taxonomy notation; every vocabulary-backed spec value is a known notation or label; every device and accessory type has the specs its domain rules compare.
     - Units are numeric.
+11. **README "Getting started" (minimal)**
+    - Prerequisites so far, `aspire run`, and how to reset the data volume.
+    - Extend it at the end of every phase, and verify each phase from a clean clone.
 
 ### Acceptance criteria
 - `aspire run` starts Postgres and the API; the log shows `Seeded 60 products (60 inserted, 0 updated, 0 deleted)`.
 - A second run logs `0 inserted, 0 updated`, and startup is noticeably faster.
 - Editing one product's description updates exactly that row and nulls its embeddings.
 - `dotnet test` passes, including the catalog validation tests.
+- A clean clone runs Phase 1 by following the README alone.
 
 ### Resolved
 - ✅ Fictional brands and golden queries GQ-01 to GQ-07 (GQ-06 is an SSD interface mismatch rather than camera lenses). Draft wording is still reviewed in task 4.
@@ -83,6 +108,7 @@ Build strictly in this order. Each step ends with its golden-query integration t
    - `IOntology` basics: load the TTL; label, taxonomy and narrower-concept lookups (needed by Stage 1 category filters).
    - `GET /api/demo/queries`, `GET /api/demo/devices` and `GET /api/taxonomy`.
    - Integration test harness that runs golden-query expectations per stage.
+   - **Verify OpenAPI output first:** FastEndpoints request and response schemas (including nested `filters`/`options` and enums) must appear correctly in `/openapi/v1.json` via `Microsoft.AspNetCore.OpenApi`. If they don't, switch to FastEndpoints' own OpenAPI support before building more endpoints, because the UI's generated types depend on it ([ADR-0014](0014-web-ui-architecture.md)).
 2. **Stage 1 — Structured** (0007)
    - `POST /api/search/structured`; `categories &&` filter with narrower-concept expansion; JSONB `@>` spec filters; `COUNT(*)` total; SQL in trace. ✅ GQ-04.
 3. **Stage 2 — Keyword** (0008)
@@ -99,16 +125,17 @@ Build strictly in this order. Each step ends with its golden-query integration t
 7. **Stage 6 — Ontology** (0013)
    - `IOntologySearch`: understand (label matcher) → expand (keyword OR-groups + expanded embedding text) → Hybrid → classify (in/out of concept) → constrain (class-level rules vs target-device specs).
    - Toggles `expandSynonyms` / `applyConstraints`; flagged items kept with reasons; one trace step per step.
-   - Unit tests for label matching, expansion, the tsquery builder, classification and each rule operator. ✅ GQ-01, GQ-02 (keyword side rescued), GQ-03 (phone battery out of concept), GQ-05, GQ-06.
+   - Unit tests for label matching, expansion, the tsquery builder, classification and each rule operator. ✅ GQ-01, GQ-02 (keyword side rescued), GQ-03 (phone battery out of concept), GQ-05, GQ-06, GQ-07 (Spanish label → concept expansion).
 
 ### Acceptance criteria
 - All 5 endpoints (stages 1–4 and 6; Stage 5 is deferred to Phase 6) appear in Scalar and return the shared contract with a populated `debugTrace`.
-- The integration suite shows the talk's story as passing tests: synonym miss → vector hit; keyword trap → hybrid fix; near miss → ontology flag with reason.
+- The integration suite shows the talk's story as passing tests: synonym miss → vector hit; keyword trap → hybrid fix; near miss → ontology flag with reason; Spanish query → chargers via ontology labels.
 - Missing ONNX models give a `503` with fix-it guidance, not a stack trace.
 - ADRs 0003, 0004, 0007–0011 and 0013 → **Accepted**.
 
 ### Open questions
 - ❓ Keep `reviews` out of `search_vector`? Revisit after GQ-02 and GQ-03 results.
+- ❓ Language for GQ-07 (proposed Spanish).
 
 ---
 
@@ -117,7 +144,7 @@ Build strictly in this order. Each step ends with its golden-query integration t
 **ADRs:** [0014](0014-web-ui-architecture.md)
 
 1. Scaffold `src/web-ui` (Vite + React + TS strict, Tailwind, shadcn/ui init, Lucide, ESLint, Prettier, Vitest, `.nvmrc`).
-2. Re-add `Aspire.Hosting.JavaScript`; `AddViteApp` with `WithReference(searchApi)`; Vite `/api` proxy from the service-discovery environment variable.
+2. Re-add `Aspire.Hosting.JavaScript`; `AddViteApp` with `WithReference(searchApi)`; Vite `/api` proxy from the service-discovery environment variable. Spike a dummy SSE endpoint through the proxy to confirm streaming isn't buffered, since Phase 4 depends on it.
 3. `npm run gen:api` with `openapi-typescript` → committed `src/api/schema.d.ts`; typed `fetch` client.
 4. `usePipelineSearch` hook (same request across stages, AbortController, URL state) + Vitest tests.
 5. Layout: `SearchBar` (golden-query presets, device picker), `FilterBar`, `PipelineStepper` (keyboard ←/→), `ResultCard` with `SignalBadges` and `CompatibilityBadge`.
@@ -182,10 +209,10 @@ Build strictly in this order. Each step ends with its golden-query integration t
 ## Phase 5 — Finish & publish
 
 1. **Dataset growth:** a generator script (in `tools/`, language to be decided) adds distractors to reach ~500 products without disturbing the curated core; golden-query tests still pass.
-2. **README:** prerequisites (.NET 10, Docker, Node LTS, Aspire CLI, Hugging Face CLI, and either Ollama or an OpenAI/Anthropic API key), model download, `aspire run`, a tour of the 8 stages, how to reset the data volume, troubleshooting.
+2. **README (final pass; kept current since Phase 1):** prerequisites (.NET 10, Docker, Node LTS, Aspire CLI, Hugging Face CLI, and either Ollama or an OpenAI/Anthropic API key), model download, `aspire run`, a tour of the 8 stages, how to reset the data volume, troubleshooting.
 3. **CI:** OpenAPI → TypeScript drift check; optional manual integration-test workflow.
 4. **Talk content & rehearsal:** finalise the talk-mode steps, speaker details and summary; rehearse the full talk end to end in the UI (there are no slides). Rebuild `nomic.jsonl` after dataset growth.
-5. **Public ADRs:** write learner-facing ADRs from each ADR's *Teaching notes*; choose their public location; decide what happens to this private folder; point the UI's `/decisions` pages at the public versions.
+5. **Public ADRs:** write learner-facing ADRs from each ADR's *Teaching notes*; choose their public location; decide what happens to these working ADRs; point the UI's `/decisions` pages at the public versions.
 6. **Final review:** code comments read as teaching material; every stage file opens with its technique / strength / failure-mode comment; all ADRs **Accepted** or explicitly superseded.
 7. **OpenAI providers (when credits allow)** (0009, 0015): test OpenAI embeddings (`Embeddings:Provider = openai`, `Rebuild: true` → commit `openai.jsonl`) and OpenAI chat; adjust golden-query expectations if needed; document the one-key setup in the README.
 
@@ -196,7 +223,7 @@ Build strictly in this order. Each step ends with its golden-query integration t
 
 ### Open questions
 - ✅ No slides: the talk lives in the web UI ([ADR-0014](0014-web-ui-architecture.md)).
-- ❓ Public ADR location (`docs/decisions/`?) and whether the private ADRs are archived or deleted.
+- ❓ Public ADR location (`docs/decisions/`?) and whether the working ADRs stay, are archived, or are replaced by the public versions before merging to `main`.
 - ❓ Generator script language (C# console in `tools/` proposed, to avoid adding Python).
 
 ---
@@ -219,7 +246,6 @@ Build strictly in this order. Each step ends with its golden-query integration t
 - Full golden-query suite still passes; ADR-0012 → **Accepted**.
 
 ### Open questions
-- ❓ Language for GQ-07 (proposed Spanish).
 - ❓ Can the earlier in-memory BGE-M3 code be shared, so Stage 5 reuses its tokenizer and pooling approach?
 
 ---

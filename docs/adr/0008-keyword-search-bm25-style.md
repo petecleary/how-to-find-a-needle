@@ -60,7 +60,7 @@ LIMIT @depth;
 
 - There is no extra infrastructure, and the index is visible in `init.sql`.
 - The lack of IDF means very common words like "charger" can dominate. That makes the Stage 4 (Hybrid) improvement easier to show, and we are honest about why.
-- English-only stemming makes GQ-07 (cross-language) fail here. That is expected and is set up for Stage 5.
+- English-only stemming makes GQ-07 (cross-language) fail here. That is expected, and sets up Stage 6's multilingual ontology labels (and Stage 5, if built).
 
 ## Alternatives considered
 

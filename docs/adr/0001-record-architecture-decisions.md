@@ -15,7 +15,7 @@ The repo is a single finished codebase on `main`. Learners do not step through b
 ## Decision
 
 1. We use a lightweight [MADR](https://adr.github.io/madr/)-style format: **Context / Decision / Consequences / Alternatives considered / Teaching notes**. The template is in [README.md](README.md).
-2. Working ADRs live in `docs/adr/`, which is **gitignored**. They stay private until the build is complete.
+2. Working ADRs live in `docs/adr/` and are committed on the **build branch**. They are not presented to learners until the build is complete.
 3. Every ADR has a **Teaching notes** section. When the build is complete (roadmap Phase 5), we write public, learner-facing ADRs from these notes and commit them to a separate public location (to be decided in Phase 5).
 4. We change an ADR in place while it is **Proposed**. Once it is **Accepted** (implemented and verified), a change of direction gets a new ADR that supersedes it.
 5. An ADR moves to **Accepted** when its roadmap acceptance criteria pass.
@@ -24,7 +24,7 @@ The repo is a single finished codebase on `main`. Learners do not step through b
 
 - Reasoning is captured while it is fresh, without exposing unfinished thinking.
 - There is some duplicated effort in Phase 5 to produce the public versions. This is deliberate: public ADRs are written for learners, while these are written for the builders.
-- Because `docs/adr/` is gitignored, **these files are not backed up by git**. Keep a copy elsewhere, or reconsider before Phase 5 if that becomes a risk.
+- The working ADRs are versioned on the build branch, so they are backed up and reviewable. Before the final merge to `main`, decide whether they stay alongside the public versions or are replaced by them.
 
 ## Alternatives considered
 

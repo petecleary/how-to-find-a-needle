@@ -2,7 +2,7 @@
 
 - **Status:** Proposed
 - **Date:** 2026-09-13
-- **Related:** ADR-0003, ADR-0004, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0016, ADR-0017; golden queries GQ-01, GQ-02, GQ-03, GQ-05, GQ-06; roadmap Phase 1 (ontology file), Phase 2 (stage)
+- **Related:** ADR-0003, ADR-0004, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0016, ADR-0017; golden queries GQ-01, GQ-02, GQ-03, GQ-05, GQ-06, GQ-07; roadmap Phase 1 (ontology file), Phase 2 (stage)
 
 ## Context
 
@@ -161,6 +161,7 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
   - GQ-02: expansion rescues the keyword side.
   - GQ-03: phone battery `OutOfConcept`.
   - GQ-05: platform mismatch flagged.
+  - GQ-07: a Spanish label match ("cargador") expands to English charger terms and finds the right chargers.
 
 ## Consequences
 

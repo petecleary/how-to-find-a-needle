@@ -73,7 +73,7 @@ Each golden query records the talk moment it demonstrates and the **expected out
 | GQ-04 | filters only: brand = Brakk, voltageV = 18, maxPrice = 100 | **Structured wins**: exact, fast, no ranking needed |
 | GQ-05 | "battery for Brakk 18V drill" (+ target device) | **Platform compatibility**: the Tornio 20V MAX battery looks similar; Ontology rejects it (platform) |
 | GQ-06 | "SSD upgrade for my Blackbird Aerobook 14" (+ target device) | **Interface compatibility**: a SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; Ontology flags it |
-| GQ-07 | cross-language (e.g. "cargador USB-C para portátil") | **Multilingual**: BGE-M3 finds the right chargers; Nomic (English-centric) is weaker |
+| GQ-07 | cross-language (e.g. "cargador USB-C para portátil") | **Multilingual**: Keyword and Vector alone are weak. Stage 6 matches the Spanish ontology label ("cargador" → *Chargers*) and expands to English terms, so the right chargers appear. If Stage 5 is built, BGE-M3 handles full-sentence cross-language retrieval |
 
 Shape:
 

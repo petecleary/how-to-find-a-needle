@@ -57,7 +57,7 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 
 ### API types
 
-- **`openapi-typescript`** generates `src/api/schema.d.ts` from the API's OpenAPI document (`/openapi/v1.json`) with an `npm run gen:api` script. The generated file is committed, so the UI builds without the API running. Regenerate when the contract changes. CI checks for drift from Phase 5.
+- **`openapi-typescript`** generates `src/api/schema.d.ts` from the API's OpenAPI document (`/openapi/v1.json`) with an `npm run gen:api` script. The generated file is committed, so the UI builds without the API running. Regenerate when the contract changes. CI checks for drift from Phase 5. The API's OpenAPI output is verified at the start of Phase 2, before the UI depends on it.
 - There is no generated client, just a small typed `fetch` wrapper in `src/api/client.ts`.
 
 ### State and data flow

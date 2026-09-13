@@ -2,7 +2,7 @@
 
 System context, backend architecture, search pipeline stages, API conventions and frontend specification for the 30-minute developer talk **"How to Find a Needle"**.
 
-> **Private working document.** Decisions behind each part are recorded in the ADRs (see [README.md](README.md)); build order is in [roadmap.md](roadmap.md). If this overview and an ADR disagree, the ADR wins, so update this file.
+> **Working document (build branch).** Decisions behind each part are recorded in the ADRs (see [README.md](README.md)); build order is in [roadmap.md](roadmap.md). If this overview and an ADR disagree, the ADR wins, so update this file.
 
 ---
 
@@ -44,7 +44,7 @@ The Datafiniti/Kaggle CSV has been **dropped**.
 how-to-find-a-needle.slnx
 Directory.Build.props / Directory.Packages.props / .editorconfig
 README.md
-docs/adr/                         # private ADRs, roadmap, this overview (gitignored)
+docs/adr/                         # working ADRs, roadmap, this overview (build branch; public ADRs after the build)
 
 src/
   PI.AppHost/                     # .NET Aspire: postgres (+pgvector), searchapi, web-ui, LLM settings
