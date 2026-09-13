@@ -1,0 +1,6 @@
+{
+  "appHost": {
+    "path": "PI.AppHost.csproj"
+  },
+  "channel": "stable"
+}

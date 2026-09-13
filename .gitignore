@@ -55,3 +55,40 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# macOS
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+
+# User-specific IDE files
+*.user
+*.userosscache
+.vs/
+.idea/
+
+# Local secrets / overrides (never commit real keys or connection strings)
+**/appsettings.*.local.json
+secrets.json
+
+# Local AI models — large binaries, downloaded per assets/models/README.md
+*.onnx
+src/PI.SearchApi/assets/models/*
+!src/PI.SearchApi/assets/models/README.md
+
+# Python (dataset prep scripts)
+__pycache__/
+*.pyc
+.venv/
+
+# Node (planned web-ui/ frontend)
+node_modules/
+dist/
+.env*
+
+# Internal planning docs — not for the learner-facing repo
+docs/adr/
+

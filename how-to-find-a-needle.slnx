@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PI.AppHost/PI.AppHost.csproj" />
+    <Project Path="src/PI.SearchApi/PI.SearchApi.csproj" />
+  </Folder>
+</Solution>
