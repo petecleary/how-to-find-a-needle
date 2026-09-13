@@ -89,6 +89,3 @@ node_modules/
 dist/
 .env*
 
-# Internal planning docs — not for the learner-facing repo
-docs/adr/
-

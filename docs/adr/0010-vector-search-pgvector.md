@@ -1,0 +1,51 @@
+# ADR-0010: Stage 3 — Vector search (pgvector)
+
+- **Status:** Proposed
+- **Date:** 2026-09-13
+- **Related:** ADR-0006, ADR-0009, ADR-0011; golden queries GQ-01, GQ-02, GQ-03; roadmap Phase 2
+
+## Context
+
+Semantic search finds products by meaning: "power brick" matches "AC adapter". It is also where the talk's central warning appears: **similarity ≠ compatibility**. A 45W barrel charger and a 65W USB-C charger embed close together.
+
+We already run Postgres with pgvector, so vectors live next to the structured data and filters.
+
+## Decision
+
+```sql
+SET LOCAL hnsw.ef_search = 100;  -- must be >= candidate depth to avoid truncated results
+
+SELECT id, name, brand, category, price, specs,
+       embedding_nomic <=> @queryVector AS distance
+FROM products
+WHERE embedding_nomic IS NOT NULL
+  /* + shared filter fragments (ADR-0007) */
+ORDER BY embedding_nomic <=> @queryVector, id
+LIMIT @depth;
+```
+
+- **Metric:** cosine distance `<=>`. The response shows `vectorDistance` (0 = identical) and `score = 1 − distance` (cosine similarity). Because vectors are normalised ([ADR-0009](0009-local-embeddings-onnx-runtime.md)), inner product would rank identically; cosine is chosen because it is the most familiar to explain.
+- **Index:** HNSW with `vector_cosine_ops`, pgvector defaults (`m = 16`, `ef_construction = 64`). Queries run in a transaction with `SET LOCAL hnsw.ef_search = 100`. The default of 40 would silently cap results below the default candidate depth of 50.
+- **Filters with approximate indexes:** filtering can reduce HNSW recall, because the index finds neighbours first and filters afterwards. At demo scale the planner usually does an exact scan, so results are exact. The ADR and trace note that production systems handle this with pgvector's iterative index scans (`hnsw.iterative_scan`, pgvector ≥ 0.8), partial indexes or over-fetching.
+- **No similarity threshold.** Vector search always returns *something*, even for nonsense queries. That is a teaching point, shown by a note in the trace.
+- **Trace:** query embedding details (from the embedder step), the SQL, `ef_search`, whether the planner used the index (from `EXPLAIN` in development, run once per request only if `options.explain` is true), and per-result distances.
+
+## Consequences
+
+- GQ-02 (synonym) succeeds here where keyword search failed.
+- GQ-01 shows the incompatible 45W barrel charger ranked near the top. That is the intended failure the ontology fixes in Stage 6.
+- GQ-03 (keyword trap) is corrected: "cordless phone battery" is less similar to "cordless drill battery" than real drill batteries.
+
+## Alternatives considered
+
+| Option | Why not (for this repo) |
+|---|---|
+| Dedicated vector DB (Qdrant, Weaviate, Pinecone) | Extra infrastructure; loses SQL filters and joins in the same query |
+| IVFFlat index | Needs training data and `lists` tuning; HNSW is simpler to explain and has better recall |
+| Brute force in C# | Hides the database's role; doesn't teach indexing |
+| Similarity cut-off | Arbitrary thresholds vary by model; better to show the raw behaviour |
+
+## Teaching notes
+
+- Nearest neighbour ≠ right answer. Vector search is a *candidate generator* with no notion of constraints.
+- Approximate indexes trade recall for speed. Know your `ef_search`.
