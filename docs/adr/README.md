@@ -33,7 +33,7 @@ Working decisions for building **How to Find a Needle**.
 | [0010](0010-vector-search-pgvector.md) | Stage 3 — Vector search (pgvector) | Search | 2 | Proposed |
 | [0011](0011-hybrid-search-rrf.md) | Stage 4 — Hybrid search with RRF | Search | 2 | Proposed |
 | [0012](0012-bge-m3-dense-and-sparse.md) | Stage 5 — BGE-M3 dense + sparse | Search | 2 | Proposed |
-| [0013](0013-domain-ontology-and-compatibility.md) | Stage 6 — Domain ontology & compatibility | Search | 1 (data), 2 (stage) | Proposed |
+| [0013](0013-domain-ontology-and-compatibility.md) | Stage 6 — Domain ontology: taxonomy, synonyms & rules | Search | 1 (data), 2 (stage) | Proposed |
 | [0014](0014-web-ui-architecture.md) | Web UI architecture | Frontend | 3 | Proposed |
 | [0015](0015-llm-hosting-and-client.md) | LLM provider & client | AI | 4 | Proposed |
 | [0016](0016-rag-grounding-and-citations.md) | Stage 7 — RAG grounding & citations | AI | 4 | Proposed |

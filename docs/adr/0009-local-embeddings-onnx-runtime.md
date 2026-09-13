@@ -29,7 +29,7 @@ Embedding models have usage details that are easy to get wrong and quietly degra
   - The full 768 dimensions are used; no Matryoshka truncation.
 - **Limits:** truncate input at 512 tokens (product text is short). Batch size 16 for seeding; single queries at request time.
 - **Session:** one `InferenceSession`, created lazily on first use and reused. `SessionOptions` use CPU with default graph optimisations. The session is thread-safe for `Run`.
-- **Document text for embedding:** `"{name}. {brand} {category}. {description} Reviews: {reviews joined}"`. This is the same text that feeds `content_hash` ([ADR-0006](0006-database-schema-and-seeding.md)).
+- **Document text for embedding:** `"{name}. {brand} {categories}. {description} Reviews: {reviews joined}"`. This is the same text that feeds `content_hash` ([ADR-0006](0006-database-schema-and-seeding.md)).
 - **Missing model:** a clear exception with the path and a link to `assets/models/README.md`. The endpoint maps it to `503` ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 - **Trace:** model name, file, prefix used, token count (and whether it was truncated), embedding time, and the first 8 dimensions of the query vector (for illustration only).
 

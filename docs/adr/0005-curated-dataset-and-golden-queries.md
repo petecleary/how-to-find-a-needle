@@ -15,10 +15,10 @@ We also need a repeatable definition of "this stage behaves as the talk claims",
 ### 1. A hand-curated synthetic catalog, `assets/data/products.json`
 
 - **Size:** start with about 60 items (Phase 1). A generator script grows it to about 500 in Phase 5 by adding plausible *distractors* around the curated core. The curated core stays hand-written.
-- **Fictional brands and products** (confirmed): for example *Corvid* laptops, *Voltline* chargers, *Kestrel* SSDs and memory, *Brakk* and *Tornio* power tools. This avoids making false spec claims about real products, and avoids trademark issues. Prices are in GBP.
-- **Categories** (each chosen to carry a compatibility constraint):
+- **Fictional brands and products** (confirmed): for example *Blackbird* laptops, *Voltline* chargers, *Kestrel* SSDs and memory, *Brakk* and *Tornio* power tools. This avoids making false spec claims about real products, and avoids trademark issues. Prices are in GBP.
+- **Product groups** (each chosen to carry a domain rule):
 
-| Category group | Constraint the ontology enforces |
+| Product group | Domain rule the ontology defines |
 |---|---|
 | Laptops + chargers / USB-C power | connector type (USB-C PD vs barrel), minimum wattage |
 | Cordless tools + batteries + battery chargers | voltage **platform** (e.g. Brakk 18V vs Tornio 20V MAX: similar numbers, different platforms) |
@@ -34,8 +34,7 @@ We also need a repeatable definition of "this stage behaves as the talk claims",
   "id": "PROD-0012",
   "name": "Voltline 65W USB-C GaN Charger",
   "brand": "Voltline",
-  "category": "laptop-charger",
-  "kind": "accessory",
+  "categories": ["laptop-chargers", "usb-c-pd-chargers", "phone-chargers"],
   "price": 49.99,
   "currency": "GBP",
   "description": "Compact 65W gallium-nitride power adapter with a single USB-C Power Delivery port...",
@@ -51,10 +50,15 @@ We also need a repeatable definition of "this stage behaves as the talk claims",
 }
 ```
 
-- `kind` is `device | accessory | standalone`. Devices can be picked as the *target device* ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+- `categories` is an **array**, because real catalogs list one product in several places. Each entry is a `skos:notation` from the ontology's taxonomy ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+  - Order matters only for display: the first category supplies the UI icon.
+  - Whether a product is a *device* (and so can be a target device) comes from its categories, not from a separate field.
 - `specs` holds display and filter attributes with **normalised units in the key name** (`wattageW`, `voltageV`), so values are numbers rather than strings like "65W".
-- **Compatibility facts are not in `products.json`.** They are hand-written in Turtle in `domain-ontology.ttl`, using the same product IDs ([ADR-0013](0013-domain-ontology-and-compatibility.md)). This covers what a device requires, what an accessory provides, explicit `compatibleWith` pairs and `partOf` kits.
-- A few values appear in both files, because they are both a filterable spec and a compatibility fact (for example `wattageW` and `connector`). A catalog validation test fails if the two files disagree.
+- **Specs are also what the domain rules compare** ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+  - Accessories carry what they provide (`connector`, `wattageW`, `interface`, `memoryType`, `platform`).
+  - Devices carry what they need (`chargingPort`, `minChargerWattageW`, `m2SlotInterface`, `memoryType`, `batteryPlatform`).
+  - Values for vocabulary-backed specs use the ontology's notations (`"usb-c"`, `"nvme"`).
+- **The ontology never names a product.** `products.json` holds the product facts; `domain-ontology.ttl` holds the taxonomy, synonyms and class-level rules. The two meet through category notations and spec names, and catalog validation tests enforce that contract.
 - Descriptions and reviews are written to deliberately create near-miss wording (for example, "black rectangular laptop power adapter" on both the 65W USB-C and the 45W barrel charger).
 
 ### 3. Golden queries, `assets/data/golden-queries.json`
@@ -63,12 +67,12 @@ Each golden query records the talk moment it demonstrates and the **expected out
 
 | ID | Query (draft) | Moment it demonstrates |
 |---|---|---|
-| GQ-01 | "charger for my Corvid Aerobook 14" (+ target device) | **Similarity ≠ compatibility**: Vector ranks the 45W barrel charger highly; Ontology flags it Incompatible (connector and wattage) |
-| GQ-02 | "power brick for laptop" | **Synonym miss**: Keyword finds nothing useful (catalog says "adapter"/"charger"); Vector succeeds |
+| GQ-01 | "charger for my Blackbird Aerobook 14" (+ target device) | **Similarity ≠ compatibility**: Vector ranks the 45W barrel charger highly; Ontology flags it Incompatible (connector and wattage) |
+| GQ-02 | "power brick for laptop" | **Synonym miss**: Keyword finds nothing useful (catalog says "adapter"/"charger"); Vector succeeds; Stage 6 synonym expansion rescues the keyword side |
 | GQ-03 | "cordless drill battery" | **Keyword trap**: Keyword ranks a *cordless phone battery* highly; Vector and Hybrid correct it |
 | GQ-04 | filters only: brand = Brakk, voltageV = 18, maxPrice = 100 | **Structured wins**: exact, fast, no ranking needed |
 | GQ-05 | "battery for Brakk 18V drill" (+ target device) | **Platform compatibility**: the Tornio 20V MAX battery looks similar; Ontology rejects it (platform) |
-| GQ-06 | "SSD upgrade for my Corvid Aerobook 14" (+ target device) | **Interface compatibility**: a SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; Ontology flags it |
+| GQ-06 | "SSD upgrade for my Blackbird Aerobook 14" (+ target device) | **Interface compatibility**: a SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; Ontology flags it |
 | GQ-07 | cross-language (e.g. "cargador USB-C para portátil") | **Multilingual**: BGE-M3 finds the right chargers; Nomic (English-centric) is weaker |
 
 Shape:
@@ -77,7 +81,7 @@ Shape:
 {
   "id": "GQ-01",
   "title": "Similarity is not compatibility",
-  "request": { "query": "charger for my Corvid Aerobook 14", "context": { "targetProductId": "PROD-0001" } },
+  "request": { "query": "charger for my Blackbird Aerobook 14", "context": { "targetProductId": "PROD-0001" } },
   "expectations": {
     "vector":   [{ "productId": "PROD-0014", "rank": { "max": 5 } }],
     "ontology": [{ "productId": "PROD-0014", "compatibility": "Incompatible" },

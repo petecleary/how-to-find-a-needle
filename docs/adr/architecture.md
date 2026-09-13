@@ -28,7 +28,8 @@ Items are authored to create:
 - **Near-miss semantic matches:** similar in vector space, wrong in reality (similarity ≠ compatibility).
 - **Keyword traps:** shared words, unrelated products (e.g. *cordless phone battery* vs *cordless drill battery*).
 - **Synonym gaps:** what the user says ("power brick") differs from what the catalog says ("adapter").
-- **Explicit compatibility facts:** connector and wattage, voltage platform, SSD interface, memory type. They are hand-written in Turtle (`domain-ontology.ttl`) against the same product IDs.
+- **Domain constraints:** connector and wattage, voltage platform, SSD interface, memory type. Products carry the spec values; the ontology defines each rule once per pair of product types, and never names a product.
+- **Multiple categories per product**, each a concept in the ontology's SKOS taxonomy.
 - **Rich descriptive text:** descriptions and short reviews, so embeddings differ meaningfully from token matching.
 
 **Golden queries** (`golden-queries.json`) record the expected per-stage outcome for each talk moment. They are used as integration tests, UI presets and the demo script.
@@ -64,8 +65,8 @@ src/
       data/
         products.json             # curated catalog: names, prices, descriptions, specs
         golden-queries.json       # talk moments + per-stage expectations
-        domain-ontology.ttl       # RDF vocabulary + compatibility facts per device/accessory
-        rules/*.rq                # SPARQL compatibility rules
+        domain-ontology.ttl       # SKOS taxonomy, synonyms, value vocabularies, class-level rules (no product ids)
+        queries/*.rq              # SPARQL lookups: labels, taxonomy, narrower concepts, rules for types
         init.sql                  # idempotent schema + indexes
       prompts/                    # rag-*.md, pedagogy-*.md
       models/                     # downloaded ONNX models (gitignored; README committed)
@@ -94,7 +95,7 @@ tests/
 | Keyword ranking | Postgres FTS (`websearch_to_tsquery`, `ts_rank_cd`), labelled **BM25-style** | [0008](0008-keyword-search-bm25-style.md) |
 | Local embeddings | ONNX Runtime + `Microsoft.ML.Tokenizers`: Nomic Embed v1.5 (768d), BGE-M3 (1024d dense + sparse) | [0009](0009-local-embeddings-onnx-runtime.md), [0012](0012-bge-m3-dense-and-sparse.md) |
 | Fusion | Reciprocal Rank Fusion (k = 60), pure C# | [0011](0011-hybrid-search-rrf.md) |
-| Knowledge graph | dotNetRDF (in-memory), hand-written Turtle (vocabulary + compatibility facts), SPARQL rule files | [0013](0013-domain-ontology-and-compatibility.md) |
+| Ontology | dotNetRDF (in-memory), hand-written Turtle: SKOS taxonomy + synonyms + class-level domain rules; SPARQL lookups; no instance data | [0013](0013-domain-ontology-and-compatibility.md) |
 | LLM (stages 7–8) | `Microsoft.Extensions.AI` `IChatClient`, provider set in config: existing local **Ollama** (OpenAI-compatible `/v1`), **OpenAI**, or **Anthropic** (official `Anthropic` .NET SDK). No containers, **no LiteLLM** | [0015](0015-llm-hosting-and-client.md) |
 | Frontend | React + Vite + TypeScript, Tailwind, shadcn/ui, Lucide; `openapi-typescript` types; Vite proxy (no CORS) | [0014](0014-web-ui-architecture.md) |
 | Testing | xUnit unit tests + `Aspire.Hosting.Testing` golden-query integration tests; Vitest for the UI hook | [0002](0002-solution-structure-and-orchestration.md) |
@@ -104,18 +105,18 @@ tests/
 
 ## 4. API Conventions & Pipeline Stages
 
-All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries` and `GET /api/demo/devices`. → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
+All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices` and `GET /api/taxonomy` (the category tree, read from the ontology). → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
 
 **Request:** `POST /api/search/{stage}`
 
 ```json
 {
-  "query": "charger for my Corvid Aerobook 14",
+  "query": "charger for my Blackbird Aerobook 14",
   "page": 1,
   "pageSize": 10,
-  "filters": { "brand": "Voltline", "category": "laptop-charger", "minPrice": 20, "maxPrice": 150, "specs": { "connector": "usb-c" } },
+  "filters": { "brand": "Voltline", "categories": ["laptop-chargers"], "minPrice": 20, "maxPrice": 150, "specs": { "connector": "usb-c" } },
   "context": { "targetProductId": "PROD-0001" },
-  "options": { "candidateDepth": 50, "rrfK": 60, "keywordWeight": 1.0, "vectorWeight": 1.0, "audience": "novice" }
+  "options": { "candidateDepth": 50, "rrfK": 60, "keywordWeight": 1.0, "vectorWeight": 1.0, "expandSynonyms": true, "applyConstraints": true, "audience": "novice" }
 }
 ```
 
@@ -124,14 +125,14 @@ All search stages use **POST** with a shared JSON request and response, so the U
 ```json
 {
   "stage": "ontology",
-  "query": "charger for my Corvid Aerobook 14",
+  "query": "charger for my Blackbird Aerobook 14",
   "page": 1, "pageSize": 10, "totalResults": 37, "executionTimeMs": 21.4,
   "results": [
     {
       "id": "PROD-0014", "name": "Voltline 45W Barrel Laptop Adapter", "brand": "Voltline",
-      "category": "laptop-charger", "price": 29.99, "specs": { "connector": "barrel-5.5mm", "wattageW": 45 },
+      "categories": ["laptop-chargers"], "price": 29.99, "specs": { "connector": "barrel-5.5mm", "wattageW": 45 },
       "score": 0.0318,
-      "signals": { "keywordRank": 3, "vectorRank": 2, "vectorDistance": 0.11, "fusedRank": 2 },
+      "signals": { "keywordRank": 3, "vectorRank": 2, "vectorDistance": 0.11, "fusedRank": 2, "conceptMatch": "InConcept" },
       "compatibility": {
         "status": "Incompatible",
         "reasons": ["Connector mismatch: device requires USB-C, charger provides 5.5mm barrel", "Insufficient power: 45W < 65W required"]
@@ -145,7 +146,7 @@ All search stages use **POST** with a shared JSON request and response, so the U
       { "stage": "keyword", "title": "Postgres full-text search (BM25-style)", "durationMs": 3.1, "sql": "…", "details": { "tsquery": "…" } },
       { "stage": "vector",  "title": "Nomic embedding + pgvector cosine",       "durationMs": 9.8, "sql": "…", "details": { "distances": "…" } },
       { "stage": "hybrid",  "title": "Reciprocal Rank Fusion (k=60)",           "durationMs": 0.2, "details": { "formulas": ["PROD-0012: 1/(60+2) + 1/(60+1) = 0.03252"] } },
-      { "stage": "ontology","title": "SPARQL compatibility rules",               "durationMs": 7.9, "details": { "target": "PROD-0001 (explicit)", "triples": ["ex:PROD-0014 ex:connectorType ex:Barrel5_5mm"] } }
+      { "stage": "ontology","title": "SKOS concepts, expansion & domain rules", "durationMs": 7.9, "details": { "concepts": ["chargers", "laptops"], "expandedTerms": ["charger", "ac adapter", "power brick"], "ruleChecks": ["Charger fits laptop: connector barrel-5.5mm = usb-c ✗", "wattageW 45 ≥ 65 ✗"] } }
     ]
   }
 }
@@ -160,7 +161,7 @@ All search stages use **POST** with a shared JSON request and response, so the U
 | 3. Vector | `/api/search/vector` | Nomic embeddings (local ONNX) + pgvector cosine. Understands meaning; similar ≠ compatible. | — | [0009](0009-local-embeddings-onnx-runtime.md), [0010](0010-vector-search-pgvector.md) |
 | 4. Hybrid | `/api/search/hybrid` | RRF over keyword + vector ranks: RRF(d) = Σ wᵢ / (k + rᵢ(d)). | 2 + 3 | [0011](0011-hybrid-search-rrf.md) |
 | 5. BGE-M3 | `/api/search/bge-m3` | Multilingual dense + learned sparse from one model, fused with RRF. Cross-language queries. | — | [0012](0012-bge-m3-dense-and-sparse.md) |
-| 6. Ontology | `/api/search/ontology` | Evaluates Hybrid candidates against the target device with SPARQL rules. **Incompatible items are kept and flagged with reasons**, ranked after compatible ones. | 4 | [0013](0013-domain-ontology-and-compatibility.md) |
+| 6. Ontology | `/api/search/ontology` | Matches the query to SKOS concepts, expands synonyms and narrower concepts, re-runs Hybrid, demotes out-of-concept items, then applies class-level domain rules against the target device. **Flagged items are kept, with reasons.** Toggles: `expandSynonyms`, `applyConstraints`. | 4 | [0013](0013-domain-ontology-and-compatibility.md) |
 | 7. RAG | `/api/search/rag` | LLM answers from a bounded evidence set (compatible + incompatible-with-reasons), with validated `[PROD-…]` citations. | 6 | [0016](0016-rag-grounding-and-citations.md) |
 | 8. Pedagogy | `/api/search/pedagogy` | Turns the grounded answer into a structured, audience-aware explanation: decision → concepts → near miss → rule of thumb → next step. | 7 | [0017](0017-pedagogy-engine.md) |
 
@@ -172,7 +173,7 @@ The `web-ui` visualises how the same query changes across all 8 stages. → [ADR
 
 ```text
 +-------------------------------------------------------------------------------------+
-| Search: "charger for my Corvid Aerobook 14"   [Golden query ▾]   [My device ▾]      |
+| Search: "charger for my Blackbird Aerobook 14"   [Golden query ▾]   [My device ▾]      |
 | Filters: brand · category · price · specs                          [Presentation ☐] |
 +-------------------------------------------------------------------------------------+
 | Stages: [1 Struct] [2 Keyword] [3 Vector] [4 Hybrid] [5 BGE-M3] [6 Onto] [7 RAG] [8 Ped] |
@@ -195,7 +196,7 @@ The `web-ui` visualises how the same query changes across all 8 stages. → [ADR
   3. Query embedding details + cosine distances.
   4. Per-item RRF formula table.
   5. Tokens and top sparse weights + dense/sparse fusion.
-  6. Target-device resolution, SPARQL rules, justifying triples, rejected items.
+  6. Matched concepts, expanded terms, in/out-of-concept classification, domain rule checks with values, flagged items.
   7. Evidence set, prompts, raw output, citation validation.
   8. Pedagogy prompt (audience section), output validation.
 - The 2D vector-space plot is a stretch goal, not in scope.
@@ -206,7 +207,7 @@ The `web-ui` visualises how the same query changes across all 8 stages. → [ADR
 
 - **Read the ADR first.** Each stage has one; follow it, or propose an ADR change before deviating.
 - **REPR, thin endpoints:** the endpoint and validator live in `Endpoints/Search/{Stage}/`; search logic lives in `Pipeline/{Technique}/`; shared DTOs in `Contracts/`.
-- **One dataset, two files, one set of IDs:** catalog records live in `products.json` (loaded into Postgres); vocabulary and compatibility facts live in `domain-ontology.ttl`. The catalog validation test keeps them consistent.
+- **Catalog vs ontology:** product records live in `products.json` (loaded into Postgres); the domain model (taxonomy, synonyms, rules) lives in `domain-ontology.ttl` and never names a product. Categories and vocabulary-backed spec values use the ontology's notations, and validation tests enforce that.
 - **POST for search, same contract for every stage**; filters apply in every stage via `SqlFilterBuilder`.
 - **Always populate `debugTrace`** with the exact parameterised SQL, parameters and stage-specific details. The trace is a feature.
 - **Be honest in naming:** Postgres FTS is "BM25-style"; vector similarity is not compatibility; never hide rejected items.

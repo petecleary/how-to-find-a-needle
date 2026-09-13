@@ -6,7 +6,7 @@
 
 ## Context
 
-After Stage 6 we have relevant candidates *and* explicit compatibility facts with reasons. Stage 7 lets an LLM answer the user's question in natural language, **using only that evidence**, and cite it.
+After Stage 6 we have relevant candidates, their concept matches *and* domain rule checks with reasons. Stage 7 lets an LLM answer the user's question in natural language, **using only that evidence**, and cite it.
 
 Without grounding, an LLM will happily recommend the 45W barrel charger, or invent a product. Grounding and citations make the answer checkable, and the UI can link each claim back to a product card.
 
@@ -22,6 +22,7 @@ Without grounding, an LLM will happily recommend the 45W barrel charger, or inve
   - Up to **2 Unknown** products.
 - **Each evidence item** is rendered as a compact, labelled block: `[PROD-0012] Voltline 65W USB-C GaN Charger — £49.99 — connector: USB-C, 65W — Compatibility: Compatible (connector USB-C matches; 65W ≥ 65W)`.
 - Descriptions are truncated to about 300 characters, and reviews are excluded (to save tokens and reduce noise).
+- The matched concepts and the domain rules that fired are included once, with their `skos:definition` text, so the answer explains constraints in the domain's own words ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
 
 ### Prompt (versioned files in `assets/prompts/rag-system.md` and `rag-user.md`)
 

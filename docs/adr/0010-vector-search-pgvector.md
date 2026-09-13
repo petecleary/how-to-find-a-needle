@@ -15,7 +15,7 @@ We already run Postgres with pgvector, so vectors live next to the structured da
 ```sql
 SET LOCAL hnsw.ef_search = 100;  -- must be >= candidate depth to avoid truncated results
 
-SELECT id, name, brand, category, price, specs,
+SELECT id, name, brand, categories, price, specs,
        embedding_nomic <=> @queryVector AS distance
 FROM products
 WHERE embedding_nomic IS NOT NULL

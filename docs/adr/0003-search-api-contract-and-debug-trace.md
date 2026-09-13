@@ -29,7 +29,8 @@ The **debug trace** is the main way learners see how each stage works: SQL, lexe
 
 Supporting read-only endpoints for the UI:
 - `GET /api/demo/queries` returns the golden queries ([ADR-0005](0005-curated-dataset-and-golden-queries.md)) as presets.
-- `GET /api/demo/devices` returns products that can be a *target device* ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+- `GET /api/demo/devices` returns products in device categories (per the taxonomy) that can be a *target device*.
+- `GET /api/taxonomy` returns the SKOS concept tree read from `domain-ontology.ttl`: notations, language-tagged labels, synonyms, definitions, icons and narrower concepts. The UI builds its category filter from it ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
 
 The legacy `GET /api/products` endpoint is removed.
 
@@ -37,12 +38,12 @@ The legacy `GET /api/products` endpoint is removed.
 
 ```json
 {
-  "query": "charger for my Corvid Aerobook 14",
+  "query": "charger for my Blackbird Aerobook 14",
   "page": 1,
   "pageSize": 10,
   "filters": {
     "brand": "Voltline",
-    "category": "laptop-charger",
+    "categories": ["laptop-chargers"],
     "minPrice": 20.00,
     "maxPrice": 150.00,
     "specs": { "connector": "usb-c" }
@@ -55,6 +56,8 @@ The legacy `GET /api/products` endpoint is removed.
     "rrfK": 60,
     "keywordWeight": 1.0,
     "vectorWeight": 1.0,
+    "expandSynonyms": true,
+    "applyConstraints": true,
     "audience": "novice"
   }
 }
@@ -70,13 +73,14 @@ The legacy `GET /api/products` endpoint is removed.
 - `candidateDepth` is between 10 and 200, and `rrfK` between 1 and 1000.
 - Weights are between 0 and 10.
 - `audience` is one of `novice | enthusiast | expert`.
+- `filters.categories` must be known taxonomy notations.
 
 ### Response (`Contracts/SearchResponse.cs`)
 
 ```json
 {
   "stage": "hybrid",
-  "query": "charger for my Corvid Aerobook 14",
+  "query": "charger for my Blackbird Aerobook 14",
   "page": 1,
   "pageSize": 10,
   "totalResults": 37,
@@ -86,7 +90,7 @@ The legacy `GET /api/products` endpoint is removed.
       "id": "PROD-0012",
       "name": "Voltline 65W USB-C GaN Charger",
       "brand": "Voltline",
-      "category": "laptop-charger",
+      "categories": ["laptop-chargers", "usb-c-pd-chargers"],
       "price": 49.99,
       "specs": { "connector": "usb-c", "wattage": 65 },
       "score": 0.0325,
@@ -95,7 +99,8 @@ The legacy `GET /api/products` endpoint is removed.
         "keywordRank": 2, "keywordScore": 0.41,
         "vectorRank": 1, "vectorDistance": 0.124,
         "bgeDenseRank": null, "bgeSparseRank": null,
-        "fusedRank": 1
+        "fusedRank": 1,
+        "conceptMatch": null
       },
       "compatibility": { "status": "NotEvaluated", "reasons": [] }
     }
@@ -107,7 +112,8 @@ The legacy `GET /api/products` endpoint is removed.
 ```
 
 - `score` means different things per stage; the trace explains it. `signals` keeps each technique's raw rank and score, so the UI can show badges.
-- `compatibility.status` is one of `NotEvaluated | Compatible | Incompatible | Unknown`. `reasons` holds human-readable strings with triple references.
+- `compatibility.status` is one of `NotEvaluated | Compatible | Incompatible | Unknown`. `reasons` holds human-readable strings that quote the domain rule and the spec values compared.
+- `signals.conceptMatch` is `InConcept | OutOfConcept | NoConcept`, set by Stage 6 ([ADR-0013](0013-domain-ontology-and-compatibility.md)); `null` in other stages.
 - `totalResults` for ranked stages is the number of candidates retrieved, which is bounded by `candidateDepth`. It is **not** a count of the whole catalog. The trace says so.
 - `answer` is populated by Stage 7 ([ADR-0016](0016-rag-grounding-and-citations.md)). `explanation` is populated by Stage 8 ([ADR-0017](0017-pedagogy-engine.md)).
 
@@ -134,7 +140,7 @@ The trace is an **ordered list of steps**, so composed stages show their whole p
 - Common fields: `stage`, `title`, `durationMs`, `notes[]`.
 - Optional typed sections, each filled in by the stage that uses it:
   - `sql` + `parameters`
-  - `details` for stage-specific structured data: lexemes, distances, per-item RRF formula strings, SPARQL text and triples, rejected items, model name, prompts, raw LLM output
+  - `details` for stage-specific structured data: lexemes, distances, per-item RRF formula strings, matched concepts, expanded terms, SPARQL text, rule checks, flagged items, model name, prompts, raw LLM output
 - **Parameter values are shown next to the SQL, never interpolated into it.** The SQL shown is the exact parameterised statement that ran.
 - The trace is always populated. This is a local teaching app, so there is no production switch to hide it. The ADR records that a real system would gate it.
 
@@ -149,6 +155,7 @@ The trace is an **ordered list of steps**, so composed stages show their whole p
 
 - The UI works with one TypeScript type ([ADR-0014](0014-web-ui-architecture.md)), and stages can be compared side by side.
 - POST for reads is less cacheable and less RESTful. That is acceptable for a demo API, and explained to learners.
+- **QUERY is the planned upgrade.** HTTP QUERY is safe and idempotent like GET, but carries a body like POST, which is exactly what a search request is. .NET 10 already supports it (`HttpMethods.Query`). **Revisit when `Microsoft.OpenApi` supports OpenAPI 3.2**, the first version that can describe a QUERY operation. The switch is then one line per endpoint, plus regenerating the UI types.
 - `details` is loosely typed (a dictionary of JSON values) to avoid 8 response subtypes. The UI renders known keys and shows unknown ones as raw JSON.
 
 ## Alternatives considered
@@ -156,6 +163,7 @@ The trace is an **ordered list of steps**, so composed stages show their whole p
 | Option | Why not (for this repo) |
 |---|---|
 | GET with query strings | Nested filters and options become awkward and unreadable |
+| HTTP QUERY method | The best semantic fit, and ASP.NET Core 10 supports it. But `Microsoft.OpenApi` 2.x only emits OpenAPI 3.0/3.1, which can't describe QUERY, so the endpoints would be missing from Scalar and from the generated UI types ([ADR-0014](0014-web-ui-architecture.md)). Adopt once OpenAPI 3.2 is supported |
 | A different response type per stage | Breaks the "same query, switch stage" demo and doubles UI code |
 | Strongly typed trace per stage | Precise, but 8 polymorphic types add noise; revisit if the UI suffers |
 | Trace only in the Aspire dashboard | Hidden from the audience; the trace must appear alongside the results |
@@ -164,3 +172,4 @@ The trace is an **ordered list of steps**, so composed stages show their whole p
 
 - A stable contract is what makes an experiment fair: same input, same output shape, different technique.
 - "Explainability by design": if you can't show *why* a result ranked where it did, you can't debug search.
+- POST for search is a long-standing workaround for "a read that needs a body". HTTP QUERY is the proper answer. Tooling support (here, OpenAPI) often decides when you can adopt a standard, not just the server framework.

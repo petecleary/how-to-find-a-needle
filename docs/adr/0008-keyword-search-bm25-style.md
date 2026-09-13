@@ -15,7 +15,7 @@ We want one clear implementation that learners can run with no extra infrastruct
 ### Implementation: PostgreSQL full-text search, labelled "BM25-style"
 
 ```sql
-SELECT id, name, brand, category, price, specs,
+SELECT id, name, brand, categories, price, specs,
        ts_rank_cd(search_vector, q) AS score
 FROM products, websearch_to_tsquery('english', @query) AS q
 WHERE search_vector @@ q
@@ -25,9 +25,12 @@ LIMIT @depth;
 ```
 
 - **Parsing:** `websearch_to_tsquery('english', …)` accepts natural input (quotes, `or`, `-exclude`) and never throws on user syntax.
-- **Document:** the `search_vector` generated column, weighted A (name), B (brand + category), C (description) ([ADR-0006](0006-database-schema-and-seeding.md)).
+- **Document:** the `search_vector` generated column, weighted A (name), B (brand + categories), C (description) ([ADR-0006](0006-database-schema-and-seeding.md)).
 - **Ranking:** `ts_rank_cd` (cover density) with default weights; no normalisation flag to start with. The talk explains the difference.
 - **Matching:** `@@` requires *all* terms by default (AND semantics). This strictness is part of the lesson (GQ-02 synonym miss).
+- **Expansion hook for Stage 6:** `IKeywordSearch` also accepts optional synonym groups from the ontology ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+  - Each group is OR-ed (`phraseto_tsquery(@t1) || phraseto_tsquery(@t2) …`) and AND-ed with the rest of the query.
+  - `websearch_to_tsquery` can't express grouped ORs, so expanded queries are assembled from these parameterised fragments. The trace shows the final `tsquery`.
 - **Trace:**
   - The SQL.
   - The parsed `tsquery` (via `SELECT websearch_to_tsquery(...)::text`), which shows stemming and stop-word removal: "batteries" → `'batteri'`.

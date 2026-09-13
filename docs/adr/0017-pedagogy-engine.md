@@ -15,7 +15,8 @@ Stage 8 turns grounded facts into an explanation shaped by teaching principles. 
 ### Position in the pipeline
 
 `IPedagogyEngine` consumes the **Stage 7 result**: the validated answer and citations, plus the evaluated candidates and compatibility reasons ([ADR-0004](0004-pipeline-composition.md)).
-- It may **not** introduce new products or facts. Its input is the RAG output, the evidence set and the ontology reasons only.
+- It may **not** introduce new products or facts. Its input is the RAG output, the evidence set, the ontology reasons, and the `skos:definition` text of each matched concept and fired rule ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+- **`concepts[].explanation` must build on those definitions**, so the lesson rests on the domain model rather than on what the model happens to believe.
 - This means a second LLM call. The latency is visible in the trace and accepted.
 
 ### Audience

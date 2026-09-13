@@ -43,8 +43,8 @@ From today's cleaned-up scaffold to a finished, teachable demo. Each phase lists
    - Author `assets/data/products.json` (~60 items) to create each golden-query moment: targets, correct answers, near misses, keyword traps, filler.
    - Write a JSON schema file (`products.schema.json`) to catch typos.
 6. **Ontology** (0013)
-   - `assets/data/domain-ontology.ttl`: vocabulary (classes, properties, connectors, storage interfaces, memory types, platforms, device labels) **and** hand-written compatibility facts for every device and accessory.
-   - Authored alongside the catalog, because both describe the same product IDs.
+   - `assets/data/domain-ontology.ttl`: SKOS taxonomy (the categories, with icons and definitions), synonyms and multilingual labels, value vocabularies (connectors, storage interfaces, memory types, platforms) and class-level domain rules. **No product IDs.**
+   - Authored alongside the catalog, because product categories and constrained spec values use its notations.
 7. **Database** (0006)
    - Replace `init.sql` with the idempotent schema (generated `search_vector`, JSONB, vector columns, indexes).
    - Add `Aspire.Npgsql` + `Pgvector` and register `NpgsqlDataSource` with `UseVector()`.
@@ -55,7 +55,7 @@ From today's cleaned-up scaffold to a finished, teachable demo. Each phase lists
 10. **Catalog validation tests**
     - Every product ID is unique.
     - Every golden-query product ID exists.
-    - Every TTL product IRI exists in `products.json`; every catalog device and accessory has TTL facts; values present in both files (wattage, connector) agree.
+    - Every product category is a taxonomy notation; every vocabulary-backed spec value is a known notation or label; every device and accessory type has the specs its domain rules compare.
     - Units are numeric.
 
 ### Acceptance criteria
@@ -80,10 +80,11 @@ Build strictly in this order. Each step ends with its golden-query integration t
 
 1. **Contract** (0003, 0004)
    - `Contracts/` types, `Pipeline/` shared types (`Candidate`, `StageResult`, `TraceStep`), `SqlFilterBuilder`, ProblemDetails mapping for 503/502.
-   - `GET /api/demo/queries` and `GET /api/demo/devices`.
+   - `IOntology` basics: load the TTL; label, taxonomy and narrower-concept lookups (needed by Stage 1 category filters).
+   - `GET /api/demo/queries`, `GET /api/demo/devices` and `GET /api/taxonomy`.
    - Integration test harness that runs golden-query expectations per stage.
 2. **Stage 1 — Structured** (0007)
-   - `POST /api/search/structured`; JSONB `@>` spec filters; `COUNT(*)` total; SQL in trace. ✅ GQ-04.
+   - `POST /api/search/structured`; `categories &&` filter with narrower-concept expansion; JSONB `@>` spec filters; `COUNT(*)` total; SQL in trace. ✅ GQ-04.
 3. **Stage 2 — Keyword** (0008)
    - `websearch_to_tsquery` + `ts_rank_cd`; parsed tsquery and matched lexemes in trace; "BM25-style" notes. ✅ GQ-02 (misses), GQ-03 (trap ranks high).
 4. **Embeddings (Nomic)** (0009)
@@ -98,7 +99,9 @@ Build strictly in this order. Each step ends with its golden-query integration t
 8. **Stage 5 — BGE-M3** (0012)
    - Dense + sparse embedder; `SparseVector` index-base conversion tests; seeder backfill; dense and sparse retrieval fused via `IRankFusion`; tokens and sparse weights in trace. ✅ GQ-07.
 9. **Stage 6 — Ontology** (0013)
-   - `IKnowledgeGraph` (loads the TTL), `.rq` rule files, target-device resolution (explicit id, then label linking), `IOntologyEvaluator` over Hybrid candidates, incompatible items kept with reasons, SPARQL and triples in trace; unit tests per rule. ✅ GQ-01, GQ-05, GQ-06.
+   - `IOntologySearch`: understand (label matcher) → expand (keyword OR-groups + expanded embedding text) → Hybrid → classify (in/out of concept) → constrain (class-level rules vs target-device specs).
+   - Toggles `expandSynonyms` / `applyConstraints`; flagged items kept with reasons; one trace step per step.
+   - Unit tests for label matching, expansion, the tsquery builder, classification and each rule operator. ✅ GQ-01, GQ-02 (keyword side rescued), GQ-03 (phone battery out of concept), GQ-05, GQ-06.
 
 ### Acceptance criteria
 - All 6 endpoints appear in Scalar and return the shared contract with a populated `debugTrace`.
@@ -122,7 +125,7 @@ Build strictly in this order. Each step ends with its golden-query integration t
 3. `npm run gen:api` with `openapi-typescript` → committed `src/api/schema.d.ts`; typed `fetch` client.
 4. `usePipelineSearch` hook (same request across stages, AbortController, URL state) + Vitest tests.
 5. Layout: `SearchBar` (golden-query presets, device picker), `FilterBar`, `PipelineStepper` (keyboard ←/→), `ResultCard` with `SignalBadges` and `CompatibilityBadge`.
-6. `DebugDrawer` renderers: `SqlBlock`, `TsQueryView`, `DistanceTable`, `RrfTable`, `TokenWeights`, `SparqlView`/`TripleList`, JSON fallback.
+6. `DebugDrawer` renderers: `SqlBlock`, `TsQueryView`, `DistanceTable`, `RrfTable`, `TokenWeights`, `ConceptMatches`/`ExpansionView`/`RuleChecks`, JSON fallback.
 7. Presentation mode (large type, hidden filters); accessibility pass.
 8. CI: add `typecheck`, `lint` and `build` for `web-ui`.
 

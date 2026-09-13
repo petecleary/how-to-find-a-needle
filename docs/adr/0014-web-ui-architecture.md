@@ -46,21 +46,21 @@ builder.AddViteApp("web-ui", "../web-ui")
 ```text
 App
 ├─ SearchBar            query input · golden-query preset picker (GET /api/demo/queries) · target-device picker (GET /api/demo/devices)
-├─ FilterBar            brand · category · price · spec chips (collapsible)
-├─ PipelineStepper      8 stage tabs, with keyboard ←/→ for presenting
+├─ FilterBar            brand · category tree (GET /api/taxonomy) · price · spec chips (collapsible)
+├─ PipelineStepper      8 stage tabs, with keyboard ←/→ for presenting · Stage 6 toggles: expand synonyms / apply constraints
 ├─ ResultsPanel (left)
 │   ├─ AnswerCard       stage 7 answer with citation chips        (Phase 4)
 │   ├─ ExplanationCard  stage 8 pedagogy output                    (Phase 4)
 │   └─ ResultCard[]     name · brand · price · key specs · SignalBadges · CompatibilityBadge (+ reasons popover)
 └─ DebugDrawer (right)
     └─ TraceStep[]      one collapsible section per trace step, rendered by stage type:
-        SqlBlock · TsQueryView · DistanceTable · RrfTable · TokenWeights · SparqlView/TripleList · PromptView
+        SqlBlock · TsQueryView · DistanceTable · RrfTable · TokenWeights · ConceptMatches · ExpansionView · RuleChecks · PromptView
 ```
 
 - **Trace renderers** map the known `details` keys to purpose-built views, falling back to pretty-printed JSON ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 - **Maths as text:** RRF formulas and distances are rendered as monospaced strings from the API. No KaTeX dependency.
 - **Presentation mode:** a toggle that increases font size and hides filters, for projector readability.
-- **No product images.** A category icon (Lucide) stands in (open question: confirm in Phase 1).
+- **No product images** (confirmed). Each taxonomy concept names a Lucide icon in the TTL (`ex:icon`), and a result card uses the icon of its first category.
 - **Stretch goal (not in scope):** a 2D projection plot of vector space for Stage 3.
 
 ### Quality bar

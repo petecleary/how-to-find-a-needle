@@ -23,11 +23,11 @@ Each technique is a small service in `Pipeline/{Technique}/` behind an interface
 | `IVectorSearch` | Nomic + pgvector | query, filters, depth | ranked candidates |
 | `IRankFusion` | RRF (pure, no I/O) | N ranked lists + weights, k | fused ranking |
 | `IBgeM3Search` | BGE-M3 dense + sparse → `IRankFusion` | query, filters, depth | ranked candidates |
-| `IOntologyEvaluator` | dotNetRDF + SPARQL | candidates, target device | candidates with compatibility |
+| `IOntologySearch` | SKOS concepts + domain rules → expanded Keyword + Vector → `IRankFusion` → classify → constrain | query, filters, target device, toggles | candidates with concept match + compatibility |
 | `IAnswerGenerator` | LLM (RAG) | evaluated candidates, query | grounded answer + citations |
 | `IPedagogyEngine` | LLM (pedagogy) | answer, evaluated candidates, audience | explanation |
 
-Supporting services: `INomicEmbedder` and `IBgeM3Embedder` ([ADR-0009](0009-local-embeddings-onnx-runtime.md), [ADR-0012](0012-bge-m3-dense-and-sparse.md)), and `IKnowledgeGraph`, which loads and queries the RDF graph ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+Supporting services: `INomicEmbedder` and `IBgeM3Embedder` ([ADR-0009](0009-local-embeddings-onnx-runtime.md), [ADR-0012](0012-bge-m3-dense-and-sparse.md)), and `IOntology`, which loads `domain-ontology.ttl` and answers label, taxonomy, expansion and rule lookups ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
 
 Shared types (in `Pipeline/`):
 
@@ -48,12 +48,16 @@ Stage 4  Keyword ─┐
 Stage 5  BGE dense ─┐
                     ├─▶ RRF ─────────────────────────────────────▶ results
          BGE sparse ┘
-Stage 6  [Stage 4 pipeline] ─▶ Ontology evaluate ────────────────▶ results (+ rejected, with reasons)
+Stage 6  understand ─▶ expand ─▶ Keyword ─┐
+                                          ├─▶ RRF ─▶ classify ─▶ constrain ─▶ results (+ flagged, with reasons)
+                                 Vector ──┘
 Stage 7  [Stage 6 pipeline] ─▶ RAG answer ───────────────────────▶ results + answer
 Stage 8  [Stage 7 pipeline] ─▶ Pedagogy ─────────────────────────▶ results + answer + explanation
 ```
 
-- **Stage 6 uses Hybrid (Stage 4) as its candidate source.** Hybrid is the strongest English retriever, and one fixed source keeps the demo predictable. BGE-M3 stays a separate comparison stage.
+- **Stage 6 re-runs the Stage 4 pipeline with an ontology-expanded query.** Keyword and Vector receive the expanded terms, and RRF fuses them. Candidates are then classified against the matched concepts and checked against domain rules ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+  - `options.expandSynonyms` and `options.applyConstraints` switch steps on and off, so the presenter can show each effect.
+  - Hybrid is the strongest English retriever, and one fixed pipeline keeps the demo predictable. BGE-M3 stays a separate comparison stage.
 - **Retrieval depth vs page size.** Services retrieve `candidateDepth` items (default 50). Fusion and evaluation run over that whole set, and **paging is applied once, at the end**, in the endpoint. This ensures RRF doesn't only see the first page.
 - **Trace steps accumulate.** A composed stage adds its own step after the steps of the services it called ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 - **Endpoints stay thin.** Each one validates, calls the top-level service for its stage, pages the results, and maps them to `SearchResponse`.

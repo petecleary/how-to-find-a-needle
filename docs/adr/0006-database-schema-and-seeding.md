@@ -23,12 +23,17 @@ Embedding ~500 products with two ONNX models takes noticeable time on a laptop. 
 ```sql
 CREATE EXTENSION IF NOT EXISTS vector;
 
+-- array_to_string is only STABLE, and generated columns require IMMUTABLE expressions.
+-- This wrapper is safe for text[] and lets search_vector include categories.
+CREATE OR REPLACE FUNCTION immutable_array_to_string(text[], text)
+RETURNS text LANGUAGE sql IMMUTABLE PARALLEL SAFE
+AS $$ SELECT array_to_string($1, $2) $$;
+
 CREATE TABLE IF NOT EXISTS products (
     id              TEXT PRIMARY KEY,
     name            TEXT NOT NULL,
     brand           TEXT NOT NULL,
-    category        TEXT NOT NULL,
-    kind            TEXT NOT NULL CHECK (kind IN ('device', 'accessory', 'standalone')),
+    categories      TEXT[] NOT NULL,   -- SKOS concept notations (ADR-0013)
     price           NUMERIC(10,2) NOT NULL,
     currency        TEXT NOT NULL,
     description     TEXT NOT NULL,
@@ -38,7 +43,7 @@ CREATE TABLE IF NOT EXISTS products (
     -- Stage 2: weighted full-text document (ADR-0008)
     search_vector   TSVECTOR GENERATED ALWAYS AS (
         setweight(to_tsvector('english', name), 'A') ||
-        setweight(to_tsvector('english', brand || ' ' || category), 'B') ||
+        setweight(to_tsvector('english', brand || ' ' || immutable_array_to_string(categories, ' ')), 'B') ||
         setweight(to_tsvector('english', description), 'C')
     ) STORED,
 
@@ -52,7 +57,7 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 CREATE INDEX IF NOT EXISTS ix_products_brand     ON products (brand);
-CREATE INDEX IF NOT EXISTS ix_products_category  ON products (category);
+CREATE INDEX IF NOT EXISTS ix_products_categories ON products USING GIN (categories);
 CREATE INDEX IF NOT EXISTS ix_products_price     ON products (price);
 CREATE INDEX IF NOT EXISTS ix_products_specs     ON products USING GIN (specs jsonb_path_ops);
 CREATE INDEX IF NOT EXISTS ix_products_search    ON products USING GIN (search_vector);
@@ -72,7 +77,7 @@ Notes:
 Seeding runs in `Program.cs` **before `app.Run()`**, so the API doesn't accept requests until the data is ready. Aspire's `WaitFor` and health check handle ordering.
 
 1. **Schema:** execute `init.sql`. It is idempotent, so running it again is a no-op.
-2. **Catalog upsert:** load `products.json` and compute `content_hash` = SHA-256 of the embedded text (name, brand, category, description, reviews). `INSERT … ON CONFLICT (id) DO UPDATE` updates only rows whose data changed; **if `content_hash` changed, set the embedding columns to NULL.** Products removed from the JSON are deleted.
+2. **Catalog upsert:** load `products.json` and compute `content_hash` = SHA-256 of the embedded text (name, brand, categories, description, reviews). `INSERT … ON CONFLICT (id) DO UPDATE` updates only rows whose data changed; **if `content_hash` changed, set the embedding columns to NULL.** Products removed from the JSON are deleted.
 3. **Embedding backfill:** for each model, select rows where its column `IS NULL`, embed them in small batches, and update. This step is added when each embedder lands (Nomic in Stage 3, BGE-M3 in Stage 5). Log progress (`Embedded 40/60 with nomic-embed-text…`).
 4. If a model's files are missing, log a clear warning and skip that backfill. The stages that need the model return `503` with fix-it guidance ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 

@@ -13,7 +13,9 @@ The talk opens with the argument that a simple `WHERE` clause is sometimes the b
 - `IStructuredSearch` builds **parameterised SQL** from `filters` only. `query` is ignored, and the trace says so explicitly.
 - Supported filters:
   - `brand`: exact, case-insensitive.
-  - `category`: exact.
+  - `categories`: match **any** of the given taxonomy notations, using array overlap `categories && @categories` (GIN index).
+    - Notations are validated against the ontology ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+    - A broader concept includes its narrower ones, so filtering by `chargers` also matches `laptop-chargers`. The expansion is deterministic and shown in the trace.
   - `minPrice` / `maxPrice`.
   - `specs`: key/value pairs matched with JSONB containment `specs @> @specs::jsonb`. This uses the GIN index and treats numbers as numbers.
 - Ordering: `ORDER BY price, id`. The ordering is deterministic, and **there is no relevance score**; `score` is `null` and `signals.structuredMatch = true`.
