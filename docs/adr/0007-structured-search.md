@@ -22,7 +22,7 @@ The talk opens with the argument that a simple `WHERE` clause is sometimes the b
 - `totalResults` is a real `COUNT(*)` over the filter, since this stage isn't bounded by candidate depth.
 - **Dynamic SQL, safely:** WHERE clauses are appended from a fixed set of fragments, and values are always parameters. Unknown `specs` keys are allowed, because containment is safe. Keys are validated against `^[a-zA-Z][a-zA-Z0-9]*$` for tidy traces.
 - Trace: the exact SQL, parameter values, row count and timing, plus a note: *"Structured search can't understand 'something to charge my laptop'. It only matches the attributes you give it."*
-- **The filter-building code is shared.** Stages 2–6 reuse the same `SqlFilterBuilder` so that filters mean the same thing in every stage ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
+- **The filter-building code is shared.** Stages 2–8 reuse the same `SqlFilterBuilder` (Stages 7–8 through the Stage 6 pipeline) so that filters mean the same thing in every stage ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 
 ## Consequences
 

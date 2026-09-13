@@ -4,7 +4,7 @@ From today's cleaned-up scaffold to a finished, teachable demo. Each phase lists
 
 > Private working document (see [ADR-0001](0001-record-architecture-decisions.md)). The repo is one finished codebase on `main`; phases are a build order, not branches learners check out.
 
-**Order:** Data → Search APIs (stages 1–6) → Frontend → AI stages (7–8) with their UI → Finish & publish.
+**Order:** Data → Search APIs (stages 1–4, 6) → Frontend → AI stages (7–8) with their UI → Finish & publish → *optional* Stage 5 BGE-M3, always last.
 
 **Rules for every phase**
 - Build passes with **0 warnings** (`TreatWarningsAsErrors`).
@@ -74,12 +74,12 @@ From today's cleaned-up scaffold to a finished, teachable demo. Each phase lists
 
 ## Phase 2 — Search APIs (stages 1–6)
 
-**ADRs:** [0003](0003-search-api-contract-and-debug-trace.md), [0004](0004-pipeline-composition.md), [0007](0007-structured-search.md), [0008](0008-keyword-search-bm25-style.md), [0009](0009-local-embeddings-onnx-runtime.md), [0010](0010-vector-search-pgvector.md), [0011](0011-hybrid-search-rrf.md), [0012](0012-bge-m3-dense-and-sparse.md), [0013](0013-domain-ontology-and-compatibility.md)
+**ADRs:** [0003](0003-search-api-contract-and-debug-trace.md), [0004](0004-pipeline-composition.md), [0007](0007-structured-search.md), [0008](0008-keyword-search-bm25-style.md), [0009](0009-local-embeddings-onnx-runtime.md), [0010](0010-vector-search-pgvector.md), [0011](0011-hybrid-search-rrf.md), [0013](0013-domain-ontology-and-compatibility.md)
 
 Build strictly in this order. Each step ends with its golden-query integration tests passing.
 
 1. **Contract** (0003, 0004)
-   - `Contracts/` types, `Pipeline/` shared types (`Candidate`, `StageResult`, `TraceStep`), `SqlFilterBuilder`, ProblemDetails mapping for 503/502.
+   - `Contracts/` types, `Pipeline/` shared types (`Candidate`, `StageResult`, `TraceStep`), `SqlFilterBuilder`, ProblemDetails mapping for 503.
    - `IOntology` basics: load the TTL; label, taxonomy and narrower-concept lookups (needed by Stage 1 category filters).
    - `GET /api/demo/queries`, `GET /api/demo/devices` and `GET /api/taxonomy`.
    - Integration test harness that runs golden-query expectations per stage.
@@ -87,31 +87,27 @@ Build strictly in this order. Each step ends with its golden-query integration t
    - `POST /api/search/structured`; `categories &&` filter with narrower-concept expansion; JSONB `@>` spec filters; `COUNT(*)` total; SQL in trace. ✅ GQ-04.
 3. **Stage 2 — Keyword** (0008)
    - `websearch_to_tsquery` + `ts_rank_cd`; parsed tsquery and matched lexemes in trace; "BM25-style" notes. ✅ GQ-02 (misses), GQ-03 (trap ranks high).
-4. **Embeddings (Nomic)** (0009)
-   - `INomicEmbedder` (tokenizer, prefixes, mean pooling, L2); verify the tokenizer file requirement and update the models README; seeder backfill for `embedding_nomic`; unit tests for pooling and normalisation.
+4. **Embeddings** (0009, 0006)
+   - `NomicOnnxEmbeddingGenerator : IEmbeddingGenerator` + `ISearchEmbedder` (tokenizer, prefixes, mean pooling, L2); verify the tokenizer file requirement and update the models README; unit tests for pooling and normalisation.
+   - `Embeddings` config (`Provider`, `Rebuild`). The seeder loads `assets/data/embeddings/nomic.jsonl` when hashes match, embeds stale or missing products live, and `Rebuild: true` regenerates and overwrites the file. Commit `nomic.jsonl`; add the file-consistency unit test.
+   - The OpenAI provider (`text-embedding-3-small`, `dimensions: 768`) is shaped for the same interface but **built and tested in Phase 5**.
 5. **Stage 3 — Vector** (0010)
    - pgvector cosine; `SET LOCAL hnsw.ef_search`; distances in trace. ✅ GQ-02 (hit), GQ-01 (near miss ranks high).
    - ⚠️ If the embeddings don't produce the expected moments, iterate on product *wording* ([ADR-0005](0005-curated-dataset-and-golden-queries.md) workflow).
 6. **Stage 4 — Hybrid** (0011)
    - Pure `ReciprocalRankFusion` with exhaustive unit tests; concurrent Keyword + Vector; per-item formula strings in trace. ✅ GQ-03 corrected; GQ-01 near miss still present.
-7. **BGE-M3 verification** (0012) ⏱ ~1 hour
-   - Reuse the earlier in-memory BGE-M3 approach. Confirm tokenizer parity (EN/ES/DE), ONNX outputs and a cross-lingual cosine sanity check against this export. Update ADR-0012 only if something differs.
-8. **Stage 5 — BGE-M3** (0012)
-   - Dense + sparse embedder; `SparseVector` index-base conversion tests; seeder backfill; dense and sparse retrieval fused via `IRankFusion`; tokens and sparse weights in trace. ✅ GQ-07.
-9. **Stage 6 — Ontology** (0013)
+7. **Stage 6 — Ontology** (0013)
    - `IOntologySearch`: understand (label matcher) → expand (keyword OR-groups + expanded embedding text) → Hybrid → classify (in/out of concept) → constrain (class-level rules vs target-device specs).
    - Toggles `expandSynonyms` / `applyConstraints`; flagged items kept with reasons; one trace step per step.
    - Unit tests for label matching, expansion, the tsquery builder, classification and each rule operator. ✅ GQ-01, GQ-02 (keyword side rescued), GQ-03 (phone battery out of concept), GQ-05, GQ-06.
 
 ### Acceptance criteria
-- All 6 endpoints appear in Scalar and return the shared contract with a populated `debugTrace`.
-- The integration suite shows the talk's story as passing tests: synonym miss → vector hit; keyword trap → hybrid fix; near miss → ontology flag with reason; cross-language → BGE-M3 hit.
+- All 5 endpoints (stages 1–4 and 6; Stage 5 is deferred to Phase 6) appear in Scalar and return the shared contract with a populated `debugTrace`.
+- The integration suite shows the talk's story as passing tests: synonym miss → vector hit; keyword trap → hybrid fix; near miss → ontology flag with reason.
 - Missing ONNX models give a `503` with fix-it guidance, not a stack trace.
-- ADRs 0003, 0004 and 0007–0013 → **Accepted**.
+- ADRs 0003, 0004, 0007–0011 and 0013 → **Accepted**.
 
 ### Open questions
-- ❓ Language for GQ-07 (proposed Spanish).
-- ❓ Can the earlier in-memory BGE-M3 code be shared, so Stage 5 reuses its tokenizer and pooling approach?
 - ❓ Keep `reviews` out of `search_vector`? Revisit after GQ-02 and GQ-03 results.
 
 ---
@@ -125,18 +121,26 @@ Build strictly in this order. Each step ends with its golden-query integration t
 3. `npm run gen:api` with `openapi-typescript` → committed `src/api/schema.d.ts`; typed `fetch` client.
 4. `usePipelineSearch` hook (same request across stages, AbortController, URL state) + Vitest tests.
 5. Layout: `SearchBar` (golden-query presets, device picker), `FilterBar`, `PipelineStepper` (keyboard ←/→), `ResultCard` with `SignalBadges` and `CompatibilityBadge`.
-6. `DebugDrawer` renderers: `SqlBlock`, `TsQueryView`, `DistanceTable`, `RrfTable`, `TokenWeights`, `ConceptMatches`/`ExpansionView`/`RuleChecks`, JSON fallback.
-7. Presentation mode (large type, hidden filters); accessibility pass.
-8. CI: add `typecheck`, `lint` and `build` for `web-ui`.
+6. `DebugDrawer` renderers: `SqlBlock`, `TsQueryView`, `DistanceTable`, `RrfTable`, `ConceptMatches`/`ExpansionView`/`RuleChecks`, JSON fallback.
+7. **Pages & content** (0014)
+   - React Router routes `/`, `/talk/:step`, `/demo`, `/glossary`, `/decisions`, `/decisions/:id`.
+   - `src/web-ui/content/`: placeholder `speaker.md`; `talk.json` with intro, hook, stages 1–4 and 6, and summary steps; `stages/*.md` explanations; `glossary.json`.
+   - Inline `term:` links with hover cards; ADRs rendered from `docs/adr/*.md` via `import.meta.glob`.
+   - Vitest content-integrity tests.
+   - ❓ Review the talk/demo split with Pete in the running UI before writing full content.
+8. Presentation mode (large type, on by default in talk mode); accessibility pass.
+9. CI: add `typecheck`, `lint` and `build` for `web-ui`.
 
 ### Acceptance criteria
 - `aspire run` opens the UI. Choosing GQ-01 and stepping 1 → 6 shows the results changing and the near miss flagged in Stage 6 with its reason.
 - Every trace step renders with a purpose-built view (no raw JSON for stages 1–6).
 - Readable on a 1280×720 projector in presentation mode; keyboard-only operable.
+- Talk mode walks from Home through the intro and stages 1–4 and 6 using only the keyboard. Each stage step shows its explanation and live results; glossary terms show definitions on hover and focus; ADR pages render with working cross-links.
 - ADR-0014 → **Accepted** (for stages 1–6).
 
 ### Open questions
 - ❓ Visual style and branding for the talk (colours, logo), if any.
+- ❓ Speaker details for `speaker.md` (name, role, bio, photo, links). Placeholders until supplied.
 
 ---
 
@@ -151,17 +155,22 @@ Build strictly in this order. Each step ends with its golden-query integration t
 2. **Model bake-off** (0015)
    - Run the golden queries 10× each against the candidate models; record JSON validity, citation correctness and latency in ADR-0015; choose the default.
 3. **Stage 7 — RAG** (0016)
-   - Evidence-set builder, prompt files in `assets/prompts/`, JSON schema output, one retry on invalid JSON, citation validator, warnings; trace with prompts and raw output; unit + structural integration tests.
+   - `POST /api/search/rag` (JSON results + evidence trace step) and `POST /api/search/rag/answer` (SSE stream, plus JSON mode for tests).
+   - Evidence-set builder; prompt files in `assets/prompts/`; `GetStreamingResponseAsync` → `meta`/`delta`/`final`/`done`/`error` events.
+   - Validation after generation: citations, `INSUFFICIENT_EVIDENCE` sentinel, incompatible-recommendation heuristic.
+   - Cancellation; unbuffered response; trace with prompts, raw output and timings (time to first token, total); unit + structural integration tests.
 4. **Stage 8 — Pedagogy** (0017)
-   - Audience-aware prompt, output schema, validator (decision Compatible, near miss Incompatible), trace; tests.
+   - `POST /api/search/pedagogy` + `/answer` streaming the `answer` section, then the `explanation` section.
+   - Audience-aware prompt with fixed markdown headings; heading parser; validator (Decision Compatible, Near miss Incompatible, concept-label heuristic); parsed structure in `final`; per-section timings in the trace; tests.
 5. **UI** (0014)
-   - `AnswerCard` with citation chips that scroll to result cards; `ExplanationCard` (decision → concepts → near miss → rule of thumb → next step); audience switcher; `PromptView` trace renderer; loading states for multi-second calls.
+   - `useAnswerStream` (fetch + SSE parser, in parallel with the results request); `SummaryPanel` rendering streamed markdown with `[PROD-…]` chips that scroll to result cards, warning badges and time to first token; audience switcher; `PromptView` trace renderer; loading states for multi-second calls; talk-mode steps, stage explanations and glossary entries for Stages 7–8.
 
 ### Acceptance criteria
 - GQ-01 in Stage 7 gives a grounded answer citing the compatible charger and warning about the near miss. Stage 8 explains connector + wattage with the near miss as a counter-example.
 - Switching audience visibly changes the explanation without changing the facts.
-- With Ollama stopped, stages 7–8 return 503 with guidance while stages 1–6 keep working.
-- Stage 7 + 8 complete in under ~10 s combined on the presenter laptop (local Ollama).
+- In Stages 7–8 the results list renders before any LLM text, and the summary's first token appears within ~1.5 s on the presenter laptop (local Ollama). Stage 8's answer and explanation complete in under ~15 s combined.
+- Switching stage mid-stream cancels generation (visible in Ollama/the trace).
+- With Ollama stopped, Stages 7–8 still show results, the summary panel shows the 503 guidance, and Stages 1–6 are unaffected.
 - ADRs 0015–0017 → **Accepted**.
 
 ### Open questions
@@ -175,19 +184,43 @@ Build strictly in this order. Each step ends with its golden-query integration t
 1. **Dataset growth:** a generator script (in `tools/`, language to be decided) adds distractors to reach ~500 products without disturbing the curated core; golden-query tests still pass.
 2. **README:** prerequisites (.NET 10, Docker, Node LTS, Aspire CLI, Hugging Face CLI, and either Ollama or an OpenAI/Anthropic API key), model download, `aspire run`, a tour of the 8 stages, how to reset the data volume, troubleshooting.
 3. **CI:** OpenAPI → TypeScript drift check; optional manual integration-test workflow.
-4. **Demo script:** stage-by-stage talk script tied to golden queries and UI bookmarks (location to be decided, see open questions).
-5. **Public ADRs:** write learner-facing ADRs from each ADR's *Teaching notes*; choose their public location; decide what happens to this private folder.
+4. **Talk content & rehearsal:** finalise the talk-mode steps, speaker details and summary; rehearse the full talk end to end in the UI (there are no slides). Rebuild `nomic.jsonl` after dataset growth.
+5. **Public ADRs:** write learner-facing ADRs from each ADR's *Teaching notes*; choose their public location; decide what happens to this private folder; point the UI's `/decisions` pages at the public versions.
 6. **Final review:** code comments read as teaching material; every stage file opens with its technique / strength / failure-mode comment; all ADRs **Accepted** or explicitly superseded.
+7. **OpenAI providers (when credits allow)** (0009, 0015): test OpenAI embeddings (`Embeddings:Provider = openai`, `Rebuild: true` → commit `openai.jsonl`) and OpenAI chat; adjust golden-query expectations if needed; document the one-key setup in the README.
 
 ### Acceptance criteria
 - A fresh clone on a clean machine runs end to end by following the README alone.
 - The whole golden-query suite passes at ~500 products.
-- Public ADRs are published; the talk demo script is rehearsed against the build.
+- Public ADRs are published; the full talk is rehearsed end to end in the UI's talk mode.
 
 ### Open questions
-- ❓ Does `presentation/` (slides, speaker notes) live in this repo?
+- ✅ No slides: the talk lives in the web UI ([ADR-0014](0014-web-ui-architecture.md)).
 - ❓ Public ADR location (`docs/decisions/`?) and whether the private ADRs are archived or deleted.
 - ❓ Generator script language (C# console in `tools/` proposed, to avoid adding Python).
+
+---
+
+## Phase 6 — Optional: Stage 5 BGE-M3 (build last)
+
+**ADRs:** [0012](0012-bge-m3-dense-and-sparse.md)
+
+> **Build this last, whoever is building.** Do not start it until Phases 1–5 are complete. It is the most cuttable stage: dense + sparse fused with RRF overlaps with Stage 4. Its unique value is learned sparse weights and full-sentence cross-language search. With a 4-week build-and-rehearse window, the core story (stages 1–4, 6–8) comes first. If time runs out, mark ADR-0012 **Deferred** and the stepper shows 7 stages.
+
+1. **BGE-M3 verification** (0012) ⏱ ~1 hour
+   - Reuse the earlier in-memory BGE-M3 approach. Confirm tokenizer parity (EN/ES/DE), ONNX outputs and a cross-lingual cosine sanity check against this export. Update ADR-0012 only if something differs.
+2. **Stage 5 — BGE-M3** (0012)
+   - Dense + sparse embedder; `SparseVector` index-base conversion tests; seeder loads or rebuilds `bge-m3.jsonl`; dense and sparse retrieval fused via `IRankFusion`; tokens and sparse weights in trace. ✅ GQ-07.
+3. **UI:** `TokenWeights` trace renderer; add the Stage 5 tab to the stepper.
+4. **Docs & talk:** README stage tour, a talk-mode step, a stage explanation and glossary entries for Stage 5.
+
+### Acceptance criteria
+- GQ-07 (cross-language) ranks the correct chargers in BGE-M3's top 5, while stages 2–4 don't.
+- Full golden-query suite still passes; ADR-0012 → **Accepted**.
+
+### Open questions
+- ❓ Language for GQ-07 (proposed Spanish).
+- ❓ Can the earlier in-memory BGE-M3 code be shared, so Stage 5 reuses its tokenizer and pooling approach?
 
 ---
 
@@ -200,7 +233,8 @@ Build strictly in this order. Each step ends with its golden-query integration t
 | 0003, 0004 | 2 |
 | 0005 | 1 (+ growth in 5) |
 | 0006 | 1 (+ backfill in 2) |
-| 0007–0012 | 2 |
+| 0007–0011 | 2 |
+| 0012 | 6 (optional, build last) |
 | 0013 | 1 (vocabulary), 2 (stage) |
 | 0014 | 3 (+ AI panels in 4) |
 | 0015–0017 | 4 |

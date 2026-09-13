@@ -32,7 +32,7 @@ Items are authored to create:
 - **Multiple categories per product**, each a concept in the ontology's SKOS taxonomy.
 - **Rich descriptive text:** descriptions and short reviews, so embeddings differ meaningfully from token matching.
 
-**Golden queries** (`golden-queries.json`) record the expected per-stage outcome for each talk moment. They are used as integration tests, UI presets and the demo script.
+**Golden queries** (`golden-queries.json`) record the expected per-stage outcome for each talk moment. They are used as integration tests, UI presets and the talk-mode stage steps.
 
 The Datafiniti/Kaggle CSV has been **dropped**.
 
@@ -67,13 +67,15 @@ src/
         golden-queries.json       # talk moments + per-stage expectations
         domain-ontology.ttl       # SKOS taxonomy, synonyms, value vocabularies, class-level rules (no product ids)
         queries/*.rq              # SPARQL lookups: labels, taxonomy, narrower concepts, rules for types
+        embeddings/               # nomic.jsonl, openai.jsonl (+ bge-m3.jsonl if built): committed product vectors
         init.sql                  # idempotent schema + indexes
       prompts/                    # rag-*.md, pedagogy-*.md
       models/                     # downloaded ONNX models (gitignored; README committed)
         nomic/                    # model_int8.onnx, tokenizer
         bge-m3/                   # model_quantized.onnx, tokenizer
 
-  web-ui/                         # React + Vite + TS + Tailwind + shadcn/ui
+  web-ui/                         # React + Vite + TS + Tailwind + shadcn/ui; the talk itself (no slides)
+    content/                      # speaker.md, talk.json + talk/*.md, stages/*.md, glossary.json
     src/
       api/                        # schema.d.ts (openapi-typescript), client.ts
       components/                 # SearchBar, PipelineStepper, ResultCard, DebugDrawer, trace renderers
@@ -93,11 +95,11 @@ tests/
 | Orchestration | .NET Aspire (Postgres, API, Vite app; OpenTelemetry dashboard) | [0002](0002-solution-structure-and-orchestration.md) |
 | Database | PostgreSQL + pgvector (`vector`, `sparsevec`, HNSW) + built-in full-text search, via `Aspire.Npgsql` + `Pgvector`, raw SQL | [0006](0006-database-schema-and-seeding.md) |
 | Keyword ranking | Postgres FTS (`websearch_to_tsquery`, `ts_rank_cd`), labelled **BM25-style** | [0008](0008-keyword-search-bm25-style.md) |
-| Local embeddings | ONNX Runtime + `Microsoft.ML.Tokenizers`: Nomic Embed v1.5 (768d), BGE-M3 (1024d dense + sparse) | [0009](0009-local-embeddings-onnx-runtime.md), [0012](0012-bge-m3-dense-and-sparse.md) |
+| Embeddings | `IEmbeddingGenerator` with a configured provider: local Nomic Embed v1.5 via ONNX Runtime (default, offline) or OpenAI `text-embedding-3-small` at 768d (tested later); BGE-M3 optional and last. Product vectors committed per provider in `assets/data/embeddings/*.jsonl`, regenerated with `Embeddings:Rebuild` | [0009](0009-local-embeddings-onnx-runtime.md), [0012](0012-bge-m3-dense-and-sparse.md) |
 | Fusion | Reciprocal Rank Fusion (k = 60), pure C# | [0011](0011-hybrid-search-rrf.md) |
 | Ontology | dotNetRDF (in-memory), hand-written Turtle: SKOS taxonomy + synonyms + class-level domain rules; SPARQL lookups; no instance data | [0013](0013-domain-ontology-and-compatibility.md) |
 | LLM (stages 7–8) | `Microsoft.Extensions.AI` `IChatClient`, provider set in config: existing local **Ollama** (OpenAI-compatible `/v1`), **OpenAI**, or **Anthropic** (official `Anthropic` .NET SDK). No containers, **no LiteLLM** | [0015](0015-llm-hosting-and-client.md) |
-| Frontend | React + Vite + TypeScript, Tailwind, shadcn/ui, Lucide; `openapi-typescript` types; Vite proxy (no CORS) | [0014](0014-web-ui-architecture.md) |
+| Frontend | React + Vite + TypeScript, Tailwind, shadcn/ui, Lucide, React Router, react-markdown; `openapi-typescript` types; Vite proxy (no CORS). Home, talk mode, demo, glossary and ADR pages **replace slides** | [0014](0014-web-ui-architecture.md) |
 | Testing | xUnit unit tests + `Aspire.Hosting.Testing` golden-query integration tests; Vitest for the UI hook | [0002](0002-solution-structure-and-orchestration.md) |
 | API docs | Scalar + `Microsoft.AspNetCore.OpenApi` | — |
 
@@ -105,7 +107,7 @@ tests/
 
 ## 4. API Conventions & Pipeline Stages
 
-All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices` and `GET /api/taxonomy` (the category tree, read from the ontology). → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
+All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 7–8 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices` and `GET /api/taxonomy` (the category tree, read from the ontology). → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
 
 **Request:** `POST /api/search/{stage}`
 
@@ -139,8 +141,6 @@ All search stages use **POST** with a shared JSON request and response, so the U
       }
     }
   ],
-  "answer": null,
-  "explanation": null,
   "debugTrace": {
     "steps": [
       { "stage": "keyword", "title": "Postgres full-text search (BM25-style)", "durationMs": 3.1, "sql": "…", "details": { "tsquery": "…" } },
@@ -162,14 +162,14 @@ All search stages use **POST** with a shared JSON request and response, so the U
 | 4. Hybrid | `/api/search/hybrid` | RRF over keyword + vector ranks: RRF(d) = Σ wᵢ / (k + rᵢ(d)). | 2 + 3 | [0011](0011-hybrid-search-rrf.md) |
 | 5. BGE-M3 | `/api/search/bge-m3` | Multilingual dense + learned sparse from one model, fused with RRF. Cross-language queries. | — | [0012](0012-bge-m3-dense-and-sparse.md) |
 | 6. Ontology | `/api/search/ontology` | Matches the query to SKOS concepts, expands synonyms and narrower concepts, re-runs Hybrid, demotes out-of-concept items, then applies class-level domain rules against the target device. **Flagged items are kept, with reasons.** Toggles: `expandSynonyms`, `applyConstraints`. | 4 | [0013](0013-domain-ontology-and-compatibility.md) |
-| 7. RAG | `/api/search/rag` | LLM answers from a bounded evidence set (compatible + incompatible-with-reasons), with validated `[PROD-…]` citations. | 6 | [0016](0016-rag-grounding-and-citations.md) |
-| 8. Pedagogy | `/api/search/pedagogy` | Turns the grounded answer into a structured, audience-aware explanation: decision → concepts → near miss → rule of thumb → next step. | 7 | [0017](0017-pedagogy-engine.md) |
+| 7. RAG | `/api/search/rag` | Results as JSON immediately; `/answer` streams a markdown summary from a bounded evidence set (compatible + incompatible-with-reasons), with `[PROD-…]` citations validated when complete. | 6 | [0016](0016-rag-grounding-and-citations.md) |
+| 8. Pedagogy | `/api/search/pedagogy` | Results as JSON immediately; `/answer` streams the Stage 7 summary, then an audience-aware markdown explanation with fixed headings: decision → concepts → near miss → rule of thumb → next step. | 7 | [0017](0017-pedagogy-engine.md) |
 
 ---
 
 ## 5. Frontend Layout
 
-The `web-ui` visualises how the same query changes across all 8 stages. → [ADR-0014](0014-web-ui-architecture.md)
+The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a keyboard-driven talk mode that replaces slides, the live demo with a per-stage explanation panel, a glossary with inline term definitions, and the ADRs. The demo shows how the same query changes across the stages. → [ADR-0014](0014-web-ui-architecture.md)
 
 ```text
 +-------------------------------------------------------------------------------------+
@@ -179,8 +179,8 @@ The `web-ui` visualises how the same query changes across all 8 stages. → [ADR
 | Stages: [1 Struct] [2 Keyword] [3 Vector] [4 Hybrid] [5 BGE-M3] [6 Onto] [7 RAG] [8 Ped] |
 +--------------------------------------------------+----------------------------------+
 | LEFT — user view                                 | RIGHT — debug drawer             |
-| (7) Answer card with citation chips              | Trace steps, one per pipeline    |
-| (8) Explanation card                             | step:                            |
+| (7-8) AI summary: streamed markdown + chips      | Trace steps, one per pipeline    |
+| (8)   + pedagogy sections, streamed              | step:                            |
 | Result cards: specs · price · signal badges      | SQL · tsquery/lexemes · distances|
 |   (keyword rank, cosine distance, RRF rank)      | RRF formulas · tokens & sparse   |
 |   · compatibility badge + reasons                | weights · SPARQL & triples ·     |
@@ -212,6 +212,7 @@ The `web-ui` visualises how the same query changes across all 8 stages. → [ADR
 - **Always populate `debugTrace`** with the exact parameterised SQL, parameters and stage-specific details. The trace is a feature.
 - **Be honest in naming:** Postgres FTS is "BM25-style"; vector similarity is not compatibility; never hide rejected items.
 - **Retrieve deep, page late:** fuse and evaluate over `candidateDepth`, page once in the endpoint.
-- **LLM output is untrusted:** validate JSON and citations; show warnings rather than hiding failures.
+- **Never make results wait for the LLM:** results are JSON from the stage endpoint; LLM text streams separately from `/answer`.
+- **LLM output is untrusted:** validate the finished markdown and its citations; show warnings rather than hiding failures.
 - **Tests:** unit-test pure logic; express talk claims as golden-query integration tests; never assert exact LLM wording.
 - **Teaching-quality code:** each pipeline service opens with a short comment covering the technique, its strength and its failure mode; comments explain *why*.

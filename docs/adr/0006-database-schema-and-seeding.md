@@ -8,7 +8,7 @@
 
 The current `init.sql` mirrors the old Datafiniti CSV, runs `DROP TABLE` on every start, and has no indexes. The connection string is passed around by hand, and there is a legacy `GET /api/products` with its own repository and models.
 
-Embedding ~500 products with two ONNX models takes noticeable time on a laptop. Doing that on every restart would hurt both development and the live demo.
+Embedding ~500 products takes noticeable time with local models, and costs a little with a hosted API. Doing that on every restart, or on every fresh clone, would hurt development, the live demo and a learner's first run.
 
 ## Decision
 
@@ -47,8 +47,10 @@ CREATE TABLE IF NOT EXISTS products (
         setweight(to_tsvector('english', description), 'C')
     ) STORED,
 
-    -- Stages 3–5: embeddings, NULL until the seeder fills them (ADR-0009, ADR-0012)
-    embedding_nomic      VECTOR(768),
+    -- Stages 3, 4, 6: dense embedding from the configured provider (ADR-0009)
+    embedding_dense      VECTOR(768),
+    embedding_model      TEXT,              -- e.g. nomic-embed-text-v1.5-int8; models are never mixed
+    -- Stage 5, optional and built last (ADR-0012)
     embedding_bge_dense  VECTOR(1024),
     embedding_bge_sparse SPARSEVEC(250002),
 
@@ -61,7 +63,7 @@ CREATE INDEX IF NOT EXISTS ix_products_categories ON products USING GIN (categor
 CREATE INDEX IF NOT EXISTS ix_products_price     ON products (price);
 CREATE INDEX IF NOT EXISTS ix_products_specs     ON products USING GIN (specs jsonb_path_ops);
 CREATE INDEX IF NOT EXISTS ix_products_search    ON products USING GIN (search_vector);
-CREATE INDEX IF NOT EXISTS ix_products_nomic     ON products USING hnsw (embedding_nomic vector_cosine_ops);
+CREATE INDEX IF NOT EXISTS ix_products_dense     ON products USING hnsw (embedding_dense vector_cosine_ops);
 CREATE INDEX IF NOT EXISTS ix_products_bge_dense ON products USING hnsw (embedding_bge_dense vector_cosine_ops);
 CREATE INDEX IF NOT EXISTS ix_products_bge_sparse ON products USING hnsw (embedding_bge_sparse sparsevec_ip_ops);
 ```
@@ -78,8 +80,13 @@ Seeding runs in `Program.cs` **before `app.Run()`**, so the API doesn't accept r
 
 1. **Schema:** execute `init.sql`. It is idempotent, so running it again is a no-op.
 2. **Catalog upsert:** load `products.json` and compute `content_hash` = SHA-256 of the embedded text (name, brand, categories, description, reviews). `INSERT … ON CONFLICT (id) DO UPDATE` updates only rows whose data changed; **if `content_hash` changed, set the embedding columns to NULL.** Products removed from the JSON are deleted.
-3. **Embedding backfill:** for each model, select rows where its column `IS NULL`, embed them in small batches, and update. This step is added when each embedder lands (Nomic in Stage 3, BGE-M3 in Stage 5). Log progress (`Embedded 40/60 with nomic-embed-text…`).
-4. If a model's files are missing, log a clear warning and skip that backfill. The stages that need the model return `503` with fix-it guidance ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
+3. **Embeddings** for the configured provider (`Embeddings:Provider`, [ADR-0009](0009-local-embeddings-onnx-runtime.md)). This step is added in Phase 2, when the Nomic embedder lands.
+   - **Provider switch:** rows whose `embedding_model` differs from the active model are cleared first, so vectors from different models are never mixed.
+   - **Load from file (normal path, seconds):** read `assets/data/embeddings/{provider}.jsonl` and write the stored vector for every product whose `contentHash` and `model` match.
+   - **Fill gaps live:** products missing from the file, or with a stale hash, are embedded with the live model or API in small batches, with a warning suggesting a rebuild.
+   - **`Embeddings:Rebuild = true`:** ignore the file, re-embed every product live, then **overwrite the file**. This regenerates the committed file after `products.json` changes. Set it back to `false` afterwards.
+   - Log the outcome, e.g. `Embeddings (nomic): 58 loaded from file, 2 embedded live, 0 missing`.
+4. If vectors are needed but the provider is unavailable (model files missing, no API key), log a clear warning and leave them NULL. Stages that need embeddings return `503` with fix-it guidance, and Stages 1–2 keep working ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 
 ### Schema changes during development
 
@@ -92,7 +99,8 @@ Delete `Endpoints/Products/GetProducts`, `Models/Products/*`, `Data/IProductRepo
 ## Consequences
 
 - Restarts are instant after the first run. Editing one product re-embeds only that product.
-- The first run with both models takes about a minute at 500 products; the log shows progress.
+- A fresh clone loads committed vectors in seconds. Only a rebuild or a stale product needs the live model or API.
+- Committed embedding files must be rebuilt when products change. The hash guard, the seeder warning and a unit test make staleness visible rather than silent.
 - Blocking startup is simple and predictable for a demo. A production system would seed from a separate job.
 - Generated columns and indexes live in SQL, so learners can read them in one file.
 
@@ -101,7 +109,8 @@ Delete `Endpoints/Products/GetProducts`, `Models/Products/*`, `Data/IProductRepo
 | Option | Why not (for this repo) |
 |---|---|
 | Drop and re-seed every start (current) | Slow restarts; embeddings recomputed needlessly |
-| Precomputed seed file with vectors committed | Generated artefacts go stale; large diffs; hides the embedding step |
+| Always embed live on first run (no committed vectors) | Slower first start, costs hosted-API users money, and results can drift from the rehearsed golden queries |
+| Precomputed query embeddings too (no model needed at all) | Over-engineering for this repo's audience: needs a query cache and a restricted UI mode |
 | EF Core migrations / DbUp / Flyway | The right choice in production; adds tooling that distracts from search |
 | Background seeding while the API serves | Stages would return partial results mid-demo |
 | Separate table per embedding model | Cleaner in theory; more joins for no teaching gain at this scale |
@@ -110,4 +119,4 @@ Delete `Endpoints/Products/GetProducts`, `Models/Products/*`, `Data/IProductRepo
 
 - Content hashing is a cheap and robust way to keep derived data (embeddings) in sync with source data.
 - Indexes are part of search design: GIN for text and JSONB, HNSW for vectors, B-tree for exact filters.
-- "Embeddings are a cache of your content": treat them as derived data you can always rebuild.
+- "Embeddings are a cache of your content": treat them as derived data you can always rebuild. Committing them is fine if every vector records its model and a hash of its source text.

@@ -93,7 +93,7 @@ Shape:
 Golden queries have three uses:
 1. They are **integration test cases** ([ADR-0002](0002-solution-structure-and-orchestration.md)).
 2. They are **UI presets** (`GET /api/demo/queries`, [ADR-0003](0003-search-api-contract-and-debug-trace.md)).
-3. They are the **demo script** for the talk.
+3. They drive the **talk-mode stage steps** in the UI ([ADR-0014](0014-web-ui-architecture.md)).
 
 ### Authoring workflow
 

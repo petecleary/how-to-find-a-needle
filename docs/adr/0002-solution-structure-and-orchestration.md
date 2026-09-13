@@ -47,8 +47,10 @@ src/
       Demo/                      # golden queries + device list for the UI
     assets/
       data/                      # products.json, golden-queries.json, domain-ontology.ttl, init.sql
+        embeddings/              # nomic.jsonl, openai.jsonl (+ bge-m3.jsonl if built): committed product vectors (ADR-0009)
       models/                    # downloaded ONNX models (gitignored, README committed)
-  web-ui/                        # React + Vite (ADR-0014)
+  web-ui/                        # React + Vite: the talk, the demo, glossary and ADR pages (ADR-0014)
+    content/                     # speaker.md, talk.json + talk/*.md, stages/*.md, glossary.json
 tests/
   PI.SearchApi.Tests/            # fast unit tests, no Docker
   PI.SearchApi.IntegrationTests/ # Aspire.Hosting.Testing, golden queries
@@ -66,7 +68,7 @@ tests/
 ### Testing
 
 - **`PI.SearchApi.Tests`** (xUnit): pure logic, including RRF maths, tokeniser/pooling helpers, catalog → RDF projection, compatibility rules and validators. No Docker; runs in seconds.
-- **`PI.SearchApi.IntegrationTests`** (xUnit + `Aspire.Hosting.Testing`): starts the AppHost, then runs every golden query ([ADR-0005](0005-curated-dataset-and-golden-queries.md)) against stages 1–6 and checks the expected hits and misses. The LLM stages (7–8) get *structural* assertions (valid JSON, citations reference real product IDs), never exact wording.
+- **`PI.SearchApi.IntegrationTests`** (xUnit + `Aspire.Hosting.Testing`): starts the AppHost, then runs every golden query ([ADR-0005](0005-curated-dataset-and-golden-queries.md)) against stages 1–6 and checks the expected hits and misses. The LLM stages (7–8) get *structural* assertions (the answer completes, citations reference evidence product IDs, Stage 8 headings are present), never exact wording.
 - Integration tests skip with a clear message if the ONNX models are not downloaded.
 
 ### Continuous integration

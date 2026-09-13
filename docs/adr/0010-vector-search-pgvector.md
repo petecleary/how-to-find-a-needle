@@ -16,16 +16,24 @@ We already run Postgres with pgvector, so vectors live next to the structured da
 SET LOCAL hnsw.ef_search = 100;  -- must be >= candidate depth to avoid truncated results
 
 SELECT id, name, brand, categories, price, specs,
-       embedding_nomic <=> @queryVector AS distance
+       embedding_dense <=> @queryVector AS distance
 FROM products
-WHERE embedding_nomic IS NOT NULL
-  /* + shared filter fragments (ADR-0007) */
-ORDER BY embedding_nomic <=> @queryVector, id
+WHERE embedding_model = @activeModel   -- only vectors from the configured provider (ADR-0009)
+  -- shared filter fragments from SqlFilterBuilder (ADR-0007); each line is added only when that filter is supplied
+  AND categories && @categories      -- category notations, broader concepts expanded to narrower
+  AND brand = @brand
+  AND price BETWEEN @minPrice AND @maxPrice
+  AND specs @> @specs::jsonb         -- normalised spec values, e.g. {"connector":"usb-c"}
+ORDER BY embedding_dense <=> @queryVector, id
 LIMIT @depth;
 ```
 
 - **Metric:** cosine distance `<=>`. The response shows `vectorDistance` (0 = identical) and `score = 1 − distance` (cosine similarity). Because vectors are normalised ([ADR-0009](0009-local-embeddings-onnx-runtime.md)), inner product would rank identically; cosine is chosen because it is the most familiar to explain.
 - **Index:** HNSW with `vector_cosine_ops`, pgvector defaults (`m = 16`, `ef_construction = 64`). Queries run in a transaction with `SET LOCAL hnsw.ef_search = 100`. The default of 40 would silently cap results below the default candidate depth of 50.
+- **Filters narrow first, then similarity ranks.**
+  - The request's normalised filters (categories, brand, price, specs) are applied in the **same SQL statement** as the vector ordering, using the shared `SqlFilterBuilder`. They mean exactly what they mean in Stage 1.
+  - Similarity only decides the order *within* products that already satisfy the hard constraints. For example, "power brick" with `categories: ["laptop-chargers"]` and `maxPrice: 50` never returns a phone battery or a £90 charger, however similar they are.
+  - The trace shows the filter fragments and parameters alongside the distances.
 - **Filters with approximate indexes:** filtering can reduce HNSW recall, because the index finds neighbours first and filters afterwards. At demo scale the planner usually does an exact scan, so results are exact. The ADR and trace note that production systems handle this with pgvector's iterative index scans (`hnsw.iterative_scan`, pgvector ≥ 0.8), partial indexes or over-fetching.
 - **No similarity threshold.** Vector search always returns *something*, even for nonsense queries. That is a teaching point, shown by a note in the trace.
 - **Trace:** query embedding details (from the embedder step), the SQL, `ef_search`, whether the planner used the index (from `EXPLAIN` in development, run once per request only if `options.explain` is true), and per-result distances.
@@ -49,3 +57,4 @@ LIMIT @depth;
 
 - Nearest neighbour ≠ right answer. Vector search is a *candidate generator* with no notion of constraints.
 - Approximate indexes trade recall for speed. Know your `ef_search`.
+- Normalised filters remove whole classes of wrong answers that similarity never can. Filtering and vector ranking in one SQL statement is a strong reason to keep vectors next to your structured data.

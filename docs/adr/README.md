@@ -29,12 +29,12 @@ Working decisions for building **How to Find a Needle**.
 | [0006](0006-database-schema-and-seeding.md) | Database schema & seeding | Data | 1 | Proposed |
 | [0007](0007-structured-search.md) | Stage 1 — Structured search | Search | 2 | Proposed |
 | [0008](0008-keyword-search-bm25-style.md) | Stage 2 — Keyword search (BM25-style) | Search | 2 | Proposed |
-| [0009](0009-local-embeddings-onnx-runtime.md) | Local embeddings with ONNX Runtime | Search | 2 | Proposed |
+| [0009](0009-local-embeddings-onnx-runtime.md) | Embedding providers (local Nomic ONNX, OpenAI) & committed embedding files | Search | 2 | Proposed |
 | [0010](0010-vector-search-pgvector.md) | Stage 3 — Vector search (pgvector) | Search | 2 | Proposed |
 | [0011](0011-hybrid-search-rrf.md) | Stage 4 — Hybrid search with RRF | Search | 2 | Proposed |
 | [0012](0012-bge-m3-dense-and-sparse.md) | Stage 5 — BGE-M3 dense + sparse | Search | 2 | Proposed |
 | [0013](0013-domain-ontology-and-compatibility.md) | Stage 6 — Domain ontology: taxonomy, synonyms & rules | Search | 1 (data), 2 (stage) | Proposed |
-| [0014](0014-web-ui-architecture.md) | Web UI architecture | Frontend | 3 | Proposed |
+| [0014](0014-web-ui-architecture.md) | Web UI: the talk, the demo & learning pages | Frontend | 3 | Proposed |
 | [0015](0015-llm-hosting-and-client.md) | LLM provider & client | AI | 4 | Proposed |
 | [0016](0016-rag-grounding-and-citations.md) | Stage 7 — RAG grounding & citations | AI | 4 | Proposed |
 | [0017](0017-pedagogy-engine.md) | Stage 8 — Pedagogy engine | AI | 4 | Proposed |

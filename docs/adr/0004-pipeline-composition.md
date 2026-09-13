@@ -24,10 +24,10 @@ Each technique is a small service in `Pipeline/{Technique}/` behind an interface
 | `IRankFusion` | RRF (pure, no I/O) | N ranked lists + weights, k | fused ranking |
 | `IBgeM3Search` | BGE-M3 dense + sparse → `IRankFusion` | query, filters, depth | ranked candidates |
 | `IOntologySearch` | SKOS concepts + domain rules → expanded Keyword + Vector → `IRankFusion` → classify → constrain | query, filters, target device, toggles | candidates with concept match + compatibility |
-| `IAnswerGenerator` | LLM (RAG) | evaluated candidates, query | grounded answer + citations |
-| `IPedagogyEngine` | LLM (pedagogy) | answer, evaluated candidates, audience | explanation |
+| `IAnswerGenerator` | LLM (RAG), streamed | evaluated candidates, query | markdown chunks, then validated citations and warnings |
+| `IPedagogyEngine` | LLM (pedagogy), streamed | validated answer, evaluated candidates, audience | markdown chunks, then parsed and validated sections |
 
-Supporting services: `INomicEmbedder` and `IBgeM3Embedder` ([ADR-0009](0009-local-embeddings-onnx-runtime.md), [ADR-0012](0012-bge-m3-dense-and-sparse.md)), and `IOntology`, which loads `domain-ontology.ttl` and answers label, taxonomy, expansion and rule lookups ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+Supporting services: `ISearchEmbedder` over `IEmbeddingGenerator` (Nomic or OpenAI, per config) and `IBgeM3Embedder` ([ADR-0009](0009-local-embeddings-onnx-runtime.md), [ADR-0012](0012-bge-m3-dense-and-sparse.md)), and `IOntology`, which loads `domain-ontology.ttl` and answers label, taxonomy, expansion and rule lookups ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
 
 Shared types (in `Pipeline/`):
 
@@ -51,8 +51,10 @@ Stage 5  BGE dense ─┐
 Stage 6  understand ─▶ expand ─▶ Keyword ─┐
                                           ├─▶ RRF ─▶ classify ─▶ constrain ─▶ results (+ flagged, with reasons)
                                  Vector ──┘
-Stage 7  [Stage 6 pipeline] ─▶ RAG answer ───────────────────────▶ results + answer
-Stage 8  [Stage 7 pipeline] ─▶ Pedagogy ─────────────────────────▶ results + answer + explanation
+Stage 7  [Stage 6 pipeline] ─▶ results (JSON)
+         /answer: [Stage 6 pipeline] ─▶ RAG ─────────────▶ streamed markdown (answer)
+Stage 8  [Stage 6 pipeline] ─▶ results (JSON)
+         /answer: [Stage 6 pipeline] ─▶ RAG ─▶ Pedagogy ─▶ streamed markdown (answer, then explanation)
 ```
 
 - **Stage 6 re-runs the Stage 4 pipeline with an ontology-expanded query.** Keyword and Vector receive the expanded terms, and RRF fuses them. Candidates are then classified against the matched concepts and checked against domain rules ([ADR-0013](0013-domain-ontology-and-compatibility.md)).

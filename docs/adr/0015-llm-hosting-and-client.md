@@ -32,24 +32,25 @@ The original design put LiteLLM in front of the providers. .NET's `Microsoft.Ext
 
 - **One `IChatClient` registered in DI**, built by a small `LlmClientFactory` that switches on `Provider`. This is the **only** provider-specific code; Stages 7–8 depend on `IChatClient` alone.
 - **Middleware pipeline** (`ChatClientBuilder`): `.UseOpenTelemetry()`, so prompts and timings appear in the Aspire dashboard; `.UseLogging()` in development.
-- **Structured output:** every call requests JSON conforming to a schema. The Claude API supports this natively (`output_config.format` with `json_schema`), and OpenAI and Ollama honour JSON-schema response formats. The API **still validates the JSON server-side** for every provider ([ADR-0016](0016-rag-grounding-and-citations.md)).
+- **Streaming:** Stages 7–8 call `IChatClient.GetStreamingResponseAsync`, which is supported by every provider, and forward text chunks to the browser as Server-Sent Events ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
+- **Markdown output, validated when complete.** The model writes markdown with inline `[PROD-…]` citations (and fixed headings in Stage 8). The API validates the finished text for every provider ([ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0017](0017-pedagogy-engine.md)). JSON-schema output isn't used, because it can't be shown progressively.
 - **Sampling parameters are provider-specific.**
   - Ollama and OpenAI: `Temperature = 0.1` for predictable demo output.
   - Anthropic: **do not send `temperature`**. Current Claude models (for example Claude Opus 5) reject sampling parameters. Use the provider's effort setting to trade depth for latency instead.
 - **Anthropic refusals:** check for a `refusal` stop reason and surface it as a clear error in the trace. Anthropic recommends opting into server-side refusal fallbacks for current models. Enable them if the `IChatClient` integration exposes them; otherwise record it as a limitation. *(Confirm when implementing.)*
-- **Limits:** output-token cap sized for the JSON contracts (about 1–2K), request timeout 60 s, **no retries** (a failed demo call should fail visibly, not hang).
+- **Limits:** output-token cap sized for a short summary (about 1–2K), request timeout 60 s, **no retries** (a failed demo call should fail visibly, not hang).
 - **Unavailable LLM:** `503` ProblemDetails with provider-specific guidance ("Is Ollama running? `ollama serve` / `ollama pull <model>`", or "Set `Llm:ApiKey` with `dotnet user-secrets`").
 - **Warm-up (Ollama, development):** an optional one-token call at startup, so the first demo request isn't cold. It is logged and never blocks startup on failure.
 - **Trace:** provider, model, endpoint host (never the key), sampling/effort settings, token counts when reported, and duration.
 
 ### Model defaults (confirm in Phase 4)
 
-- **Ollama:** chosen by a bake-off of small instruction models, for example `llama3.2:3b`, `qwen2.5:7b`, `phi4-mini`. The criteria:
-  1. Valid JSON on all golden queries in 10 of 10 runs.
+- **Ollama:** chosen by a bake-off on the presenter laptop (Apple silicon, 64 GB), which comfortably runs mid-size models such as the ~30–35B Qwen class Pete already uses. Include one smaller model as the suggestion for learners on lighter hardware. The criteria:
+  1. Correct structure (Stage 8 headings, sentinel when needed) and no citation warnings on all golden queries in 10 of 10 runs.
   2. Correct citations.
-  3. Under ~5 s per Stage 7 answer on the presenter laptop.
+  3. Time to first token under ~1.5 s, and a complete Stage 7 answer under ~8 s, on the presenter laptop.
 - **Anthropic:** `claude-opus-5` by default. A smaller or cheaper Claude model is a documented config change the learner can choose.
-- **OpenAI:** set by the learner in config. The README lists a suggested model at publish time, since model versions change quickly.
+- **OpenAI:** set by the learner in config. The README lists a suggested model at publish time, since model versions change quickly. The provider is wired to `IChatClient` but **built and tested late** (roadmap Phase 5), because there are no credits during the main build.
 
 Record the bake-off results and chosen defaults here.
 
@@ -74,5 +75,5 @@ Record the bake-off results and chosen defaults here.
 ## Teaching notes
 
 - Put the LLM behind an abstraction (`IChatClient`) and treat it as a replaceable dependency, not the architecture.
-- Providers differ in the details (sampling parameters, refusals, structured output). Keep those differences in one place.
-- Structured output plus server-side validation turn a creative model into a dependable component.
+- Providers differ in the details (sampling parameters, refusals, streaming). Keep those differences in one place.
+- Streaming makes an LLM feel fast; validating the finished text keeps it honest.

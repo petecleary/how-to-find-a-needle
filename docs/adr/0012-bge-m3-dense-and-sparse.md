@@ -44,7 +44,7 @@ Prove, in a scratch console app or unit test:
   - Tokens for the query, including sub-word pieces, which show how multilingual tokenisation works.
   - The top sparse weights as `token → weight`, which makes learned sparse retrieval visible.
   - Dense distances, per-item RRF formula strings, and model name and timing.
-- **Seeder:** backfills both BGE columns in batches of 8 (a larger model than Nomic).
+- **Seeder:** loads `assets/data/embeddings/bge-m3.jsonl` (dense vector plus sparse `token → weight` pairs) using the same hash and `Rebuild` rules as [ADR-0009](0009-local-embeddings-onnx-runtime.md). It embeds missing products in batches of 8, since this is a larger model than Nomic.
 - **Cross-language golden query (GQ-07):** the language is decided in Phase 2 (Spanish proposed). The expectation is that BGE-M3 ranks the correct chargers in its top 5 while Stages 2–4 don't.
 
 ## Consequences

@@ -27,6 +27,28 @@ The **debug trace** is the main way learners see how each stage works: SQL, lexe
 | 7 RAG | `POST /api/search/rag` |
 | 8 Pedagogy | `POST /api/search/pedagogy` |
 
+### LLM answer streams (Stages 7–8)
+
+Stages 7 and 8 use **two requests**, sent by the UI at the same time with the same body:
+
+| Request | Returns |
+|---|---|
+| `POST /api/search/rag` · `POST /api/search/pedagogy` | The normal JSON `SearchResponse`: the Stage 6 pipeline's results and trace, including an `evidence` step listing the products the summary will use. Renders immediately |
+| `POST /api/search/rag/answer` · `POST /api/search/pedagogy/answer` | The LLM's **markdown** summary as **Server-Sent Events** (`text/event-stream`), shown above the results like an AI overview on a search page |
+
+- **Answer endpoints are stateless.** They re-run the Stage 6 pipeline with the same request to build the evidence set. Retrieval is deterministic, so both requests see the same products, for a cost of a few tens of milliseconds.
+- **Events:**
+  - `meta`: evidence IDs, provider, model.
+  - `delta`: markdown text, with `section` = `answer` | `explanation`.
+  - `final`: per section, the full markdown, citations, warnings, and (Stage 8) the parsed structure.
+  - `done`: time to first token, total time, trace.
+  - `error`: a ProblemDetails body, e.g. `503` when the LLM is unavailable. The results request is unaffected.
+
+  Payloads are specified in [ADR-0016](0016-rag-grounding-and-citations.md) and [ADR-0017](0017-pedagogy-engine.md).
+- **`Accept: application/json`** on an answer endpoint waits for completion and returns the same content as one JSON object. Integration tests and Scalar use this form.
+- **Cancellation:** closing the connection cancels generation, because the request's `CancellationToken` flows into `IChatClient`.
+- **OpenAPI** describes the JSON form. OpenAPI 3.1 has no first-class way to describe event-stream payloads, so the UI hand-types the event shapes in `src/api/answerEvents.ts`.
+
 Supporting read-only endpoints for the UI:
 - `GET /api/demo/queries` returns the golden queries ([ADR-0005](0005-curated-dataset-and-golden-queries.md)) as presets.
 - `GET /api/demo/devices` returns products in device categories (per the taxonomy) that can be a *target device*.
@@ -105,8 +127,6 @@ The legacy `GET /api/products` endpoint is removed.
       "compatibility": { "status": "NotEvaluated", "reasons": [] }
     }
   ],
-  "answer": null,
-  "explanation": null,
   "debugTrace": { "steps": [] }
 }
 ```
@@ -115,7 +135,7 @@ The legacy `GET /api/products` endpoint is removed.
 - `compatibility.status` is one of `NotEvaluated | Compatible | Incompatible | Unknown`. `reasons` holds human-readable strings that quote the domain rule and the spec values compared.
 - `signals.conceptMatch` is `InConcept | OutOfConcept | NoConcept`, set by Stage 6 ([ADR-0013](0013-domain-ontology-and-compatibility.md)); `null` in other stages.
 - `totalResults` for ranked stages is the number of candidates retrieved, which is bounded by `candidateDepth`. It is **not** a count of the whole catalog. The trace says so.
-- `answer` is populated by Stage 7 ([ADR-0016](0016-rag-grounding-and-citations.md)). `explanation` is populated by Stage 8 ([ADR-0017](0017-pedagogy-engine.md)).
+- `SearchResponse` never contains LLM text. Stages 7–8 stream it from their answer endpoints (see *LLM answer streams* above).
 
 ### Debug trace (`Contracts/DebugTrace.cs`)
 
