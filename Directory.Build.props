@@ -1,0 +1,15 @@
+<!--
+  Shared C# settings for every project in the solution (ADR-0002).
+  Warnings are errors so the teaching code stays clean: a warning a learner
+  sees in a clone is a warning we should have fixed.
+-->
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+</Project>

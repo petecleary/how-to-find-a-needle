@@ -1,0 +1,20 @@
+# Every label (preferred, alternate and hidden — i.e. common misspellings) for
+# every concept in every scheme, taxonomy and value vocabularies alike.
+# ?schemeNotation is only bound for value-vocabulary concepts (the taxonomy's
+# own scheme, ex:Taxonomy, carries no notation): DomainOntology.cs uses it to
+# answer "what are this vocabulary's known values and labels?"
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?concept ?notation ?schemeNotation ?label ?lang ?kind
+WHERE {
+    ?concept skos:notation ?notation .
+    OPTIONAL { ?concept skos:inScheme ?scheme . ?scheme skos:notation ?schemeNotation . }
+    {
+        ?concept skos:prefLabel ?label . BIND("pref" AS ?kind)
+    } UNION {
+        ?concept skos:altLabel ?label . BIND("alt" AS ?kind)
+    } UNION {
+        ?concept skos:hiddenLabel ?label . BIND("hidden" AS ?kind)
+    }
+    BIND(LANG(?label) AS ?lang)
+}

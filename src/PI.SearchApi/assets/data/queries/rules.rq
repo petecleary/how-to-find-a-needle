@@ -1,0 +1,23 @@
+# Every compatibility rule and its checks: which accessory type is compared
+# against which device type, on what spec names, with what operator, and
+# whether the values are vocabulary-backed concepts (ex:valueScheme) or raw
+# values (numbers). One row per check; a rule with two checks (e.g. "charger
+# fits laptop") produces two rows sharing the same ?rule and type notations.
+PREFIX ex:   <https://needle.example/ontology#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?rule ?accessoryTypeNotation ?deviceTypeNotation
+       ?accessorySpec ?operator ?deviceSpec ?valueSchemeNotation ?definition
+WHERE {
+    ?rule a ex:CompatibilityRule ;
+          ex:accessoryType ?accessoryType ;
+          ex:deviceType    ?deviceType ;
+          ex:check         ?check .
+    ?accessoryType skos:notation ?accessoryTypeNotation .
+    ?deviceType    skos:notation ?deviceTypeNotation .
+    ?check ex:accessorySpec ?accessorySpec ;
+           ex:operator      ?operator ;
+           ex:deviceSpec    ?deviceSpec ;
+           skos:definition  ?definition .
+    OPTIONAL { ?check ex:valueScheme ?valueScheme . ?valueScheme skos:notation ?valueSchemeNotation . }
+}

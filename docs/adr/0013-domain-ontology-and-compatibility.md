@@ -63,6 +63,7 @@ ex:ChargerFitsLaptop a ex:CompatibilityRule ;
     ex:accessoryType ex:LaptopChargers ;
     ex:deviceType    ex:Laptops ;
     ex:check [ ex:accessorySpec "connector" ; ex:operator ex:equals ;         ex:deviceSpec "chargingPort" ;
+               ex:valueScheme ex:Connectors ;
                skos:definition "The charger's plug must fit the laptop's charging port."@en ] ,
              [ ex:accessorySpec "wattageW"  ; ex:operator ex:greaterOrEqual ; ex:deviceSpec "minChargerWattageW" ;
                skos:definition "The charger must supply at least the power the laptop needs."@en ] .
@@ -70,15 +71,15 @@ ex:ChargerFitsLaptop a ex:CompatibilityRule ;
 
 - Initial rules:
 
-  | Rule | Accessory spec | Operator | Device spec |
-  |---|---|---|---|
-  | Charger fits laptop | `connector` | = | `chargingPort` |
-  | | `wattageW` | ≥ | `minChargerWattageW` |
-  | SSD fits laptop | `interface` | = | `m2SlotInterface` |
-  | Memory fits laptop | `memoryType` | = | `memoryType` |
-  | Battery fits tool | `platform` | = | `batteryPlatform` |
+  | Rule | Accessory spec | Operator | Device spec | Value scheme |
+  |---|---|---|---|---|
+  | Charger fits laptop | `connector` | = | `chargingPort` | `ex:Connectors` |
+  | | `wattageW` | ≥ | `minChargerWattageW` | — (numeric) |
+  | SSD fits laptop | `interface` | = | `m2SlotInterface` | `ex:StorageInterfaces` |
+  | Memory fits laptop | `memoryType` | = | `memoryType` | `ex:MemoryTypes` |
+  | Battery fits tool | `platform` | = | `batteryPlatform` | `ex:BatteryPlatforms` |
 
-- Operators are deliberately few: `equals`, `greaterOrEqual`, `lessOrEqual`, `in`. Values for vocabulary-backed specs are compared **as concepts**, so `"Type-C"` and `"usb-c"` are equal.
+- Operators are deliberately few: `equals`, `greaterOrEqual`, `lessOrEqual`, `in`. **`ex:valueScheme`** marks a check as vocabulary-backed: its accessory and device values are compared **as concepts** in that scheme, so `"Type-C"` and `"usb-c"` are equal. A check with no `ex:valueScheme` compares raw values (numbers, for `wattageW`). Catalog validation tests use `ex:valueScheme` to know which spec values must resolve to a known notation or label ([roadmap Phase 1](roadmap.md#phase-1--data)).
 - **Products carry the values** in their `specs` (for example a laptop's `chargingPort: "usb-c"`, `minChargerWattageW: 65`). The ontology carries the **rules**. Adding a product never requires changing the ontology; adding a new *type* of product does.
 
 ### Engine
@@ -88,9 +89,10 @@ ex:ChargerFitsLaptop a ex:CompatibilityRule ;
   - `labels.rq`: every label → concept, loaded once into an in-memory matcher.
   - `taxonomy.rq`: the concept tree for `GET /api/taxonomy`.
   - `narrower.rq`: transitive narrower concepts (`skos:broader*`).
-  - `rules-for-types.rq`: rules whose accessory and device types subsume the given categories.
+  - `rules.rq`: every compatibility rule and its checks (accessory/device type, spec names, operator, value scheme).
 - **Rule checks run in C#** with a small generic evaluator (one method per operator) over the specs of the candidate and the target device. The rules are data from the TTL; the C# never names a rule.
 - **No OWL reasoner and no stored instance triples.** Subsumption uses SPARQL property paths, which keeps behaviour predictable and explainable.
+- **A minimal loader ships in Phase 1** ([roadmap](roadmap.md#phase-1--data)): `Pipeline/Ontology/DomainOntology.cs` loads the TTL and exposes read-only concept, narrower-concept, vocabulary-value and rule lookups, so Phase 1's catalog validation tests can check `products.json` against the real ontology instead of a duplicate parser. It is not registered in DI. Phase 2 ([roadmap](roadmap.md#phase-2--search-apis-stages-16)) adds the label matcher, the `rules-for-types` lookup, `GET /api/taxonomy` and rule evaluation on top of the same loader.
 
 ### `GET /api/taxonomy`
 

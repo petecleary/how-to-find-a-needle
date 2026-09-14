@@ -66,7 +66,7 @@ src/
         products.json             # curated catalog: names, prices, descriptions, specs
         golden-queries.json       # talk moments + per-stage expectations
         domain-ontology.ttl       # SKOS taxonomy, synonyms, value vocabularies, class-level rules (no product ids)
-        queries/*.rq              # SPARQL lookups: labels, taxonomy, narrower concepts, rules for types
+        queries/*.rq              # SPARQL lookups: labels, taxonomy, narrower concepts, rules
         embeddings/               # nomic.jsonl, openai.jsonl (+ bge-m3.jsonl if built): committed product vectors
         init.sql                  # idempotent schema + indexes
       prompts/                    # rag-*.md, pedagogy-*.md

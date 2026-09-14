@@ -1,0 +1,19 @@
+# Every taxonomy concept, with its notation, labels, icon and device-type flag.
+# DomainOntology.cs groups these rows into a tree in C#, using the separate
+# broader relationship each row carries (skos:broader* recursion is not done
+# here — see narrower.rq for the transitive version).
+PREFIX ex:   <https://needle.example/ontology#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?concept ?notation ?broaderNotation ?icon ?isDeviceType ?label ?lang
+WHERE {
+    ?concept a skos:Concept ;
+             skos:inScheme <https://needle.example/ontology#Taxonomy> ;
+             skos:notation ?notation ;
+             skos:prefLabel ?label .
+    BIND(LANG(?label) AS ?lang)
+    OPTIONAL { ?concept skos:broader ?broader . ?broader skos:notation ?broaderNotation . }
+    OPTIONAL { ?concept ex:icon ?icon . }
+    OPTIONAL { ?concept ex:isDeviceType ?isDeviceType . }
+}
+ORDER BY ?notation ?lang

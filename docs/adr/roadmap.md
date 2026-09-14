@@ -64,8 +64,9 @@ If time runs short, cut from the bottom up. Anyone building, human or agent, fol
    - Author `assets/data/products.json` (~60 items) to create each golden-query moment: targets, correct answers, near misses, keyword traps, filler.
    - Write a JSON schema file (`products.schema.json`) to catch typos.
 6. **Ontology** (0013)
-   - `assets/data/domain-ontology.ttl`: SKOS taxonomy (the categories, with icons and definitions), synonyms and multilingual labels, value vocabularies (connectors, storage interfaces, memory types, platforms) and class-level domain rules. **No product IDs.**
+   - `assets/data/domain-ontology.ttl`: SKOS taxonomy (the categories, with icons and definitions), synonyms and multilingual (English + Spanish) labels, value vocabularies (connectors, storage interfaces, memory types, platforms) and class-level domain rules. **No product IDs.**
    - Authored alongside the catalog, because product categories and constrained spec values use its notations.
+   - `Pipeline/Ontology/DomainOntology.cs`: a minimal dotNetRDF loader (concepts, narrower-concept checks, vocabulary values, rules) so catalog validation tests read the real TTL. Not registered in DI yet — Phase 2 extends it into the full `IOntologySearch` pipeline.
 7. **Database** (0006)
    - Replace `init.sql` with the idempotent schema (generated `search_vector`, JSONB, vector columns, indexes).
    - Add `Aspire.Npgsql` + `Pgvector` and register `NpgsqlDataSource` with `UseVector()`.
@@ -135,7 +136,7 @@ Build strictly in this order. Each step ends with its golden-query integration t
 
 ### Open questions
 - ❓ Keep `reviews` out of `search_vector`? Revisit after GQ-02 and GQ-03 results.
-- ❓ Language for GQ-07 (proposed Spanish).
+- ✅ Language for GQ-07: Spanish ("cargador USB-C para portátil").
 
 ---
 

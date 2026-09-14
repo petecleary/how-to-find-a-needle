@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "Read(//Users/petecleary/.nuget/packages/pgvector/**)",
+      "Bash(find ~/.nuget/packages -maxdepth 1 -iname \"pgvector*\")",
+      "Read(//Users/petecleary/.nuget/packages/**)",
+      "Bash(find ~/.nuget/packages/pgvector -type f | head -30)",
+      "Bash(cat ~/.nuget/packages/pgvector/0.3.2/README.md | head -60)",
+      "Read(//Users/petecleary/.nuget/packages/pgvector/0.3.2/**)",
+      "Bash(strings ~/.nuget/packages/pgvector/0.3.2/lib/net6.0/Pgvector.dll | grep -i \"UseVector\\\\|^Pgvector\" | sort -u | head -30)",
+      "Read(//Users/petecleary/.nuget/packages/pgvector/0.3.2/lib/net6.0/**)",
+      "Bash(strings ~/.nuget/packages/pgvector/0.3.2/lib/net6.0/Pgvector.dll | grep -i \"Extension\\\\|DataSourceBuilder\\\\|NpgsqlConnection\\\\b\" | sort -u | head -30)",
+      "Read(//private/tmp/pgtest/**)",
+      "Bash(sed -i '' '1i using System;' Program.cs)",
+      "Bash(dotnet run *)",
+      "Bash(docker exec *)",
+      "Read(//private/tmp/**)",
+      "Bash(curl -sk https://localhost:60887/health -w \"\\\\nHTTP %{http_code}\\\\n\")",
+      "Bash(curl -sk http://localhost:60886/health -w \"\\\\nHTTP %{http_code}\\\\n\")",
+      "Bash(curl -sk https://localhost:60886/health -w \"\\\\nHTTP %{http_code}\\\\n\")",
+      "Bash(curl -sk http://localhost:60887/health -w \"\\\\nHTTP %{http_code}\\\\n\")"
+    ]
+  }
+}
