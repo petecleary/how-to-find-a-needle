@@ -45,6 +45,15 @@ public sealed class VectorStageGoldenQueryTests(AppHostFixture fixture)
     }
 
     [Fact]
+    public async Task GQ08_Vector_RanksTheNamedLaptopAndBrandAccessoriesAboveTheChargers()
+    {
+        // Talk moment: a device name is context, not intent — but vector search can't tell, so Blackbird things win.
+        RepositoryPaths.SkipUnlessNomicModelIsPresent();
+
+        await GoldenQueryRunner.RunAsync(fixture, "GQ-08", "vector");
+    }
+
+    [Fact]
     public async Task GQ06_Vector_RanksTheSataSsdHighly()
     {
         // Talk moment: a SATA M.2 2280 SSD reads almost identically to the NVMe drive the laptop needs.

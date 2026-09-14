@@ -80,8 +80,9 @@ public sealed class DomainOntologyTests
     {
         var ontology = Load();
 
+        // Stated for every charger (ADR-0013), so phone chargers are checked against a laptop too.
         var rule = Assert.Single(ontology.Rules, r =>
-            r.AccessoryTypeNotation == "laptop-chargers" && r.DeviceTypeNotation == "laptops");
+            r.AccessoryTypeNotation == "chargers" && r.DeviceTypeNotation == "laptops");
 
         Assert.Equal(2, rule.Checks.Count);
 

@@ -151,6 +151,9 @@ Build strictly in this order. Each step ends with its golden-query integration t
 - **0004:** `Candidate` has a nullable score and a compatibility result; `StageResult` has an optional total; Stage 1 pages in SQL.
 - **0009:** `tokenizer.json` is the only tokenizer file needed. Embed **one text per inference call**: padding shifts int8 vectors (cosine 0.989 against 1.000).
 - **0013:** label normalisation (case, accents, simple plurals), term order before the cap, and the scope of `applyConstraints`.
+- **0013 (after GQ-08):** the target device is resolved in the Understand step. A device name in the query is removed from retrieval text; the device's own type ("laptop", "drill") is a context concept, not expanded or classified; the device itself is demoted with a reason.
+- **0013 (ontology data):** "Charger fits laptop" now applies to every `chargers` concept, not only `laptop-chargers`, so a 20W phone charger is Incompatible with a laptop instead of unflagged.
+- **0005:** GQ-08 "The device name trap" added. Talk notes are recorded in the Teaching notes of ADRs 0008, 0009, 0010 and 0013.
 
 **Checkpoint — needs Pete (ADR-0005: fix the data, not the assertions).** Nothing below has been changed.
 

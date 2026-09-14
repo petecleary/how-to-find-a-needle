@@ -4,7 +4,8 @@ namespace PI.SearchApi.Pipeline.Ontology;
 //
 // What:     Looks up every 1–3 word phrase of the query in an index of every ontology label
 //           (preferred, alternative and hidden; every language). Longest phrases claim their
-//           words first, and no word belongs to two matches.
+//           words first, and no word belongs to two matches. Words naming the target device are
+//           claimed before matching even starts: they are context, not something to look for.
 // Strength: Deterministic and inspectable: the trace shows exactly which phrase matched which
 //           label. A Spanish "cargador" finds Chargers because the ontology says so, not a model.
 // Failure:  Purely lexical. "brick" alone won't match "power brick", and an unlisted synonym
@@ -28,11 +29,19 @@ public sealed class LabelMatcher
             .ToDictionary(group => group.Key, group => group.Select(entry => entry.Label).ToList());
     }
 
-    public QueryUnderstanding Understand(string query)
+    /// <param name="deviceMention">Tokens naming the target device; they are never matched against labels.</param>
+    public QueryUnderstanding Understand(string query, TokenSpan? deviceMention = null)
     {
         var tokens = TextNormaliser.Tokenise(query);
         var claimed = new bool[tokens.Count];
         var matches = new List<LabelMatch>();
+
+        // "Brakk 18V Combi Drill" contains the labels "Brakk 18V" and "combi drill", but as a device name it
+        // describes what the shopper owns. Claiming it first stops those words matching anything.
+        if (deviceMention is { } mention)
+        {
+            claimed.AsSpan(mention.Start, mention.Count).Fill(true);
+        }
 
         // Longest first: "cordless phone battery" must claim "battery" before the one-word
         // label "battery" (→ Batteries) gets a chance to.
@@ -60,7 +69,7 @@ public sealed class LabelMatcher
 
         matches.Sort((a, b) => a.TokenStart.CompareTo(b.TokenStart));
 
-        return new QueryUnderstanding(query, tokens, matches);
+        return new QueryUnderstanding(query, tokens, matches) { DeviceMention = deviceMention };
     }
 }
 
@@ -71,33 +80,59 @@ public sealed record LabelMatch(string Phrase, int TokenStart, int TokenCount, I
     /// <summary>Taxonomy concept notations this phrase names (categories), e.g. "chargers".</summary>
     public IReadOnlyList<string> TaxonomyConcepts =>
         [.. Labels.Where(l => l.IsTaxonomyConcept).Select(l => l.ConceptNotation).Distinct()];
-
-    /// <summary>True when the phrase names at least one product category (not just a spec value).</summary>
-    public bool IsTaxonomyMatch => Labels.Any(l => l.IsTaxonomyConcept);
 }
 
-/// <summary>What Stage 6 understood about a query.</summary>
+/// <summary>What Stage 6 understood about a query: what the shopper wants, and what is only context.</summary>
 public sealed record QueryUnderstanding(string Query, IReadOnlyList<Token> Tokens, IReadOnlyList<LabelMatch> Matches)
 {
+    /// <summary>The tokens that name the target device, if the query names it.</summary>
+    public TokenSpan? DeviceMention { get; init; }
+
+    /// <summary>
+    /// Matched device-type concepts the target device belongs to, e.g. "laptops" in "charger for my laptop"
+    /// when the device is a laptop. They describe what the shopper owns, so they aren't expanded or classified against.
+    /// </summary>
+    public IReadOnlyList<string> ContextConcepts { get; init; } = [];
+
     /// <summary>Every taxonomy concept matched anywhere in the query, in query order.</summary>
     public IReadOnlyList<string> TaxonomyConcepts => [.. Matches.SelectMany(m => m.TaxonomyConcepts).Distinct()];
 
+    /// <summary>The categories the shopper is looking for: matched taxonomy concepts that aren't context.</summary>
+    public IReadOnlyList<string> WantedConcepts => [.. TaxonomyConcepts.Where(c => !ContextConcepts.Contains(c))];
+
+    /// <summary>The device name as typed, e.g. "Blackbird Aerobook 14"; null if the query doesn't name the device.</summary>
+    public string? DeviceMentionText =>
+        DeviceMention is { } mention ? string.Join(' ', Tokens.Skip(mention.Start).Take(mention.Count).Select(t => t.Original)) : null;
+
+    /// <summary>True when the phrase names at least one wanted category.</summary>
+    public bool IsWanted(LabelMatch match) => match.TaxonomyConcepts.Any(c => !ContextConcepts.Contains(c));
+
+    /// <summary>The query with the device name removed: what vector search should embed. "charger for my Blackbird Aerobook 14" → "charger for my".</summary>
+    public string QueryWithoutDevice => JoinTokens(IsDeviceToken);
+
     /// <summary>
-    /// The query with taxonomy-matched phrases removed, e.g. "power brick for laptop" → "for". Value
-    /// phrases like "USB-C" stay in (ADR-0013): they aren't expanded, so keyword search still needs them.
+    /// The query with the device name and wanted-category phrases removed: what keyword search AND-s with the
+    /// expanded OR groups. "power brick for laptop" → "for". Value phrases ("USB-C") and context concepts ("laptop"
+    /// when you own one) stay in: they aren't expanded, so keyword search still needs them as typed.
     /// </summary>
     public string RemainingText
     {
         get
         {
-            var covered = new bool[Tokens.Count];
+            var wanted = new bool[Tokens.Count];
 
-            foreach (var match in Matches.Where(m => m.IsTaxonomyMatch))
+            foreach (var match in Matches.Where(IsWanted))
             {
-                covered.AsSpan(match.TokenStart, match.TokenCount).Fill(true);
+                wanted.AsSpan(match.TokenStart, match.TokenCount).Fill(true);
             }
 
-            return string.Join(' ', Tokens.Where((_, i) => !covered[i]).Select(t => t.Original));
+            return JoinTokens(i => wanted[i] || IsDeviceToken(i));
         }
     }
+
+    private bool IsDeviceToken(int index) =>
+        DeviceMention is { } mention && index >= mention.Start && index < mention.Start + mention.Count;
+
+    private string JoinTokens(Func<int, bool> exclude) =>
+        string.Join(' ', Tokens.Where((_, i) => !exclude(i)).Select(t => t.Original));
 }

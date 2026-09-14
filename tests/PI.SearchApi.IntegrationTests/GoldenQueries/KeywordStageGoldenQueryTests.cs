@@ -33,6 +33,13 @@ public sealed class KeywordStageGoldenQueryTests(AppHostFixture fixture)
     }
 
     [Fact]
+    public async Task GQ08_Keyword_FindsTheChargerWhoseDescriptionNamesTheDevice()
+    {
+        // Talk moment: a device name helps keyword search — the official charger's description names the Aerobook.
+        await GoldenQueryRunner.RunAsync(fixture, "GQ-08", "keyword");
+    }
+
+    [Fact]
     public async Task GQ07_Keyword_FindsNothingForASpanishQuery()
     {
         // Talk moment: English stemming over an English catalog shares no words with "cargador USB-C para portátil".

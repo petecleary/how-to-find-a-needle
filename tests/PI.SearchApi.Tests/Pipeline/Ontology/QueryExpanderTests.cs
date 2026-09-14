@@ -61,6 +61,31 @@ public sealed class QueryExpanderTests
     }
 
     [Fact]
+    public void Expand_DeviceMention_IsRemovedFromBothRetrievers()
+    {
+        // GQ-08: "Blackbird Aerobook 14" is tokens 3–5 of the query.
+        var understanding = Matcher.Understand("charger for my Blackbird Aerobook 14", new TokenSpan(3, 3));
+
+        var expansion = Expander.Expand(understanding);
+
+        Assert.Equal("for my", expansion.Keyword.RemainingText);
+        Assert.StartsWith("charger for my (chargers, ", expansion.EmbeddingText);
+        Assert.DoesNotContain("Blackbird", expansion.EmbeddingText);
+    }
+
+    [Fact]
+    public void Expand_ContextConcept_IsNotExpandedOrAppended()
+    {
+        var understanding = Matcher.Understand("power adapter for my laptop") with { ContextConcepts = ["laptops"] };
+
+        var expansion = Expander.Expand(understanding);
+
+        Assert.Single(expansion.Keyword.OrGroups);
+        Assert.Equal("power adapter", expansion.Keyword.OrGroups[0][0]);
+        Assert.DoesNotContain("laptops)", expansion.EmbeddingText);
+    }
+
+    [Fact]
     public void Expand_SpanishQuery_ExpandsToEnglishTerms()
     {
         // GQ-07: the Spanish phrase expands to English labels the catalog actually uses.

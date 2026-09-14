@@ -76,3 +76,10 @@ LIMIT @depth;
 - Lexical search matches *words*, not *meaning*. It is fast and precise for exact terms, and blind to synonyms.
 - Always check what your "BM25" actually is. Many databases ship a different ranking under a familiar name.
 - Show learners the tokenised query. Stemming and stop words explain many surprising results.
+
+**For the talk (found while building, Phase 2):**
+- **Keyword search rewards the shopper for using the catalog's words.**
+  - "power adapter for my laptop" (GQ-01) puts the official Blackbird charger in the top 3, because its description says "laptop power adapter". "charger for my laptop" ranked it 5th, behind barrel chargers whose descriptions say "laptop charger".
+  - Same intent, different words, different winner. The ontology's synonyms (Stage 6) are how you stop depending on the exact word.
+- **A device name helps keyword search and hurts vector search.** "charger for my Blackbird Aerobook 14" finds the official charger, because its description names the Aerobook. Stage 3 on the same query ranks laptops and bags first (GQ-08, ADR-0010).
+- **Cover density in action (GQ-03).** "cordless drill battery" matches the phone battery pack, but drills whose descriptions mention "cordless … drill … battery" closer together still outrank it (the phone battery is 5th). `ts_rank_cd` scores proximity, not meaning.

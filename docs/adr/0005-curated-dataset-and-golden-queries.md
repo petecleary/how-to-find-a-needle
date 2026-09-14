@@ -72,13 +72,14 @@ Each golden query records the talk moment it demonstrates and the **expected out
 | GQ-03 | "cordless drill battery" | **Keyword trap**: Keyword ranks a *cordless phone battery* highly; Vector and Hybrid correct it |
 | GQ-04 | filters only: brand = Brakk, voltageV = 18, maxPrice = 100 | **Structured wins**: exact, fast, no ranking needed |
 | GQ-05 | "18V battery" (+ target device) | **Platform compatibility**: the Tornio 20V MAX battery looks similar; Ontology rejects it (platform) |
-| GQ-06 | "SSD upgrade for my laptop" (+ target device) |
-
-Queries that need a target device don't name it (changed in Phase 2, after running the golden queries against real embeddings):
-- With "Blackbird Aerobook 14" or "Brakk 18V drill" in the query text, vector search ranked every product of that brand (laptops, bags, other tools) above the accessories the moment is about. The device comes from `context.targetProductId` instead, as it would from a "my device" picker.
-- GQ-05 also avoids the word "drill". It matches the *Drills* concept in Stage 6, so drills would be in concept and rank above the batteries.
-- GQ-01 says "power adapter", which the catalog uses. With "charger for my laptop", keyword search ranked the official charger 5th; the exact wording is the point of its keyword expectation. **Interface compatibility**: a SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; Ontology flags it |
+| GQ-06 | "SSD upgrade for my laptop" (+ target device) | **Interface compatibility**: a SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; Ontology flags it |
 | GQ-07 | cross-language (e.g. "cargador USB-C para portátil") | **Multilingual**: Keyword and Vector alone are weak. Stage 6 matches the Spanish ontology label ("cargador" → *Chargers*) and expands to English terms, so the right chargers appear. If Stage 5 is built, BGE-M3 handles full-sentence cross-language retrieval |
+| GQ-08 | "charger for my Blackbird Aerobook 14" (no target device) | **The device name trap**: Vector ranks the named laptop and a Blackbird sleeve above the chargers; Stage 6 recognises the device name as context, uses it as the target device, and puts the compatible chargers first ([ADR-0013](0013-domain-ontology-and-compatibility.md)) |
+
+Queries GQ-01, GQ-05 and GQ-06 take their target device from `context.targetProductId`, as if from a "my device" picker, and don't name it (changed in Phase 2, after running the golden queries against real embeddings):
+- With "Blackbird Aerobook 14" or "Brakk 18V drill" in the query text, vector search ranked every product of that brand (laptops, bags, other tools) above the accessories the moment is about. Each query should isolate one moment, so the device-name failure has its own golden query, GQ-08.
+- GQ-05 avoids the word "drill" so that its moment is only about the battery platform.
+- GQ-01 says "power adapter", which the catalog uses. With "charger for my laptop", keyword search ranked the official charger 5th; the exact wording is the point of its keyword expectation.
 
 Shape:
 
@@ -86,7 +87,7 @@ Shape:
 {
   "id": "GQ-01",
   "title": "Similarity is not compatibility",
-  "request": { "query": "charger for my Blackbird Aerobook 14", "context": { "targetProductId": "PROD-0001" } },
+  "request": { "query": "power adapter for my laptop", "context": { "targetProductId": "PROD-0001" } },
   "expectations": {
     "vector":   [{ "productId": "PROD-0014", "rank": { "max": 5 } }],
     "ontology": [{ "productId": "PROD-0014", "compatibility": "Incompatible" },
@@ -126,3 +127,11 @@ Golden queries have three uses:
 
 - Evaluation data is part of the search system. Without golden queries, "better search" is an opinion.
 - Normalise units at ingestion (`wattageW: 65`, not `"65W"`). Structured search and ontologies both depend on it.
+
+**For the talk (found while building, Phase 2):**
+- **Real embeddings rewrote our golden queries, and that's the point of having them.** The first drafts named the device ("charger for my Blackbird Aerobook 14"), and three expectations failed. Vector search ranked Blackbird laptops and bags above the chargers, because the brand was the loudest thing in the query.
+  - We didn't loosen the tests. We asked what each query was meant to prove.
+  - The talk moments now take the device from a picker.
+  - The device-name failure got its own golden query (GQ-08), and Stage 6 learned to handle it.
+- **Each golden query should isolate one failure mode.** "battery for Brakk 18V drill" mixed three things: a brand pull, a device-type word ("drill") and the platform near miss. "18V battery" with a target device shows only the platform near miss.
+- **Wording is part of the experiment.** "charger for my laptop" and "power adapter for my laptop" mean the same thing to a person. They produce different keyword winners (ADR-0008).

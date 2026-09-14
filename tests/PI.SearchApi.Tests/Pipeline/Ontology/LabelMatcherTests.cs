@@ -47,7 +47,7 @@ public sealed class LabelMatcherTests
 
         Assert.Equal(["chargers", "laptops"], understanding.TaxonomyConcepts);
         var usbC = Assert.Single(understanding.Matches, m => m.Phrase == "USB-C");
-        Assert.False(usbC.IsTaxonomyMatch);
+        Assert.Empty(usbC.TaxonomyConcepts); // a value concept, not a category
         Assert.Equal("usb-c", usbC.Labels[0].ConceptNotation);
 
         // Value phrases stay in the remaining text; only category phrases are removed (ADR-0013).
@@ -82,6 +82,29 @@ public sealed class LabelMatcherTests
 
         Assert.Empty(understanding.Matches);
         Assert.Equal("brick", understanding.RemainingText);
+    }
+
+    [Fact]
+    public void Understand_DeviceMention_IsNotMatchedAndIsRemovedFromSearchText()
+    {
+        // "Brakk 18V" and "Combi Drill" are labels, but inside a device name they describe what you own.
+        var understanding = Matcher.Understand("battery for my Brakk 18V Combi Drill", new TokenSpan(3, 4));
+
+        Assert.Equal(["batteries"], understanding.TaxonomyConcepts);
+        Assert.Equal("Brakk 18V Combi Drill", understanding.DeviceMentionText);
+        Assert.Equal("battery for my", understanding.QueryWithoutDevice);
+        Assert.Equal("for my", understanding.RemainingText);
+    }
+
+    [Fact]
+    public void Understand_ContextConcept_IsNotWantedButStaysInTheText()
+    {
+        // With a laptop as the target device, "laptop" describes what you own, not what you want.
+        var understanding = Matcher.Understand("power adapter for my laptop") with { ContextConcepts = ["laptops"] };
+
+        Assert.Equal(["chargers", "laptops"], understanding.TaxonomyConcepts);
+        Assert.Equal(["chargers"], understanding.WantedConcepts);
+        Assert.Equal("for my laptop", understanding.RemainingText);
     }
 
     [Fact]

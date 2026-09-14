@@ -60,7 +60,7 @@ ex:UsbC a skos:Concept ; skos:inScheme ex:Connectors ; skos:notation "usb-c" ;
 
 # --- Domain rule (class level) --------------------------------------------
 ex:ChargerFitsLaptop a ex:CompatibilityRule ;
-    ex:accessoryType ex:LaptopChargers ;
+    ex:accessoryType ex:Chargers ;          # every charger, not only laptop chargers (changed in Phase 2)
     ex:deviceType    ex:Laptops ;
     ex:check [ ex:accessorySpec "connector" ; ex:operator ex:equals ;         ex:deviceSpec "chargingPort" ;
                ex:valueScheme ex:Connectors ;
@@ -115,6 +115,13 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 1. **Understand.** Match the normalised query against all labels in any language: longest match first, no overlaps, phrases of 1–3 words.
    - *Normalised* means lower-cased, accents folded ("portátil" = "portatil") and simple English plurals folded on both sides ("chargers" = "charger", "batteries" = "battery"). Without plural folding, "charger" would never match the preferred label "Chargers". It is still lexical, and the trace says so.
    - Both taxonomy concepts (categories) and value concepts (e.g. `usb-c`) are matched and shown. Only taxonomy concepts are expanded and used for classification; a matched value phrase stays in the rest of the query.
+   - **Resolve the target device first** (moved from step 5 in Phase 2):
+     - use `context.targetProductId` if given;
+     - otherwise the longest device product name (a product in an `ex:isDeviceType` category) that appears in the query, matched as a whole folded token sequence;
+     - otherwise none.
+   - **A device name is context, not intent.** If the query names the target device ("charger for my Blackbird Aerobook 14"), those words are claimed before label matching and removed from what keyword and vector search receive. The trace shows the name that was removed. *Why:* with the device name left in the text, vector search ranked the laptop itself, other Blackbird laptops and a Blackbird sleeve above every charger (GQ-08).
+   - **The device's own type is context too.** A matched taxonomy concept that is a device type, and that the target device belongs to ("laptop" when the device is a laptop, "drill" when it's a drill), is a *context concept*. It stays in the query text but isn't expanded and isn't used for classification. *Why:* otherwise every laptop or drill is `InConcept` and unflagged, and outranks the accessories the shopper asked for.
+   - Only the remaining *wanted concepts* are expanded (step 2) and classified against (step 4).
    - Output: the matched taxonomy concepts and value concepts, e.g. "power brick for laptop" → *Chargers*, *Laptops*.
    - This is lexical and simple, and the trace shows exactly which phrase matched which label.
 2. **Expand** (`options.expandSynonyms`, default on). For each matched taxonomy concept, collect the labels of the concept and its narrower concepts, capped at 10 terms per concept.
@@ -124,12 +131,7 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 3. **Retrieve.** Keyword + Vector with the expansions, fused with RRF. This is the Stage 4 pipeline with better input ([ADR-0011](0011-hybrid-search-rrf.md)).
 4. **Classify.** A candidate is `InConcept` if any of its categories is a matched concept or narrower than one, and `OutOfConcept` otherwise. With no matched concept it is `NoConcept`.
    - Example: the cordless *phone* battery is under *Telephony*, not *Power tools › Batteries*, so it is `OutOfConcept` (GQ-03).
-5. **Constrain** (`options.applyConstraints`, default on). Resolve the target device:
-   - `context.targetProductId` if given;
-   - otherwise the longest match of a device product's name (a product in an `ex:isDeviceType` category) in the query text;
-   - otherwise none.
-
-   Then, for each candidate, find the rules for (candidate categories, device categories) and evaluate every check:
+5. **Constrain** (`options.applyConstraints`, default on). Using the target device resolved in step 1, for each candidate find the rules for (candidate categories, device categories) and evaluate every check:
    - `Compatible`: all checks pass.
    - `Incompatible`: any check fails.
    - `Unknown`: a needed spec is missing, or there is no target device.
@@ -140,6 +142,8 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 **Ordering, with flagged items kept:** unflagged items first, then `OutOfConcept`, then `Incompatible`. Within each group items keep their fused rank. **Nothing is silently removed.**
 - `options.applyConstraints` switches off both demotions and the rule checks. `signals.conceptMatch` is still reported, so the presenter can show the classification before turning it on.
 - An item that is both `OutOfConcept` and `Incompatible` goes in the `Incompatible` group.
+- The target device itself goes in the `OutOfConcept` group, with the reason "This is your target device". Shoppers asking for a charger for their laptop don't want the laptop, but it isn't hidden.
+- Device resolution and context concepts apply when `expandSynonyms` is on; with both toggles off, retrieval receives the query as typed.
 
 **Trace:**
 - Matched phrases → concepts.
@@ -197,3 +201,17 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 - SKOS gives you taxonomy, synonyms and multilingual labels in a standard, tiny vocabulary.
 - One domain model serves many jobs: navigation, query understanding, validation and explanation.
 - Similarity is a guess, and a rule is knowledge. Keep demoted results and their reasons visible.
+
+**For the talk (found while building, Phase 2):**
+- **"A device name is context, not intent."** People search the way they think: "charger for my Blackbird Aerobook 14". Stages 2–4 can't tell what you *want* from what you *own*. The device name is the most distinctive part of the query, so it wins: in Stage 3 the Aerobook itself ranks 2nd and a Blackbird laptop sleeve 5th, while the compatible Voltline charger is 7th (GQ-08). Stage 6 understands the query before retrieving: it recognises the device, removes it from the search text, uses it as the target device, and the compatible chargers come first.
+- **Show the trace of GQ-08 in Stage 6.** Put `deviceMention: "Blackbird Aerobook 14"` next to `queryWithoutDevice: "charger for my"`. That one line is query understanding.
+- **"Laptop" can be context too.** In "power adapter for my laptop" (GQ-01) with an Aerobook as the target, "laptop" describes what you own. Treating it as a wanted category would put every laptop above the chargers.
+- **Honest limits to mention.**
+  - Device matching is exact: "my Aerobook" alone isn't found, and product names like "Brakk 18V Combi Drill (Body Only)" are rarely typed in full.
+  - Fuzzy entity recognition (aliases, model numbers) is the next step. It could be more ontology or catalog data, such as product aliases, without an LLM.
+- **A rule scoped too narrowly is a silent gap.**
+  - "Charger fits laptop" first applied only to *Laptop chargers*.
+  - With the device-name trap fixed, GQ-08's third result was the Voltline 20W USB-C *phone* charger, unflagged. No rule said anything about a phone charger and a laptop.
+  - Widening the rule to every *Charger* — one line of Turtle, no C# — flagged it: "must supply at least the power the laptop needs: 20W; needs at least 65W".
+  - Lesson: state a rule at the most general concept it's true for. A shopper can plug any charger into a laptop.
+- **Why the other golden queries don't name the device:** GQ-01, GQ-05 and GQ-06 take the device from a "my device" picker (`targetProductId`), so each isolates one moment. GQ-08 exists to show the device-name trap on its own.

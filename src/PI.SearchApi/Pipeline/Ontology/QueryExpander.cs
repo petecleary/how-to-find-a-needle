@@ -4,9 +4,10 @@ namespace PI.SearchApi.Pipeline.Ontology;
 
 // Stage 6, step 2 — Expand: synonyms and narrower concepts
 //
-// What:     For each phrase that named a category, gathers that concept's labels and the labels
-//           of every concept beneath it (capped at 10 terms per concept). Keyword search gets
-//           them as OR groups; vector search gets the query with the concepts' names appended.
+// What:     For each phrase that named a wanted category, gathers that concept's labels and the
+//           labels of every concept beneath it (capped at 10 terms per concept). Keyword search gets
+//           them as OR groups; vector search gets the query, minus any device name, with the
+//           concepts' names appended.
 // Strength: Improves recall with knowledge instead of guesses: "power brick" also searches for
 //           "AC adapter" and "laptop chargers", because the ontology lists them as the same thing.
 // Failure:  Expansion only knows what someone wrote down. Too many terms dilutes precision, which
@@ -21,11 +22,12 @@ public sealed class QueryExpander(IOntology ontology)
     {
         var groups = new List<ExpandedPhrase>();
 
-        foreach (var match in understanding.Matches.Where(m => m.IsTaxonomyMatch))
+        foreach (var match in understanding.Matches.Where(understanding.IsWanted))
         {
+            var concepts = match.TaxonomyConcepts.Where(c => understanding.WantedConcepts.Contains(c)).ToList();
             var terms = new List<string>();
 
-            foreach (var concept in match.TaxonomyConcepts)
+            foreach (var concept in concepts)
             {
                 foreach (var term in TermsFor(match.Phrase, concept))
                 {
@@ -36,24 +38,28 @@ public sealed class QueryExpander(IOntology ontology)
                 }
             }
 
-            groups.Add(new ExpandedPhrase(match.Phrase, match.TaxonomyConcepts, terms));
+            groups.Add(new ExpandedPhrase(match.Phrase, concepts, terms));
         }
 
         var keyword = new KeywordExpansion([.. groups.Select(g => g.Terms)], understanding.RemainingText);
 
-        // Vector side: append the matched concepts' English names (and their narrower concepts') to the query,
-        // e.g. "power brick for laptop (chargers, laptop chargers, …, laptops)", pulling the embedding towards them.
-        var conceptNames = understanding.TaxonomyConcepts
-            .SelectMany(concept => ConceptAndNarrower(concept))
+        // Vector side: the query without the device name, with the wanted concepts' English names (and their
+        // narrower concepts') appended, e.g. "power brick for laptop (chargers, laptop chargers, …, laptops)".
+        var conceptNames = understanding.WantedConcepts
+            .SelectMany(ConceptAndNarrower)
             .Select(concept => ontology.TryGetConcept(concept, out var c) ? c.PrefLabels.GetValueOrDefault("en") : null)
             .OfType<string>()
             .Select(name => name.ToLowerInvariant())
             .Distinct()
             .ToList();
 
+        var baseText = string.IsNullOrWhiteSpace(understanding.QueryWithoutDevice)
+            ? understanding.Query // the query was only a device name: nothing else to embed
+            : understanding.QueryWithoutDevice;
+
         var embeddingText = conceptNames.Count == 0
-            ? understanding.Query
-            : $"{understanding.Query} ({string.Join(", ", conceptNames)})";
+            ? baseText
+            : $"{baseText} ({string.Join(", ", conceptNames)})";
 
         return new QueryExpansion(groups, keyword, embeddingText);
     }

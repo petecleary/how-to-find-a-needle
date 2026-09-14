@@ -252,8 +252,10 @@ ex:Tornio20vMax a skos:Concept ; skos:inScheme ex:BatteryPlatforms ; skos:notati
 # new accessory or device *type* does.
 # ============================================================================
 
+# Stated for every charger, not just laptop chargers: a shopper can plug a phone charger into a
+# laptop too, and the rule is what says a 20W phone charger isn't enough.
 ex:ChargerFitsLaptop a ex:CompatibilityRule ;
-    ex:accessoryType ex:LaptopChargers ;
+    ex:accessoryType ex:Chargers ;
     ex:deviceType    ex:Laptops ;
     ex:check [ ex:accessorySpec "connector" ; ex:operator ex:equals ;         ex:deviceSpec "chargingPort" ;
                ex:valueScheme ex:Connectors ;

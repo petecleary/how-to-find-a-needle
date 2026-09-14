@@ -109,3 +109,10 @@ Configuration (`appsettings.json`; secrets via `dotnet user-secrets`):
 - Read the model card: asymmetric models like Nomic need query/document prefixes.
 - Put embeddings behind an interface, like chat. Then record *which model* made every vector, because vectors from different models aren't comparable.
 - Embeddings are derived data. Committing them is fine if each vector carries its model and a hash of its source text.
+
+**For the talk (found while building, Phase 2):**
+- **Batching changed the answer.**
+  - With the int8 Nomic model, "search_query: SSD" embedded alone and in a batch with an identical text agree exactly (cosine 1.000000).
+  - Batched with a longer text, cosine drops to 0.989404, although padding is masked out of attention and out of mean pooling. Quantisation measures value ranges over the whole padded batch.
+  - The fix: one text per inference call. Lesson: "an optimisation that changes results is a bug, and only a test that compares numbers finds it."
+- **The tokenizer file matters.** `Microsoft.ML.Tokenizers` wanted a `vocab.txt`; the model ships `tokenizer.json`. Reading the vocabulary out of it took a few lines, but a *different* vocabulary would still have run and produced plausible, wrong vectors.
