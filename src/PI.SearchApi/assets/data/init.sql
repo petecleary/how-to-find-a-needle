@@ -3,9 +3,9 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 
 -- array_to_string is only STABLE, and a generated column needs an IMMUTABLE expression.
--- This wrapper just re-declares the same function as IMMUTABLE: text[] categories never
+-- This wrapper just re-declares the same function as IMMUTABLE: text[] values never
 -- change meaning between calls, so the promise is safe, and it lets search_vector below
--- include categories alongside name and description.
+-- include categories and reviews alongside name and description.
 CREATE OR REPLACE FUNCTION immutable_array_to_string(text[], text)
 RETURNS text LANGUAGE sql IMMUTABLE PARALLEL SAFE
 AS $$ SELECT array_to_string($1, $2) $$;
@@ -22,12 +22,13 @@ CREATE TABLE IF NOT EXISTS products (
     specs           JSONB NOT NULL DEFAULT '{}',
 
     -- Stage 2: a weighted full-text document (ADR-0008). setweight ranks a name match (A)
-    -- above a brand/category match (B) above a description match (C); reviews are left out
-    -- deliberately, to keep them from adding lexical noise to keyword search.
+    -- above a brand/category match (B) above a description match (C) above a review match (D).
+    -- Reviews carry shoppers' own words ("cordless phone battery"), so they count — but least.
     search_vector   TSVECTOR GENERATED ALWAYS AS (
         setweight(to_tsvector('english', name), 'A') ||
         setweight(to_tsvector('english', brand || ' ' || immutable_array_to_string(categories, ' ')), 'B') ||
-        setweight(to_tsvector('english', description), 'C')
+        setweight(to_tsvector('english', description), 'C') ||
+        setweight(to_tsvector('english', immutable_array_to_string(reviews, ' ')), 'D')
     ) STORED,
 
     -- Stages 3, 4, 6: dense embedding from the configured provider (ADR-0009). Nomic's model
@@ -42,6 +43,30 @@ CREATE TABLE IF NOT EXISTS products (
     content_hash    TEXT NOT NULL,   -- SHA-256 of the text that is embedded (ProductDocument.BuildText)
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Migration for databases created before reviews joined search_vector (ADR-0006). PostgreSQL 16
+-- can't change a generated column's expression, so if the stored expression doesn't mention
+-- reviews, drop the column and add it back; Postgres recomputes it for every row. The column's
+-- GIN index is dropped with it and recreated by CREATE INDEX IF NOT EXISTS below.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM pg_attribute a
+        JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
+        WHERE a.attrelid = 'products'::regclass
+          AND a.attname = 'search_vector'
+          AND pg_get_expr(d.adbin, d.adrelid) NOT LIKE '%reviews%'
+    ) THEN
+        ALTER TABLE products DROP COLUMN search_vector;
+        ALTER TABLE products ADD COLUMN search_vector TSVECTOR GENERATED ALWAYS AS (
+            setweight(to_tsvector('english', name), 'A') ||
+            setweight(to_tsvector('english', brand || ' ' || immutable_array_to_string(categories, ' ')), 'B') ||
+            setweight(to_tsvector('english', description), 'C') ||
+            setweight(to_tsvector('english', immutable_array_to_string(reviews, ' ')), 'D')
+        ) STORED;
+    END IF;
+END $$;
 
 -- B-tree: exact-match and range filters (Stage 1's brand and price filters).
 CREATE INDEX IF NOT EXISTS ix_products_brand     ON products (brand);

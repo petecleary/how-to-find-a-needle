@@ -69,7 +69,7 @@ Each golden query records the talk moment it demonstrates and the **expected out
 |---|---|---|
 | GQ-01 | "power adapter for my laptop" (+ target device) | **Similarity ≠ compatibility**: Vector ranks the 45W barrel charger highly; Ontology flags it Incompatible (connector and wattage) |
 | GQ-02 | "power brick for laptop" | **Synonym miss**: Keyword finds nothing useful (catalog says "adapter"/"charger"); Vector succeeds; Stage 6 synonym expansion rescues the keyword side |
-| GQ-03 | "cordless drill battery" | **Keyword trap**: Keyword ranks a *cordless phone battery* highly; Vector and Hybrid correct it |
+| GQ-03 | "cordless drill battery" | **Keyword trap**: Keyword ranks a *cordless phone battery* 1st; Vector ranks the drill battery first; Hybrid lifts the drill battery above the trap but can't remove it from the top 3; Ontology marks it OutOfConcept |
 | GQ-04 | filters only: brand = Brakk, voltageV = 18, maxPrice = 100 | **Structured wins**: exact, fast, no ranking needed |
 | GQ-05 | "18V battery" (+ target device) | **Platform compatibility**: the Tornio 20V MAX battery looks similar; Ontology rejects it (platform) |
 | GQ-06 | "SSD upgrade for my laptop" (+ target device) | **Interface compatibility**: a SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; Ontology flags it |
@@ -134,4 +134,8 @@ Golden queries have three uses:
   - The talk moments now take the device from a picker.
   - The device-name failure got its own golden query (GQ-08), and Stage 6 learned to handle it.
 - **Each golden query should isolate one failure mode.** "battery for Brakk 18V drill" mixed three things: a brand pull, a device-type word ("drill") and the platform near miss. "18V battery" with a target device shows only the platform near miss.
+- **Sometimes the expectation, not the data, was wrong.** GQ-03 first expected hybrid search to push the phone battery out of its top 3 *and* keyword search to rank it in its top 3.
+  - Under RRF those two pull against each other (ADR-0011).
+  - We changed the hybrid expectation to "ranked below the drill battery", which is what fusion honestly achieves, and left the removal to the ontology.
+  - Changing an assertion is allowed when the claim itself was wrong, never just to make a test pass.
 - **Wording is part of the experiment.** "charger for my laptop" and "power adapter for my laptop" mean the same thing to a person. They produce different keyword winners (ADR-0008).

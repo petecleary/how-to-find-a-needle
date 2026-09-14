@@ -1,6 +1,6 @@
 # ADR-0010: Stage 3 — Vector search (pgvector)
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0006, ADR-0009, ADR-0011; golden queries GQ-01, GQ-02, GQ-03; roadmap Phase 2
 

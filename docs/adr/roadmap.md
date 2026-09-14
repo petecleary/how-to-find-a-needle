@@ -95,11 +95,11 @@ If time runs short, cut from the bottom up. Anyone building, human or agent, fol
 - ✅ Category icons, no product images.
 - ✅ GBP, with `en-GB` price formatting.
 - ✅ The repo is on GitHub, so the CI task applies.
-- ✅ ADR-0002, 0005 and 0006 stay **Proposed**: each has more scope landing in a later phase (0002: web-ui CI in Phase 3; 0005: dataset growth in Phase 5; 0006: embedding backfill in Phase 2), so none moves to Accepted until its whole decision is built — the same pattern Phase 2 uses for ADR-0013.
+- ✅ ADR-0002, 0005 and 0006 stay **Proposed**: each has more scope landing in a later phase (0002: web-ui CI in Phase 3; 0005: dataset growth in Phase 5; 0006: embedding backfill in Phase 2), so none moves to Accepted until its whole decision is built — the same pattern Phase 2 uses for ADR-0013. *(ADR-0006 was accepted when Phase 2 completed.)*
 
 ---
 
-## Phase 2 — Search APIs (stages 1–6)
+## Phase 2 — Search APIs (stages 1–6) ✅ (done)
 
 **ADRs:** [0003](0003-search-api-contract-and-debug-trace.md), [0004](0004-pipeline-composition.md), [0007](0007-structured-search.md), [0008](0008-keyword-search-bm25-style.md), [0009](0009-local-embeddings-onnx-runtime.md), [0010](0010-vector-search-pgvector.md), [0011](0011-hybrid-search-rrf.md), [0013](0013-domain-ontology-and-compatibility.md)
 
@@ -123,25 +123,27 @@ Build strictly in this order. Each step ends with its golden-query integration t
    - pgvector cosine; `SET LOCAL hnsw.ef_search`; distances in trace. ✅ GQ-02 (hit), GQ-01 (near miss ranks high).
    - ⚠️ If the embeddings don't produce the expected moments, iterate on product *wording* ([ADR-0005](0005-curated-dataset-and-golden-queries.md) workflow).
 6. **Stage 4 — Hybrid** (0011)
-   - Pure `ReciprocalRankFusion` with exhaustive unit tests; concurrent Keyword + Vector; per-item formula strings in trace. ✅ GQ-03 corrected; GQ-01 near miss still present.
+   - Pure `ReciprocalRankFusion` with exhaustive unit tests; concurrent Keyword + Vector; per-item formula strings in trace. ✅ GQ-03 drill battery lifted above the keyword trap; GQ-01 near miss still present.
 7. **Stage 6 — Ontology** (0013)
    - `IOntologySearch`: understand (label matcher) → expand (keyword OR-groups + expanded embedding text) → Hybrid → classify (in/out of concept) → constrain (class-level rules vs target-device specs).
    - Toggles `expandSynonyms` / `applyConstraints`; flagged items kept with reasons; one trace step per step.
    - Unit tests for label matching, expansion, the tsquery builder, classification and each rule operator. ✅ GQ-01, GQ-02 (keyword side rescued), GQ-03 (phone battery out of concept), GQ-05, GQ-06, GQ-07 (Spanish label → concept expansion).
 
 ### Acceptance criteria
-- All 5 endpoints (stages 1–4 and 6; Stage 5 is deferred to Phase 6) appear in Scalar and return the shared contract with a populated `debugTrace`.
-- The integration suite shows the talk's story as passing tests: synonym miss → vector hit; keyword trap → hybrid fix; near miss → ontology flag with reason; Spanish query → chargers via ontology labels.
-- Missing ONNX models give a `503` with fix-it guidance, not a stack trace.
-- ADRs 0003, 0004, 0007–0011 and 0013 → **Accepted**.
+- ✅ All 5 endpoints (stages 1–4 and 6; Stage 5 is deferred to Phase 6) appear in Scalar and return the shared contract with a populated `debugTrace`.
+- ✅ The integration suite shows the talk's story as passing tests: synonym miss → vector hit; keyword trap → hybrid lifts the right answer → ontology flags the trap; near miss → ontology flag with reason; Spanish query → chargers via ontology labels; device name → context, not intent.
+- ✅ Missing ONNX models give a `503` with fix-it guidance, not a stack trace.
+- ✅ ADRs 0003, 0004, 0007, 0008, 0010, 0011 and 0013 → **Accepted**. ADR-0006 → **Accepted** too, now that its embedding step is built.
+  - ADR-0009 stays **Proposed**: its Nomic provider is built and verified, but its OpenAI provider is Phase 5 scope (same rule as Phase 1).
 
-### Build status (2026-09-14) 🚧 built; golden-query data decisions pending
+### Build status (2026-09-14) ✅ complete
 
 **Built:** the shared contract and trace; `SqlFilterBuilder`; the three demo GETs; Stages 1, 2, 3, 4 and 6 with thin endpoints and validators; the Nomic ONNX embedder; the seeder's embedding step, with a committed `nomic.jsonl`; 503 handling; the golden-query integration harness.
 
 **Verified:**
-- `dotnet build`: 0 warnings. Unit tests: 151 pass.
-- Integration tests: 19 of 25 pass. The 6 failures are ranking expectations, listed below.
+- `dotnet build`: 0 warnings. Unit tests: 161 pass.
+- Integration tests: **28 of 28 pass**, covering golden queries GQ-01 to GQ-08 across every stage built, plus the demo endpoints.
+- The `init.sql` migration (reviews added to `search_vector`) ran in place on an existing data volume.
 - OpenAPI: FastEndpoints works with `Microsoft.AspNetCore.OpenApi`, so no switch was needed. Nested request types, string enums and strict numbers all appear in `/openapi/v1.json`.
 - The seeder loads 60 vectors from `nomic.jsonl` into empty rows, reports "60 already current" on restart, and rewrites the file with `Embeddings__Rebuild=true`.
 - With the model moved away, Stages 3, 4 and 6 return 503 with guidance, while Stages 1–2 and the demo GETs still work.
@@ -153,19 +155,19 @@ Build strictly in this order. Each step ends with its golden-query integration t
 - **0013:** label normalisation (case, accents, simple plurals), term order before the cap, and the scope of `applyConstraints`.
 - **0013 (after GQ-08):** the target device is resolved in the Understand step. A device name in the query is removed from retrieval text; the device's own type ("laptop", "drill") is a context concept, not expanded or classified; the device itself is demoted with a reason.
 - **0013 (ontology data):** "Charger fits laptop" now applies to every `chargers` concept, not only `laptop-chargers`, so a 20W phone charger is Incompatible with a laptop instead of unflagged.
-- **0005:** GQ-08 "The device name trap" added. Talk notes are recorded in the Teaching notes of ADRs 0008, 0009, 0010 and 0013.
+- **0005:** GQ-08 "The device name trap" added. Talk notes are recorded in the Teaching notes of ADRs 0005, 0008, 0009, 0010, 0011 and 0013.
+- **0006 / 0008:** `reviews` added to `search_vector` at weight D, with an in-place migration in `init.sql`.
+- **0005 / 0011:** GQ-03's hybrid expectation changed from "phone battery not in the top 3" to "ranked below the drill battery". Under RRF, a keyword #1 stays in the top 3; removing it is Stage 6's job.
 
-**Checkpoint — needs Pete (ADR-0005: fix the data, not the assertions).** Nothing below has been changed.
+**Golden-query checkpoint — resolved with Pete:**
 
-| Test | Expected | Actual | Why | Options |
-|---|---|---|---|---|
-| Keyword GQ-03 | PROD-0032 in top 3 | rank 5 | Drill products (PROD-0006, -0008, -0009) and PROD-0026 also contain *cordless*, *drill* and *battery* | (a) Add `reviews` to `search_vector` (open question below); PROD-0032's review says "Cordless phone battery…". (b) Reword PROD-0032 so the three words sit closer together, which `ts_rank_cd` rewards |
-| ~~Vector GQ-01, hybrid GQ-01, vector GQ-06, vector GQ-05, ontology GQ-05~~ | | | Device and brand names in the query text; "drill" matching *Drills* | ✅ **Resolved** (Pete approved): queries no longer name the device. GQ-01 "power adapter for my laptop", GQ-05 "18V battery", GQ-06 "SSD upgrade for my laptop"; the device comes from `targetProductId` ([ADR-0005](0005-curated-dataset-and-golden-queries.md)) |
-
-ADRs 0003, 0004, 0007–0011 and 0013 stay **Proposed** until these pass.
+| Issue | Resolution |
+|---|---|
+| Vector GQ-01, hybrid GQ-01, vector GQ-05, vector GQ-06, ontology GQ-05: device and brand names in the query text pulled brand products above the accessories | Queries no longer name the device: GQ-01 "power adapter for my laptop", GQ-05 "18V battery", GQ-06 "SSD upgrade for my laptop"; the device comes from `targetProductId`. The device-name failure became GQ-08, and Stage 6 now treats a device name as context ([ADR-0005](0005-curated-dataset-and-golden-queries.md), [ADR-0013](0013-domain-ontology-and-compatibility.md)) |
+| Keyword GQ-03: phone battery ranked 5th, and wording fixes also moved it up in vector search | Reviews indexed at weight D (it becomes keyword #1); hybrid expectation corrected to match what RRF honestly does ([ADR-0011](0011-hybrid-search-rrf.md)) |
 
 ### Open questions
-- ❓ Keep `reviews` out of `search_vector`? GQ-02 passes either way. Keyword GQ-03 currently misses its bound (rank 5); including reviews is one candidate fix, see the checkpoint above.
+- ✅ Keep `reviews` out of `search_vector`? No: indexed at the lowest weight (D). GQ-02 is unaffected; GQ-03's keyword trap depends on it (ADR-0006, ADR-0008).
 - ✅ Language for GQ-07: Spanish ("cargador USB-C para portátil"). Passes in Stage 6.
 - ✅ Tokenizer file: `tokenizer.json` only (ADR-0009).
 - ✅ OpenAPI: FastEndpoints + `Microsoft.AspNetCore.OpenApi` is sufficient (ADR-0014).

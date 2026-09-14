@@ -28,9 +28,10 @@ public sealed class HybridStageGoldenQueryTests(AppHostFixture fixture)
     }
 
     [Fact]
-    public async Task GQ03_Hybrid_CorrectsTheKeywordTrap()
+    public async Task GQ03_Hybrid_PutsTheDrillBatteryAboveTheKeywordTrap()
     {
-        // Talk moment: the drill battery rises to the top and the cordless phone battery drops out of the top 3.
+        // Talk moment: fusion lifts the drill battery above the phone battery, but a keyword #1 survives RRF
+        // in the top 3 — removing it is the ontology's job.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
 
         await GoldenQueryRunner.RunAsync(fixture, "GQ-03", "hybrid");

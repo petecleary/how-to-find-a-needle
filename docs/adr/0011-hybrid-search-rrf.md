@@ -1,6 +1,6 @@
 # ADR-0011: Stage 4 — Hybrid search with Reciprocal Rank Fusion
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0004, ADR-0008, ADR-0010, ADR-0012; golden queries GQ-01 to GQ-03; roadmap Phase 2
 
@@ -62,3 +62,11 @@ IReadOnlyList<FusedItem> Fuse(IReadOnlyList<RankedList> lists, int k);
 
 - Fuse **ranks**, not scores, when the scores come from different universes.
 - Hybrid search is the pragmatic default for most production search today.
+
+**For the talk (found while building, Phase 2):**
+- **A strong keyword trap survives fusion (GQ-03).** For "cordless drill battery", keyword search ranks the phone battery 1st and vector search ranks it 7th.
+  - RRF: 1/(60+1) + 1/(60+7) = 0.01639 + 0.01493 = **0.03132**, 3rd overall.
+  - The drill battery (4th in keyword, 2nd in vector): 1/(60+4) + 1/(60+2) = **0.03175**, 2nd.
+  - Hybrid puts the right battery above the trap, but can't push the trap out of the top 3: being near the top of *one* list is worth almost as much as doing well in both.
+  - Only the ontology (Stage 6) removes it from contention, by knowing it's a phone battery.
+- **The margins are tiny.** 3rd and 4th place were 0.03132 and 0.03126. RRF rankings can flip on one rank change, which is why golden queries assert loose bounds rather than exact positions.

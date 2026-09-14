@@ -1,6 +1,6 @@
 # ADR-0013: Stage 6 — Domain ontology: taxonomy, synonyms & rules
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0003, ADR-0004, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0016, ADR-0017; golden queries GQ-01, GQ-02, GQ-03, GQ-05, GQ-06, GQ-07; roadmap Phase 1 (ontology file), Phase 2 (stage)
 

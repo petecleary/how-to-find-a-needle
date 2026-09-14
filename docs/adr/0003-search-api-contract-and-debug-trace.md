@@ -1,6 +1,6 @@
 # ADR-0003: Search API contract & debug trace
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0004, ADR-0014; roadmap Phase 2
 

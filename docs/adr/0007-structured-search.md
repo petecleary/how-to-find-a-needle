@@ -1,6 +1,6 @@
 # ADR-0007: Stage 1 — Structured search
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0003, ADR-0004, ADR-0006; golden query GQ-04; roadmap Phase 2
 

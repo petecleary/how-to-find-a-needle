@@ -1,6 +1,6 @@
 # ADR-0008: Stage 2 — Keyword search (BM25-style)
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0004, ADR-0006, ADR-0011; golden queries GQ-02, GQ-03; roadmap Phase 2
 
@@ -25,7 +25,7 @@ LIMIT @depth;
 ```
 
 - **Parsing:** `websearch_to_tsquery('english', …)` accepts natural input (quotes, `or`, `-exclude`) and never throws on user syntax.
-- **Document:** the `search_vector` generated column, weighted A (name), B (brand + categories), C (description) ([ADR-0006](0006-database-schema-and-seeding.md)).
+- **Document:** the `search_vector` generated column, weighted A (name), B (brand + categories), C (description), D (reviews) ([ADR-0006](0006-database-schema-and-seeding.md)). Reviews were added in Phase 2, at the lowest weight.
 - **Ranking:** `ts_rank_cd` (cover density) with default weights; no normalisation flag to start with. The talk explains the difference.
 - **Matching:** `@@` requires *all* terms by default (AND semantics). This strictness is part of the lesson (GQ-02 synonym miss).
 - **Expansion hook for Stage 6:** `IKeywordSearch` also accepts optional synonym groups from the ontology ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
@@ -82,4 +82,6 @@ LIMIT @depth;
   - "power adapter for my laptop" (GQ-01) puts the official Blackbird charger in the top 3, because its description says "laptop power adapter". "charger for my laptop" ranked it 5th, behind barrel chargers whose descriptions say "laptop charger".
   - Same intent, different words, different winner. The ontology's synonyms (Stage 6) are how you stop depending on the exact word.
 - **A device name helps keyword search and hurts vector search.** "charger for my Blackbird Aerobook 14" finds the official charger, because its description names the Aerobook. Stage 3 on the same query ranks laptops and bags first (GQ-08, ADR-0010).
-- **Cover density in action (GQ-03).** "cordless drill battery" matches the phone battery pack, but drills whose descriptions mention "cordless … drill … battery" closer together still outrank it (the phone battery is 5th). `ts_rank_cd` scores proximity, not meaning.
+- **Cover density in action (GQ-03).** Before reviews were indexed, "cordless drill battery" matched the phone battery pack, but it came 5th. Drills whose descriptions put "cordless … drill … battery" closer together outranked it. `ts_rank_cd` scores proximity, not meaning.
+- **Reviews are where shoppers' words live.** The phone battery's review says "Cordless phone battery arrived quickly". Once reviews were indexed (at the lowest weight, D), the phone battery became keyword search's **#1** result for "cordless drill battery", a textbook keyword trap. Which fields you index is a relevance decision, not just a storage one.
+- **Rewording the product didn't work.** Moving "no drill needed" earlier in its description also made it #1 in keyword search, but it pulled the phone battery into vector search's top 3 as well. Words that match a query lexically also move the embedding towards it.

@@ -1,6 +1,6 @@
 # ADR-0004: Pipeline composition
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0003, ADR-0007 to ADR-0017; roadmap Phase 2
 

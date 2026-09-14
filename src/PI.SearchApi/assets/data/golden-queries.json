@@ -53,7 +53,7 @@
   {
     "id": "GQ-03",
     "title": "The keyword trap",
-    "moment": "Keyword search ranks a cordless phone battery near the top because it shares the words; vector and hybrid put the drill battery first, and the ontology marks the phone battery OutOfConcept.",
+    "moment": "Keyword search ranks a cordless phone battery first because it shares the words; vector search puts the drill battery first; hybrid lifts the drill battery above the trap but can't push it out of the top 3; the ontology marks the phone battery OutOfConcept.",
     "request": {
       "query": "cordless drill battery"
     },
@@ -67,7 +67,7 @@
       ],
       "hybrid": [
         { "productId": "PROD-0026", "rank": { "max": 2 } },
-        { "productId": "PROD-0032", "absentFromTop": 3 }
+        { "productId": "PROD-0032", "rank": { "min": 3 } }
       ],
       "ontology": [
         { "productId": "PROD-0026", "conceptMatch": "InConcept", "rank": { "max": 3 } },

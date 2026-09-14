@@ -8,7 +8,7 @@ namespace PI.SearchApi.Pipeline.Keyword;
 // Stage 2 — Keyword search (BM25-style)
 //
 // What:     Postgres full-text search: websearch_to_tsquery + ts_rank_cd over a weighted
-//           tsvector (A name, B brand + categories, C description).
+//           tsvector (A name, B brand + categories, C description, D reviews).
 // Strength: Fast and exact; great for names, model numbers and specific terms.
 // Failure:  Matches words, not meaning: misses synonyms ("power brick" vs "adapter")
 //           and is fooled by shared words ("cordless" phone vs drill battery).
@@ -28,7 +28,7 @@ public sealed partial class KeywordSearch(NpgsqlDataSource dataSource, SqlFilter
     private const string SearchSqlTemplate = $"""
         SELECT {ProductRows.Columns},
                ts_rank_cd(search_vector, q) AS score,
-               ts_headline('english', name || '. ' || brand || ' ' || array_to_string(categories, ' ') || '. ' || description, q,
+               ts_headline('english', name || '. ' || brand || ' ' || array_to_string(categories, ' ') || '. ' || description || ' ' || array_to_string(reviews, ' '), q,
                            'MaxFragments=3, MinWords=3, MaxWords=10, StartSel=«, StopSel=»') AS headline
         FROM products, {"{tsquerySource}"}
         {"{where}"}
@@ -119,7 +119,7 @@ public sealed partial class KeywordSearch(NpgsqlDataSource dataSource, SqlFilter
             ["tsquery"] = parsedTsQuery,
             ["tsqueryExpression"] = tsQuery,
             ["expanded"] = expansion is not null,
-            ["ranking"] = "ts_rank_cd (cover density), field weights A = name, B = brand + categories, C = description",
+            ["ranking"] = "ts_rank_cd (cover density), field weights A = name, B = brand + categories, C = description, D = reviews",
             ["matches"] = matches,
             ["optionsUsed"] = new { request.Options.CandidateDepth },
         };
