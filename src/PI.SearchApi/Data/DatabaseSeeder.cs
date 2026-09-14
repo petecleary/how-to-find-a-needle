@@ -72,10 +72,8 @@ public sealed class DatabaseSeeder(
             -- no longer describe this row, so null them out; Phase 2's embedding step then
             -- re-embeds only what actually changed. A price or spec edit alone leaves the hash
             -- (and so the vectors) untouched.
-            embedding_dense      = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_dense END,
-            embedding_model      = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_model END,
-            embedding_bge_dense  = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_bge_dense END,
-            embedding_bge_sparse = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_bge_sparse END
+            embedding_dense = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_dense END,
+            embedding_model = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_model END
         WHERE products.name         IS DISTINCT FROM EXCLUDED.name
            OR products.brand        IS DISTINCT FROM EXCLUDED.brand
            OR products.categories   IS DISTINCT FROM EXCLUDED.categories

@@ -1,6 +1,6 @@
 # ADR-0013: Stage 5 — Ontology: SKOS taxonomy, vocabularies & domain rules
 
-- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): SKOS-first framing, BGE-M3 removed and stages renumbered, with no change in behaviour; code comments follow in the Phase 2 rework.
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): SKOS-first framing, BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework).
 - **Date:** 2026-09-13
 - **Related:** ADR-0003, ADR-0004, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0016, ADR-0017, ADR-0018; golden queries GQ-01, GQ-02, GQ-03, GQ-05, GQ-06, GQ-07; roadmap Phase 1 (ontology file), Phase 2 (stage)
 

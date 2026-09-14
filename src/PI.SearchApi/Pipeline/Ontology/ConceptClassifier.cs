@@ -2,7 +2,7 @@ using PI.SearchApi.Contracts;
 
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6, step 4 — Classify: in or out of concept
+// Stage 5, step 4 — Classify: in or out of concept
 //
 // What:     A candidate is InConcept if any of its categories is a concept the query named, or
 //           narrower than one (skos:broader*). Otherwise it's OutOfConcept. If the query named

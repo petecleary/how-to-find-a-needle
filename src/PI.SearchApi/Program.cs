@@ -40,7 +40,7 @@ var dataDirectory = Path.Combine(AppContext.BaseDirectory, "assets", "data");
 // --- Data (ADR-0006) --------------------------------------------------------
 // Aspire injects the connection string by name; the API is not supported standalone
 // (root CLAUDE.md), so a missing connection string means "run this via PI.AppHost".
-// UseVector() registers the Npgsql <-> pgvector type mappings (Vector, SparseVector).
+// UseVector() registers the Npgsql <-> pgvector type mappings (Vector).
 builder.AddNpgsqlDataSource("pi-teach-db-search", configureDataSourceBuilder: b => b.UseVector());
 builder.Services.AddSingleton<DatabaseSeeder>();
 
@@ -73,7 +73,7 @@ builder.Services.AddTransient<IVectorSearch, VectorSearch>();
 builder.Services.AddSingleton<IRankFusion, ReciprocalRankFusion>();
 builder.Services.AddTransient<IHybridSearch, HybridSearch>();
 
-// --- Stage 6: Ontology — concepts, expansion and domain rules (ADR-0013) ------
+// --- Stage 5: Ontology — concepts, expansion and domain rules (ADR-0013) ------
 // The matcher indexes every label once, and the other steps only read the ontology: singletons.
 builder.Services.AddSingleton<LabelMatcher>();
 builder.Services.AddSingleton<QueryExpander>();

@@ -7,7 +7,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 /// </summary>
 /// <remarks>
 /// One domain model serves many jobs: category filters (Stage 1), the taxonomy endpoint, catalog
-/// validation tests, and Stage 6's query understanding, classification and rule checks.
+/// validation tests, and Stage 5's query understanding, classification and rule checks.
 /// </remarks>
 public interface IOntology
 {
@@ -20,7 +20,7 @@ public interface IOntology
     /// <summary>Every class-level compatibility rule.</summary>
     IReadOnlyList<CompatibilityRule> Rules { get; }
 
-    /// <summary>The SPARQL text of <c>rules.rq</c>, so Stage 6's trace can show the query behind the rules.</summary>
+    /// <summary>The SPARQL text of <c>rules.rq</c>, so Stage 5's trace can show the query behind the rules.</summary>
     string RulesSparql { get; }
 
     /// <summary>Looks up one taxonomy concept by its notation (e.g. "laptop-chargers").</summary>
@@ -41,7 +41,7 @@ public interface IOntology
 
     /// <summary>
     /// The chain from <paramref name="notation"/> up to the root, e.g. laptop-chargers → chargers → power.
-    /// Stage 6's trace uses it to show why a candidate is "in concept".
+    /// Stage 5's trace uses it to show why a candidate is "in concept".
     /// </summary>
     IReadOnlyList<string> BroaderChain(string notation);
 

@@ -6,6 +6,6 @@ namespace PI.SearchApi.Contracts;
 /// </summary>
 public sealed record CompatibilityResult(CompatibilityStatus Status, IReadOnlyList<string> Reasons)
 {
-    /// <summary>The value every stage before Stage 6 returns: no rule was checked.</summary>
+    /// <summary>The value every stage before Stage 5 returns: no rule was checked.</summary>
     public static CompatibilityResult NotEvaluated { get; } = new(CompatibilityStatus.NotEvaluated, []);
 }

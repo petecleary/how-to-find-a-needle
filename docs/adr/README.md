@@ -28,10 +28,10 @@ An ADR amended in place by a later ADR names it in its status line ([ADR-0001](0
 |---|---|---|---|---|
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Foundation | — | Proposed |
 | [0002](0002-solution-structure-and-orchestration.md) | Solution structure & orchestration | Foundation | 1 | Proposed |
-| [0003](0003-search-api-contract-and-debug-trace.md) | Search API contract & debug trace | Foundation | 2 | Proposed (reopened by 0018; Phase 2 rework) |
+| [0003](0003-search-api-contract-and-debug-trace.md) | Search API contract & debug trace | Foundation | 2 | Accepted (amended by 0018) |
 | [0004](0004-pipeline-composition.md) | Pipeline composition | Foundation | 2 | Accepted (amended by 0018) |
 | [0005](0005-curated-dataset-and-golden-queries.md) | Curated dataset & golden queries | Data | 1 | Proposed |
-| [0006](0006-database-schema-and-seeding.md) | Database schema & seeding | Data | 1 (+ embeddings in 2) | Proposed (reopened by 0018; Phase 1 rework) |
+| [0006](0006-database-schema-and-seeding.md) | Database schema & seeding | Data | 1 (+ embeddings in 2) | Accepted (amended by 0018) |
 | [0007](0007-structured-search.md) | Stage 1 — Structured search | Search | 2 | Accepted (amended by 0018) |
 | [0008](0008-keyword-search-bm25-style.md) | Stage 2 — Keyword search (BM25-style) | Search | 2 | Accepted (amended by 0018) |
 | [0009](0009-local-embeddings-onnx-runtime.md) | Embedding providers (local Nomic ONNX, OpenAI) & committed embedding files | Search | 2 (Nomic), 5 (OpenAI) | Proposed (Nomic built and verified; OpenAI provider in Phase 5) |

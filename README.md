@@ -8,14 +8,13 @@ Search is often treated as a single problem with a single solution ("just add a 
 
 ### The pipeline
 
-1. **Structured search** — databases, filtering, normalized data, and why a simple `WHERE` clause is sometimes the best solution.
+1. **Structured search** — databases, filtering, normalised data, and why a simple `WHERE` clause is sometimes the best solution.
 2. **Keyword search** — lexical relevance with Postgres full-text search, ranked "BM25-style" (and why that isn't quite BM25).
 3. **Semantic search** — embeddings and vector search, using local models such as [Nomic](https://www.nomic.ai/).
-4. **Hybrid search** — combining sparse and dense retrieval with Reciprocal Rank Fusion (RRF).
-5. **BGE-M3** — multilingual dense/sparse retrieval and cross-language search.
-6. **Ontology / knowledge graphs** — using RDF/Turtle to represent explicit concepts and relationships such as `compatibleWith`, `requires`, `partOf`.
-7. **LLM + RAG** — giving an LLM the retrieved evidence *and* ontology facts so it can answer questions and make recommendations.
-8. **Pedagogy** — turning retrieved information and domain knowledge into an explanation that's actually useful to the user.
+4. **Hybrid search** — combining keyword and vector retrieval with Reciprocal Rank Fusion (RRF).
+5. **Ontology** — a SKOS taxonomy, synonyms, language-tagged labels and value vocabularies in RDF/Turtle, plus class-level compatibility rules (for example, a charger's plug must fit the laptop's port).
+6. **LLM + RAG** — giving an LLM the retrieved evidence *and* ontology facts so it can answer questions and make recommendations, with citations that are checked.
+7. **Pedagogy** — turning that grounded answer into an explanation for a novice, enthusiast or expert, compared with a plain prompt to show what teaching design adds.
 
 ### The central idea
 
@@ -37,10 +36,10 @@ The talk is deliberately practical and experimental: the same dataset is used th
 
 - **.NET / C# API** ([src/PI.SearchApi](src/PI.SearchApi)) — FastEndpoints-based API exposing the search pipeline, one endpoint/feature per technique as the talk progresses.
 - **PostgreSQL + pgvector** for storage, structured querying, and vector similarity search.
-- **Local embeddings** — [Nomic](https://www.nomic.ai/) (dense) and [BGE-M3](https://huggingface.co/BAAI/bge-m3) (multilingual dense + sparse) run via ONNX Runtime, no external API calls required.
+- **Local embeddings** — [Nomic](https://www.nomic.ai/) Embed Text v1.5 runs via ONNX Runtime, no external API calls required.
 - **RDF/Turtle ontology** — a SKOS taxonomy of product categories, multilingual synonyms and class-level compatibility rules (e.g. "a laptop charger's connector must match the laptop's charging port"). It describes product *types*, never individual products.
 - **.NET Aspire AppHost** ([src/PI.AppHost](src/PI.AppHost)) to orchestrate the API, database, and dependencies locally.
-- A fictional frontend (to be added) so the audience can see the pipeline progress from simple filtering → BM25 → vector → hybrid → ontology → LLM/RAG.
+- A fictional frontend (to be added) so the audience can see the pipeline progress from simple filtering → BM25-style keyword → vector → hybrid → ontology → RAG → pedagogy.
 
 ## Dataset
 
@@ -56,7 +55,7 @@ The demo uses a single hand-curated, synthetic electronics catalog throughout �
 
 **Download the embedding model**
 
-Vector, hybrid and ontology search (Stages 3, 4 and 6) embed queries with Nomic Embed Text v1.5, running locally on ONNX Runtime. The model files are large, so they aren't committed. Follow [src/PI.SearchApi/assets/models/README.md](src/PI.SearchApi/assets/models/README.md) (section 1, Nomic) to download `model_int8.onnx` and `tokenizer.json`.
+Vector, hybrid and ontology search (Stages 3, 4 and 5) embed queries with Nomic Embed Text v1.5, running locally on ONNX Runtime. The model files are large, so they aren't committed. Follow [src/PI.SearchApi/assets/models/README.md](src/PI.SearchApi/assets/models/README.md) (section 1, Nomic) to download `model_int8.onnx` and `tokenizer.json`.
 
 Without the model, structured and keyword search (Stages 1–2) still work, and the other stages return `503 Service Unavailable` with the same instructions.
 
@@ -85,7 +84,7 @@ Open **Search API (Scalar)** from the `searchapi` resource in the dashboard. Eve
 | 2 Keyword | `POST /api/search/keyword` |
 | 3 Vector | `POST /api/search/vector` |
 | 4 Hybrid | `POST /api/search/hybrid` |
-| 6 Ontology | `POST /api/search/ontology` |
+| 5 Ontology | `POST /api/search/ontology` |
 
 Try the talk's opening example on each stage:
 
@@ -124,4 +123,4 @@ The next `aspire run` rebuilds the schema and re-seeds the catalog from scratch.
 
 ## Status
 
-This repo is built incrementally alongside the talk, following the phases in [docs/adr/roadmap.md](docs/adr/roadmap.md). Expect each stage (structured → keyword → semantic → hybrid → BGE-M3 → ontology → LLM/RAG → pedagogy) to land as a corresponding feature/endpoint in [src/PI.SearchApi](src/PI.SearchApi).
+This repo is built incrementally alongside the talk, following the phases in [docs/adr/roadmap.md](docs/adr/roadmap.md). Expect each stage (structured → keyword → semantic → hybrid → ontology → LLM/RAG → pedagogy) to land as a corresponding feature/endpoint in [src/PI.SearchApi](src/PI.SearchApi).

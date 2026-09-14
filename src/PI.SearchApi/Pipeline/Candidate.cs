@@ -7,7 +7,7 @@ namespace PI.SearchApi.Pipeline;
 /// between pipeline services; the endpoint pages them and maps them to <see cref="ProductResult"/>.
 /// </summary>
 /// <param name="Score">Null in Stage 1, which has no notion of relevance (ADR-0007).</param>
-/// <param name="Compatibility">NotEvaluated until Stage 6 checks domain rules.</param>
+/// <param name="Compatibility">NotEvaluated until Stage 5 checks domain rules.</param>
 public sealed record Candidate(
     ProductSummary Product,
     double? Score,

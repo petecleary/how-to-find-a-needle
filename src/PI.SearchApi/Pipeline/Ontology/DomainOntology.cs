@@ -4,7 +4,7 @@ using VDS.RDF.Query;
 
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6 knowledge — Domain ontology loader (ADR-0013)
+// Stage 5 knowledge — Domain ontology loader (ADR-0013)
 //
 // What:     Loads domain-ontology.ttl (SKOS taxonomy, multilingual labels, value vocabularies
 //           and class-level compatibility rules) into an in-memory RDF graph, and answers

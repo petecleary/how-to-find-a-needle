@@ -68,7 +68,7 @@ public sealed class OntologyStageGoldenQueryTests(AppHostFixture fixture)
     [Fact]
     public async Task GQ08_Ontology_TreatsTheDeviceNameAsContext()
     {
-        // Talk moment: Stage 6 recognises "Blackbird Aerobook 14" as the device you own, removes it from the
+        // Talk moment: Stage 5 recognises "Blackbird Aerobook 14" as the device you own, removes it from the
         // search text, checks the chargers against it, and moves the laptop itself below the chargers.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
 
@@ -86,7 +86,7 @@ public sealed class OntologyStageGoldenQueryTests(AppHostFixture fixture)
     [Fact]
     public async Task Ontology_TogglesOff_NothingIsDemotedOrEvaluated_ButEveryStepIsStillTraced()
     {
-        // The presenter's before/after: Stage 6 with both toggles off behaves like hybrid search on the typed query.
+        // The presenter's before/after: Stage 5 with both toggles off behaves like hybrid search on the typed query.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
 
         var request = GoldenQueryCase.Load("GQ-01").Request;

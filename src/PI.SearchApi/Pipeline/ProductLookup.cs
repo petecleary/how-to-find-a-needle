@@ -5,7 +5,7 @@ namespace PI.SearchApi.Pipeline;
 
 /// <summary>
 /// Reads specific products by ID, and the products that can be a target device. Used by the demo
-/// endpoints and by Stage 6, which needs the target device's specs to check domain rules.
+/// endpoints and by Stage 5, which needs the target device's specs to check domain rules.
 /// </summary>
 public sealed class ProductLookup(NpgsqlDataSource dataSource, IOntology ontology)
 {

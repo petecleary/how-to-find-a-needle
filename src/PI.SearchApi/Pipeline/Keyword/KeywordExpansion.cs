@@ -1,7 +1,7 @@
 namespace PI.SearchApi.Pipeline.Keyword;
 
 /// <summary>
-/// A keyword query rewritten by Stage 6's ontology expansion (ADR-0008, ADR-0013).
+/// A keyword query rewritten by Stage 5's ontology expansion (ADR-0008, ADR-0013).
 /// </summary>
 /// <param name="OrGroups">
 /// One group per phrase the ontology recognised, holding that phrase and its synonyms, e.g.

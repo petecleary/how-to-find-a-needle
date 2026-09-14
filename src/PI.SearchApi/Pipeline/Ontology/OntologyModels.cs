@@ -26,7 +26,7 @@ public enum LabelKind
 }
 
 /// <summary>
-/// One label for one concept, in one language. Stage 6's label matcher reads every label, in every
+/// One label for one concept, in one language. Stage 5's label matcher reads every label, in every
 /// language, from the ontology — so "cargador" finds Chargers without a line of Spanish-aware code.
 /// </summary>
 /// <param name="SchemeNotation">Null for taxonomy concepts; the vocabulary scheme (e.g. "connectors") otherwise.</param>

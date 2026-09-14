@@ -5,7 +5,7 @@ using PI.SearchApi.Contracts;
 
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6, step 5 — Constrain: class-level domain rules vs the target device
+// Stage 5, step 5 — Constrain: class-level domain rules vs the target device
 //
 // What:     Finds the rules for (candidate's type, device's type) in the ontology, then runs
 //           each check — one of four operators — over the candidate's and the device's specs.

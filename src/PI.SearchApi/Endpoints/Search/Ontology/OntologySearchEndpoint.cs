@@ -5,7 +5,7 @@ using PI.SearchApi.Pipeline.Ontology;
 
 namespace PI.SearchApi.Endpoints.Search.Ontology;
 
-/// <summary><c>POST /api/search/ontology</c> — Stage 6 (ADR-0013).</summary>
+/// <summary><c>POST /api/search/ontology</c> — Stage 5 (ADR-0013).</summary>
 public sealed class OntologySearchEndpoint(IOntologySearch search) : Endpoint<SearchRequest, SearchResponse>
 {
     public override void Configure()
@@ -13,7 +13,7 @@ public sealed class OntologySearchEndpoint(IOntologySearch search) : Endpoint<Se
         Post("/api/search/ontology");
         AllowAnonymous();
         Validator<OntologySearchRequestValidator>();
-        Summary(s => s.Summary = "Stage 6 — Ontology: SKOS concepts, synonym expansion, classification and domain rules");
+        Summary(s => s.Summary = "Stage 5 — Ontology: SKOS concepts, synonym expansion, classification and domain rules");
     }
 
     public override async Task HandleAsync(SearchRequest req, CancellationToken ct)

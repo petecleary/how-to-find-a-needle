@@ -30,7 +30,7 @@
   {
     "id": "GQ-02",
     "title": "The synonym miss",
-    "moment": "Nobody's catalog says \"power brick\": keyword search finds nothing useful, vector search finds the laptop chargers, and Stage 6 synonym expansion rescues the keyword side.",
+    "moment": "Nobody's catalog says \"power brick\": keyword search finds nothing useful, vector search finds the laptop chargers, and Stage 5 synonym expansion rescues the keyword side.",
     "request": {
       "query": "power brick for laptop"
     },
@@ -144,7 +144,7 @@
   {
     "id": "GQ-07",
     "title": "Beyond English",
-    "moment": "A Spanish query shares no words with the English catalog; Stage 6 matches the Spanish ontology label \"cargador\" to Chargers and expands to English terms, so the right chargers appear.",
+    "moment": "A Spanish query shares no words with the English catalog; Stage 5 matches the Spanish ontology label \"cargador\" to Chargers and expands to English terms, so the right chargers appear.",
     "request": {
       "query": "cargador USB-C para portátil"
     },
@@ -160,7 +160,7 @@
   {
     "id": "GQ-08",
     "title": "The device name trap",
-    "moment": "Shoppers name the device they own. Vector search treats \"Blackbird Aerobook 14\" as what's wanted, so the laptop itself and a Blackbird sleeve outrank the chargers; Stage 6 recognises the device name, uses it as the target device instead of search text, and puts the compatible chargers first.",
+    "moment": "Shoppers name the device they own. Vector search treats \"Blackbird Aerobook 14\" as what's wanted, so the laptop itself and a Blackbird sleeve outrank the chargers; Stage 5 recognises the device name, uses it as the target device instead of search text, and puts the compatible chargers first.",
     "request": {
       "query": "charger for my Blackbird Aerobook 14"
     },

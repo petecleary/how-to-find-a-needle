@@ -16,7 +16,7 @@ namespace PI.SearchApi.Pipeline.Keyword;
 public sealed partial class KeywordSearch(NpgsqlDataSource dataSource, SqlFilterBuilder filterBuilder) : IKeywordSearch
 {
     // {tsquery} is websearch_to_tsquery('english', @query) AS q — a function call, which FROM accepts
-    // directly — or, for Stage 6's expanded expression, (SELECT … AS q) AS expanded: FROM can't take a
+    // directly — or, for Stage 5's expanded expression, (SELECT … AS q) AS expanded: FROM can't take a
     // bare expression like (a || b) && c, but it can take a one-row subquery that computes it.
     //   search_vector @@ q  — the match: true when the document satisfies the tsquery. Every term must
     //                         match (AND), which is exactly why a synonym the catalog never uses misses.

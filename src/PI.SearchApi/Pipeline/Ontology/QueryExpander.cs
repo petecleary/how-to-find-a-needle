@@ -2,7 +2,7 @@ using PI.SearchApi.Pipeline.Keyword;
 
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6, step 2 — Expand: synonyms and narrower concepts
+// Stage 5, step 2 — Expand: synonyms and narrower concepts
 //
 // What:     For each phrase that named a wanted category, gathers that concept's labels and the
 //           labels of every concept beneath it (capped at 10 terms per concept). Keyword search gets
@@ -93,7 +93,7 @@ public sealed class QueryExpander(IOntology ontology)
         new[] { notation }.Concat(ontology.NarrowerOrSelf(notation).Where(n => n != notation).Order(StringComparer.Ordinal));
 }
 
-/// <summary>Stage 6's rewritten query for both retrievers, plus what was expanded (for the trace).</summary>
+/// <summary>Stage 5's rewritten query for both retrievers, plus what was expanded (for the trace).</summary>
 public sealed record QueryExpansion(IReadOnlyList<ExpandedPhrase> Phrases, KeywordExpansion Keyword, string EmbeddingText);
 
 /// <summary>One matched phrase and the terms it expanded to.</summary>

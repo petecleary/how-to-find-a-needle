@@ -2,7 +2,7 @@ namespace PI.SearchApi.Contracts;
 
 /// <summary>
 /// One concept in the category tree returned by <c>GET /api/taxonomy</c> (ADR-0013). The UI builds
-/// its category filter from it; the same SKOS concepts drive query understanding in Stage 6.
+/// its category filter from it; the same SKOS concepts drive query understanding in Stage 5.
 /// </summary>
 public sealed record TaxonomyNode
 {

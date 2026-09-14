@@ -2,7 +2,7 @@ namespace PI.SearchApi.Contracts;
 
 /// <summary>
 /// The one response every search stage returns (ADR-0003), so the UI can switch stages without
-/// special cases. It never contains LLM text; Stages 7–8 stream that from their answer endpoints.
+/// special cases. It never contains LLM text; Stages 6–7 stream that from their answer endpoints.
 /// </summary>
 public sealed record SearchResponse
 {

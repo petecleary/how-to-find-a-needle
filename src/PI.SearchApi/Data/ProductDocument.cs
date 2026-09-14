@@ -13,7 +13,7 @@ public static class ProductDocument
     /// <summary>
     /// The exact text Stage 3+ embeds for a product (ADR-0009): name, brand, categories,
     /// description and reviews, in that order. Price and specs are deliberately excluded —
-    /// they're compared structurally (Stage 1) and by rule (Stage 6), not by meaning.
+    /// they're compared structurally (Stage 1) and by rule (Stage 5), not by meaning.
     /// </summary>
     public static string BuildText(CatalogProduct product)
     {

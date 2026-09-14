@@ -6,7 +6,7 @@ From today's cleaned-up scaffold to a finished, teachable demo. Each phase lists
 
 **Order:** Data → Search APIs (stages 1–5) → Frontend → AI stages (6–7) with their UI → Finish & publish.
 
-> **Scope change, 2026-09-14 ([ADR-0018](0018-scope-and-going-further.md)).** BGE-M3 is no longer built, and the stages are renumbered to seven: Ontology is Stage 5, RAG Stage 6, Pedagogy Stage 7. Stage 7 gains a baseline toggle and becomes a Must. Phases 0, 1 and 2 are **reopened** for small rework, listed in each phase. **Do the rework before starting Phase 3.**
+> **Scope change, 2026-09-14 ([ADR-0018](0018-scope-and-going-further.md)).** BGE-M3 is no longer built, and the stages are renumbered to seven: Ontology is Stage 5, RAG Stage 6, Pedagogy Stage 7. Stage 7 gains a baseline toggle and becomes a Must. Phases 0, 1 and 2 were reopened for small rework; it is done and verified (see each phase).
 
 **Rules for every phase**
 - Build passes with **0 warnings** (`TreatWarningsAsErrors`).
@@ -39,29 +39,29 @@ Not built at any priority: BGE-M3 and the other going-further topics ([ADR-0018]
 
 ---
 
-## Phase 0 — Clean-up ⚠️ (reopened for ADR-0018 rework)
+## Phase 0 — Clean-up ✅ (done)
 
 - Removed unused packages (Redis output caching, `Aspire.Hosting.JavaScript`, `Aspire.Npgsql` in the AppHost); patched the `Microsoft.OpenApi` vulnerability via `Microsoft.AspNetCore.OpenApi` 10.0.12.
 - `.gitignore`: keep `appsettings.Development.json`; ignore downloaded models except their README; `docs/adr/` was initially ignored and is now tracked on the build branch.
 - Removed the dead Datafiniti CSV import; the API fails fast without its connection string; removed `UseFileServer`; tidied template comments.
 - Fixed the models README (correct files and paths for Nomic and BGE-M3).
 
-### Rework required (ADR-0018)
+### ADR-0018 rework ✅ (done 2026-09-14)
 
 1. **Models README** (`src/PI.SearchApi/assets/models/README.md`)
    - Remove section 2 (BGE-M3) and the `bge-m3/` folder from the expected layout.
    - Correct the Nomic section's "Used by" line to the **Vector, Hybrid and Ontology** stages (it currently omits Ontology).
 
-### Acceptance criteria (rework)
+### Acceptance criteria (rework) ✅
 - The models README describes only Nomic, and following it from a clean clone still produces a working `nomic/` folder.
 
 ---
 
-## Phase 1 — Data ⚠️ (reopened for ADR-0018 rework)
+## Phase 1 — Data ✅ (done)
 
 **ADRs:** [0002](0002-solution-structure-and-orchestration.md), [0005](0005-curated-dataset-and-golden-queries.md), [0006](0006-database-schema-and-seeding.md), [0013](0013-domain-ontology-and-compatibility.md) (vocabulary and facts only)
 
-### Rework required (ADR-0018)
+### ADR-0018 rework ✅ (done 2026-09-14)
 
 1. **Schema** (`assets/data/init.sql`, [ADR-0006](0006-database-schema-and-seeding.md))
    - Remove `embedding_bge_dense`, `embedding_bge_sparse` and their comment from `CREATE TABLE`.
@@ -73,11 +73,13 @@ Not built at any priority: BGE-M3 and the other going-further topics ([ADR-0018]
 3. **Composition root** (`Program.cs`)
    - The `UseVector()` comment names `SparseVector`, which is no longer used; name `Vector` only.
 
-### Acceptance criteria (rework)
+### Acceptance criteria (rework) ✅
 - On an **existing** data volume, `aspire run` starts without a reset, `\d products` shows no BGE columns or indexes, and the log shows `0 inserted, 0 updated, 0 deleted`.
 - On a **fresh** volume, the log shows `Seeded 60 products (60 inserted, 0 updated, 0 deleted)`.
 - `dotnet test` (unit) passes, including catalog validation.
 - ADR-0006 → **Accepted** again.
+
+**Verified (2026-09-14):** on the existing `pgvector-data-search` volume the AppHost started without a reset. `products` has no BGE columns or indexes, and all 60 rows kept their Nomic vector (the migration dropped only the BGE columns). Unit tests: 161 pass. The optional fresh-volume run was not repeated.
 
 ### Original tasks ✅ (done)
 
@@ -130,13 +132,13 @@ Not built at any priority: BGE-M3 and the other going-further topics ([ADR-0018]
 
 ---
 
-## Phase 2 — Search APIs (stages 1–5) ⚠️ (reopened for ADR-0018 rework)
+## Phase 2 — Search APIs (stages 1–5) ✅ (done)
 
 **ADRs:** [0003](0003-search-api-contract-and-debug-trace.md), [0004](0004-pipeline-composition.md), [0007](0007-structured-search.md), [0008](0008-keyword-search-bm25-style.md), [0009](0009-local-embeddings-onnx-runtime.md), [0010](0010-vector-search-pgvector.md), [0011](0011-hybrid-search-rrf.md), [0013](0013-domain-ontology-and-compatibility.md)
 
-> Stage numbers in this phase use the seven-stage numbering. The ontology stage was built as "Stage 6"; the code still says so until the rework below is done.
+> Stage numbers in this phase use the seven-stage numbering. The ontology stage was built as "Stage 6" and renumbered in the ADR-0018 rework.
 
-### Rework required (ADR-0018)
+### ADR-0018 rework ✅ (done 2026-09-14)
 
 1. **Contract** ([ADR-0003](0003-search-api-contract-and-debug-trace.md))
    - Remove `BgeDenseRank` and `BgeSparseRank` from `Contracts/CandidateSignals.cs`.
@@ -156,12 +158,19 @@ Not built at any priority: BGE-M3 and the other going-further topics ([ADR-0018]
    - "What's in this repo": local embeddings are Nomic only.
    - Stage table "5 Ontology"; "Stages 3, 4 and 5" in the model section; the status line's stage sequence.
 
-### Acceptance criteria (rework)
+### Acceptance criteria (rework) ✅
 - `dotnet build`: 0 warnings. Unit tests pass. Integration tests: all golden-query tests pass (28 of 28 before the rework).
 - `/openapi/v1.json` has no `bgeDenseRank` / `bgeSparseRank` and does include `options.applyPedagogy`.
 - `grep -rniE "bge|Stage 8|Stages? 7–8" src tests` finds nothing, and no remaining "Stage 6" in `src` or `tests` refers to the ontology.
 - The README matches the seven stages.
 - ADR-0003 → **Accepted** again. ADRs 0004, 0007, 0008, 0010, 0011 and 0013 stay **Accepted** (amended).
+
+**Verified (2026-09-14):**
+- `dotnet build`: 0 warnings. Unit tests: 161 pass. Integration tests: **28 of 28** pass.
+- `/openapi/v1.json`: `CandidateSignals` has no BGE ranks; `SearchOptions.applyPedagogy` is a boolean.
+- GQ-01 on `/api/search/ontology` is unchanged: the compatible chargers rank first and the 45W barrel charger is still flagged Incompatible.
+- The leftover grep over `src`, `tests` and `README.md` is clean.
+- **Found while verifying:** `/openapi/v1.json` has no operation summaries at all, so FastEndpoints' `Summary(...)` text (for example "Stage 5 — Ontology") doesn't reach Scalar or the generated UI types. This was already true before the rework. Look at it in Phase 3, when the UI types are generated.
 
 ### Original build order ✅ (done)
 
@@ -240,7 +249,7 @@ Build strictly in this order. Each step ends with its golden-query integration t
 
 **ADRs:** [0014](0014-web-ui-architecture.md)
 
-**Starts after the ADR-0018 rework of Phases 0–2**, so the generated API types never contain BGE signals.
+The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain no BGE signals.
 
 1. Scaffold `src/web-ui` (Vite + React + TS strict, Tailwind, shadcn/ui init, Lucide, ESLint, Prettier, Vitest, `.nvmrc`).
 2. Re-add `Aspire.Hosting.JavaScript`; `AddViteApp` with `WithReference(searchApi)`; Vite `/api` proxy from the service-discovery environment variable. Spike a dummy SSE endpoint through the proxy to confirm streaming isn't buffered, since Phase 4 depends on it.

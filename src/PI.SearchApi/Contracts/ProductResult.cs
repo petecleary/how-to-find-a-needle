@@ -21,7 +21,7 @@ public sealed record ProductResult
 
     /// <summary>
     /// Means something different in each stage, and the trace says what: null in Stage 1,
-    /// ts_rank_cd in Stage 2, cosine similarity in Stage 3, the RRF sum in Stages 4 and 6.
+    /// ts_rank_cd in Stage 2, cosine similarity in Stage 3, the RRF sum in Stages 4 and 5.
     /// </summary>
     public double? Score { get; init; }
 

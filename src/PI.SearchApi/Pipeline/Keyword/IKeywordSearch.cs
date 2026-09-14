@@ -11,6 +11,6 @@ public interface IKeywordSearch
     /// Returns up to <c>options.candidateDepth</c> candidates in ts_rank_cd order, with the request's
     /// filters applied first.
     /// </summary>
-    /// <param name="expansion">Stage 6's ontology expansion; null for plain keyword search.</param>
+    /// <param name="expansion">Stage 5's ontology expansion; null for plain keyword search.</param>
     Task<StageResult> SearchAsync(SearchRequest request, KeywordExpansion? expansion, CancellationToken ct);
 }

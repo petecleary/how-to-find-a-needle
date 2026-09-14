@@ -1,6 +1,6 @@
 # ADR-0004: Pipeline composition
 
-- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour; code comments follow in the Phase 2 rework.
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework).
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0003, ADR-0007 to ADR-0011, ADR-0013 to ADR-0018; roadmap Phase 2
 

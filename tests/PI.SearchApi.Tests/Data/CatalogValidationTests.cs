@@ -150,7 +150,7 @@ public sealed class CatalogValidationTests
     }
 
     // Every product under a rule's accessory or device type must carry the spec(s) that
-    // rule compares — otherwise Stage 6 (Phase 2) can only ever report Unknown for it.
+    // rule compares — otherwise Stage 5 (Phase 2) can only ever report Unknown for it.
     [Fact]
     public void Products_DeviceAndAccessoryTypes_HaveSpecsTheirRulesCompare()
     {

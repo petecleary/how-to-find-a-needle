@@ -1,6 +1,6 @@
 # ADR-0006: Database schema & seeding
 
-- **Status:** Proposed. Accepted in Phase 2 (2026-09-14); reopened 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md), which removes the BGE-M3 columns and indexes (Phase 1 rework).
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended by [ADR-0018](0018-scope-and-going-further.md), which removed the BGE-M3 columns and indexes; re-accepted after the Phase 1 rework was verified (2026-09-14).
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0005, ADR-0008, ADR-0009, ADR-0010, ADR-0018; roadmap Phase 1
 

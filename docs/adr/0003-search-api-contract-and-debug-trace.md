@@ -1,6 +1,6 @@
 # ADR-0003: Search API contract & debug trace
 
-- **Status:** Proposed. Accepted in Phase 2 (2026-09-14); reopened 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md), which removes the `bge-m3` route and BGE signals and adds `options.applyPedagogy` (Phase 2 rework).
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended by [ADR-0018](0018-scope-and-going-further.md), which removed the `bge-m3` route and BGE signals and added `options.applyPedagogy`; re-accepted after the Phase 2 rework was verified (2026-09-14).
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0004, ADR-0014, ADR-0017, ADR-0018; roadmap Phase 2
 

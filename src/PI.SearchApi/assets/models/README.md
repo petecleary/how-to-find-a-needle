@@ -6,7 +6,7 @@ The commands below use the [Hugging Face CLI](https://huggingface.co/docs/huggin
 
 ## 1. Nomic Embed Text v1.5 — dense, 768 dimensions
 
-Used by the **Vector** and **Hybrid** stages.
+Used by the **Vector**, **Hybrid** and **Ontology** stages.
 
 - **Source:** [nomic-ai/nomic-embed-text-v1.5](https://huggingface.co/nomic-ai/nomic-embed-text-v1.5)
 - **Files:** `onnx/model_int8.onnx`, `tokenizer.json`
@@ -16,25 +16,11 @@ huggingface-cli download nomic-ai/nomic-embed-text-v1.5 onnx/model_int8.onnx tok
 mv ./nomic/onnx/model_int8.onnx ./nomic/model_int8.onnx && rmdir ./nomic/onnx
 ```
 
-## 2. BGE-M3 — multilingual dense (1024 dimensions) + sparse
-
-Used by the **BGE-M3** stage.
-
-- **Source:** [gpahal/bge-m3-onnx-int8](https://huggingface.co/gpahal/bge-m3-onnx-int8)
-- **Files:** `model_quantized.onnx`, `tokenizer.json`
-
-```bash
-huggingface-cli download gpahal/bge-m3-onnx-int8 model_quantized.onnx tokenizer.json --local-dir ./bge-m3
-```
-
 ## Expected layout
 
 ```text
 assets/models/
   nomic/
     model_int8.onnx
-    tokenizer.json
-  bge-m3/
-    model_quantized.onnx
     tokenizer.json
 ```

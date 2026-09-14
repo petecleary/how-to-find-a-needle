@@ -1,6 +1,6 @@
 # ADR-0011: Stage 4 — Hybrid search with Reciprocal Rank Fusion
 
-- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour; code comments follow in the Phase 2 rework.
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework).
 - **Date:** 2026-09-13
 - **Related:** ADR-0004, ADR-0008, ADR-0010, ADR-0018; golden queries GQ-01 to GQ-03; roadmap Phase 2
 

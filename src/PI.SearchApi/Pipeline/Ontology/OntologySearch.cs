@@ -4,7 +4,7 @@ using PI.SearchApi.Pipeline.Hybrid;
 
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6 — Ontology: SKOS concepts, expansion and domain rules
+// Stage 5 — Ontology: SKOS concepts, expansion and domain rules
 //
 // What:     Understands the query first — which device the shopper owns, which categories they
 //           want — then expands the wanted concepts into synonyms and narrower concepts, re-runs
@@ -29,7 +29,7 @@ public sealed class OntologySearch(
 {
     public async Task<StageResult> SearchAsync(SearchRequest request, CancellationToken ct)
     {
-        using var activity = PipelineTelemetry.Source.StartActivity("Stage 6: ontology search");
+        using var activity = PipelineTelemetry.Source.StartActivity("Stage 5: ontology search");
         var options = request.Options;
 
         // 1. Understand: resolve the device first, so its name is claimed before label matching,
