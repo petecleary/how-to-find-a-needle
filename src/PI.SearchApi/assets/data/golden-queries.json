@@ -4,7 +4,7 @@
     "title": "Similarity is not compatibility",
     "moment": "Vector search ranks the 45W barrel charger highly because it reads like the right one; the ontology flags it Incompatible on connector and wattage.",
     "request": {
-      "query": "charger for my Blackbird Aerobook 14",
+      "query": "power adapter for my laptop",
       "context": { "targetProductId": "PROD-0001" }
     },
     "expectations": {
@@ -53,7 +53,7 @@
   {
     "id": "GQ-03",
     "title": "The keyword trap",
-    "moment": "Keyword search ranks a cordless phone battery near the top because it shares the words; vector and hybrid put the drill battery first, and the ontology marks the phone battery OutOfConcept.",
+    "moment": "Keyword search ranks a cordless phone battery first because it shares the words; vector search puts the drill battery first; hybrid lifts the drill battery above the trap but can't push it out of the top 3; the ontology marks the phone battery OutOfConcept.",
     "request": {
       "query": "cordless drill battery"
     },
@@ -67,7 +67,7 @@
       ],
       "hybrid": [
         { "productId": "PROD-0026", "rank": { "max": 2 } },
-        { "productId": "PROD-0032", "absentFromTop": 3 }
+        { "productId": "PROD-0032", "rank": { "min": 3 } }
       ],
       "ontology": [
         { "productId": "PROD-0026", "conceptMatch": "InConcept", "rank": { "max": 3 } },
@@ -107,7 +107,7 @@
     "title": "Same numbers, different platform",
     "moment": "A Tornio 20V MAX battery looks almost identical to a Brakk 18V one; the ontology rejects it because the battery platform doesn't match the drill.",
     "request": {
-      "query": "battery for Brakk 18V drill",
+      "query": "18V battery",
       "context": { "targetProductId": "PROD-0006" }
     },
     "expectations": {
@@ -127,7 +127,7 @@
     "title": "Same slot, different interface",
     "moment": "A SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; the ontology flags the interface mismatch.",
     "request": {
-      "query": "SSD upgrade for my Blackbird Aerobook 14",
+      "query": "SSD upgrade for my laptop",
       "context": { "targetProductId": "PROD-0001" }
     },
     "expectations": {
@@ -154,6 +154,31 @@
       ],
       "ontology": [
         { "productId": "PROD-0012", "conceptMatch": "InConcept", "rank": { "max": 5 } }
+      ]
+    }
+  },
+  {
+    "id": "GQ-08",
+    "title": "The device name trap",
+    "moment": "Shoppers name the device they own. Vector search treats \"Blackbird Aerobook 14\" as what's wanted, so the laptop itself and a Blackbird sleeve outrank the chargers; Stage 6 recognises the device name, uses it as the target device instead of search text, and puts the compatible chargers first.",
+    "request": {
+      "query": "charger for my Blackbird Aerobook 14"
+    },
+    "expectations": {
+      "keyword": [
+        { "productId": "PROD-0011", "rank": { "max": 3 } }
+      ],
+      "vector": [
+        { "productId": "PROD-0001", "rank": { "max": 3 } },
+        { "productId": "PROD-0037", "rank": { "max": 5 } },
+        { "productId": "PROD-0012", "absentFromTop": 5 }
+      ],
+      "ontology": [
+        { "productId": "PROD-0011", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0012", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0014", "compatibility": "Incompatible" },
+        { "productId": "PROD-0015", "compatibility": "Incompatible" },
+        { "productId": "PROD-0001", "absentFromTop": 5 }
       ]
     }
   }

@@ -8,7 +8,38 @@ public sealed record OntologyConcept(
     string? BroaderNotation,
     bool IsDeviceType,
     string? Icon,
-    IReadOnlyDictionary<string, string> PrefLabels);
+    IReadOnlyDictionary<string, string> PrefLabels,
+    IReadOnlyList<string> AltLabels,
+    string? Definition);
+
+/// <summary>Which SKOS labelling property a label came from.</summary>
+public enum LabelKind
+{
+    /// <summary>skos:prefLabel — the name to display, one per language.</summary>
+    Preferred,
+
+    /// <summary>skos:altLabel — a synonym people use ("power brick").</summary>
+    Alternative,
+
+    /// <summary>skos:hiddenLabel — matched but never displayed, e.g. a common misspelling ("chager").</summary>
+    Hidden,
+}
+
+/// <summary>
+/// One label for one concept, in one language. Stage 6's label matcher reads every label, in every
+/// language, from the ontology — so "cargador" finds Chargers without a line of Spanish-aware code.
+/// </summary>
+/// <param name="SchemeNotation">Null for taxonomy concepts; the vocabulary scheme (e.g. "connectors") otherwise.</param>
+public sealed record ConceptLabel(
+    string ConceptNotation,
+    string? SchemeNotation,
+    string Label,
+    string Language,
+    LabelKind Kind)
+{
+    /// <summary>True for product categories; false for value-vocabulary concepts such as "usb-c".</summary>
+    public bool IsTaxonomyConcept => SchemeNotation is null;
+}
 
 /// <summary>
 /// One concept from a value vocabulary (for example a connector or a battery platform),

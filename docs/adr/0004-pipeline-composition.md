@@ -1,6 +1,6 @@
 # ADR-0004: Pipeline composition
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0003, ADR-0007 to ADR-0017; roadmap Phase 2
 
@@ -32,9 +32,13 @@ Supporting services: `ISearchEmbedder` over `IEmbeddingGenerator` (Nomic or Open
 Shared types (in `Pipeline/`):
 
 ```csharp
-public sealed record Candidate(ProductSummary Product, double Score, CandidateSignals Signals);
-public sealed record StageResult(IReadOnlyList<Candidate> Candidates, IReadOnlyList<TraceStep> Trace);
+public sealed record Candidate(ProductSummary Product, double? Score, CandidateSignals Signals, CompatibilityResult Compatibility);
+public sealed record StageResult(IReadOnlyList<Candidate> Candidates, IReadOnlyList<TraceStep> Trace, int? TotalResults = null);
 ```
+
+- `Score` is nullable because Stage 1 has no relevance score ([ADR-0007](0007-structured-search.md)).
+- `Compatibility` starts as `NotEvaluated` and is only set by Stage 6 ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+- `TotalResults` is set only by Stage 1, whose `COUNT(*)` covers more rows than the page it returns; ranked stages leave it null and the endpoint uses the candidate count.
 
 ### How stages compose
 
@@ -63,6 +67,7 @@ Stage 8  [Stage 6 pipeline] ─▶ results (JSON)
 - **Retrieval depth vs page size.** Services retrieve `candidateDepth` items (default 50). Fusion and evaluation run over that whole set, and **paging is applied once, at the end**, in the endpoint. This ensures RRF doesn't only see the first page.
 - **Trace steps accumulate.** A composed stage adds its own step after the steps of the services it called ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 - **Endpoints stay thin.** Each one validates, calls the top-level service for its stage, pages the results, and maps them to `SearchResponse`.
+  - **Exception: Stage 1** pages in SQL (`LIMIT`/`OFFSET` plus a `COUNT(*)`), because it isn't bounded by candidate depth and has no ranking to protect ([ADR-0007](0007-structured-search.md)).
 - Services are registered in DI in `Program.cs`, in a clearly commented block per stage. Embedders and the knowledge graph are **singletons**, because they load their model or graph once. Search services are scoped or transient, and use the pooled `NpgsqlDataSource`.
 
 ## Consequences

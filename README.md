@@ -9,7 +9,7 @@ Search is often treated as a single problem with a single solution ("just add a 
 ### The pipeline
 
 1. **Structured search** — databases, filtering, normalized data, and why a simple `WHERE` clause is sometimes the best solution.
-2. **Keyword search** — BM25 and lexical relevance.
+2. **Keyword search** — lexical relevance with Postgres full-text search, ranked "BM25-style" (and why that isn't quite BM25).
 3. **Semantic search** — embeddings and vector search, using local models such as [Nomic](https://www.nomic.ai/).
 4. **Hybrid search** — combining sparse and dense retrieval with Reciprocal Rank Fusion (RRF).
 5. **BGE-M3** — multilingual dense/sparse retrieval and cross-language search.
@@ -52,6 +52,13 @@ The demo uses a single hand-curated, synthetic electronics catalog throughout �
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - [Docker](https://www.docker.com/) (for the Postgres + pgvector container)
 - [.NET Aspire CLI](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling)
+- [Hugging Face CLI](https://huggingface.co/docs/huggingface_hub/guides/cli), to download the local embedding model
+
+**Download the embedding model**
+
+Vector, hybrid and ontology search (Stages 3, 4 and 6) embed queries with Nomic Embed Text v1.5, running locally on ONNX Runtime. The model files are large, so they aren't committed. Follow [src/PI.SearchApi/assets/models/README.md](src/PI.SearchApi/assets/models/README.md) (section 1, Nomic) to download `model_int8.onnx` and `tokenizer.json`.
+
+Without the model, structured and keyword search (Stages 1–2) still work, and the other stages return `503 Service Unavailable` with the same instructions.
 
 **Run everything**
 
@@ -63,15 +70,46 @@ aspire run
 
 ```
 Seeded 60 products (60 inserted, 0 updated, 0 deleted)
+Embeddings (nomic): 60 loaded from file, 0 embedded live, 0 missing (0 already current)
 ```
 
-A second run logs `0 inserted, 0 updated, 0 deleted` and starts noticeably faster — restarts don't re-seed products that haven't changed.
+Product vectors come from the committed `assets/data/embeddings/nomic.jsonl`, so the first run takes seconds, not minutes. A second run logs `0 inserted, 0 updated, 0 deleted` and `(60 already current)`, and starts noticeably faster.
+
+**Try the search stages**
+
+Open **Search API (Scalar)** from the `searchapi` resource in the dashboard. Every stage takes the same request and returns the same response, including a `debugTrace` that shows the SQL, parsed queries, distances, RRF formulas and rule checks behind the results:
+
+| Stage | Endpoint |
+|---|---|
+| 1 Structured | `POST /api/search/structured` |
+| 2 Keyword | `POST /api/search/keyword` |
+| 3 Vector | `POST /api/search/vector` |
+| 4 Hybrid | `POST /api/search/hybrid` |
+| 6 Ontology | `POST /api/search/ontology` |
+
+Try the talk's opening example on each stage:
+
+```json
+{ "query": "power adapter for my laptop", "context": { "targetProductId": "PROD-0001" } }
+```
+
+`GET /api/demo/queries` lists every golden query, `GET /api/demo/devices` lists the products that can be a target device, and `GET /api/taxonomy` returns the category tree from the ontology.
 
 **Run the tests**
 
 ```sh
 dotnet test tests/PI.SearchApi.Tests              # fast, no Docker
 dotnet test tests/PI.SearchApi.IntegrationTests    # needs Docker running
+```
+
+The integration tests run the golden queries against each stage. Vector, hybrid and ontology tests skip, with a message, if the Nomic model isn't downloaded.
+
+**After editing products.json**
+
+A changed product's vector no longer matches its text, so the seeder embeds it live and warns. To regenerate the committed file, run once with a rebuild, then commit `nomic.jsonl`:
+
+```sh
+Embeddings__Rebuild=true dotnet run --project src/PI.AppHost
 ```
 
 **Reset the data**

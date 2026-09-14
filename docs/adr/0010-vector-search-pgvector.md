@@ -1,6 +1,6 @@
 # ADR-0010: Stage 3 — Vector search (pgvector)
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0006, ADR-0009, ADR-0011; golden queries GQ-01, GQ-02, GQ-03; roadmap Phase 2
 
@@ -58,3 +58,16 @@ LIMIT @depth;
 - Nearest neighbour ≠ right answer. Vector search is a *candidate generator* with no notion of constraints.
 - Approximate indexes trade recall for speed. Know your `ef_search`.
 - Normalised filters remove whole classes of wrong answers that similarity never can. Filtering and vector ranking in one SQL statement is a strong reason to keep vectors next to your structured data.
+
+**For the talk (found while building, Phase 2):**
+- **Named entities pull embeddings (GQ-08).** "charger for my Blackbird Aerobook 14" ranks:
+  1. the Blackbird charger (its description names the Aerobook);
+  2. the Aerobook 14 itself;
+  3. and 4. two more Blackbird laptops;
+  5. a Blackbird laptop sleeve;
+  6. a Blackbird backpack.
+
+  Only then comes the Voltline 65W charger, at 7th. The embedding captures "Blackbird things" more strongly than "a charger". A vector has no notion of which words are the goal and which are context.
+- **Same effect with brands:** "battery for Brakk 18V drill" ranked every Brakk item, including drills, an angle grinder and a work light, above the Tornio 20V MAX battery (11th). As "18V battery" the Tornio battery is in the top 5, and the near miss is visible again.
+- **The fix isn't a better embedding, it's understanding the query first** (Stage 6, ADR-0013). This is the thesis in one example.
+- **Similarity scores are compressed.** For GQ-08 the top 10 spans cosine similarity 0.88 to 0.71. "Close" and "right" are not the same thing, and there is no threshold that separates them.

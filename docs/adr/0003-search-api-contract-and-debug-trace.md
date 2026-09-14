@@ -1,6 +1,6 @@
 # ADR-0003: Search API contract & debug trace
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0004, ADR-0014; roadmap Phase 2
 
@@ -80,7 +80,8 @@ The legacy `GET /api/products` endpoint is removed.
     "vectorWeight": 1.0,
     "expandSynonyms": true,
     "applyConstraints": true,
-    "audience": "novice"
+    "audience": "novice",
+    "explain": false
   }
 }
 ```
@@ -88,6 +89,8 @@ The legacy `GET /api/products` endpoint is removed.
 - `filters` apply as **pre-filters** in every stage, and are the *only* input to Stage 1.
 - `context.targetProductId` is the device the user owns. It is optional, and Stages 6–8 use it ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
 - `options` are stage-specific tuning values. Stages ignore options that don't apply to them, and the trace lists the options each stage actually used.
+- `options.explain` (default `false`) adds the Postgres `EXPLAIN` plan to vector-search trace steps, to show whether the planner used the HNSW index ([ADR-0010](0010-vector-search-pgvector.md)).
+- `options.audience` is a lower-case string (`novice | enthusiast | expert`), not an enum, matching the audience vocabulary used by the UI content and prompts ([ADR-0017](0017-pedagogy-engine.md)).
 
 **Validation (FluentValidation, one validator per endpoint):**
 - `page` ≥ 1 and `pageSize` between 1 and 50.

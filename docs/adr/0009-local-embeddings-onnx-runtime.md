@@ -56,14 +56,17 @@ Configuration (`appsettings.json`; secrets via `dotnet user-secrets`):
 
 - **Model:** `assets/models/nomic/model_int8.onnx` (nomic-embed-text-v1.5, 768 dimensions).
 - **Tokenizer:** BERT WordPiece (uncased), via `Microsoft.ML.Tokenizers`.
-  - **Verify in Phase 2** whether the library loads the model's `tokenizer.json` directly, or needs `vocab.txt` (`BertTokenizer.Create`).
-  - Update the models README with whichever file is needed.
+  - *Verified in Phase 2:* `BertTokenizer.Create` reads only a `vocab.txt`-style list (one token per line, line number = ID) and can't load Hugging Face's `tokenizer.json`. The model ships only `tokenizer.json`, whose `model.vocab` is the same 30,522-token WordPiece vocabulary as a token → ID map. The generator writes it out in ID order into a stream at load time, so **`tokenizer.json` is the only tokenizer file needed** (as the models README already says).
+  - `tokenizer.json`'s normaliser sets `lowercase: true` with `strip_accents` unset, which in BERT means accents are stripped when lower-casing ("portátil" → "portatil"). `BertOptions` sets both explicitly.
 - **Task prefixes (required):** `ISearchEmbedder` applies `"search_document: "` to products and `"search_query: "` to queries. The OpenAI provider uses no prefixes.
 - **Inference:**
   - Inputs: `input_ids`, `attention_mask`, `token_type_ids` (confirm the names from the model metadata at startup and log them).
   - Output: `last_hidden_state`.
   - Pooling: **mean pooling** over tokens using the attention mask, then **L2 normalisation**.
-- **Limits:** truncate at 512 tokens. Batch size 16 for seeding; single queries at request time.
+- **Limits:** truncate at 512 tokens (including `[CLS]` and `[SEP]`).
+- **One text per inference call, for products and queries alike** (changed in Phase 2; the first draft said batch size 16 for seeding).
+  - *Why:* with the int8 model, a text's vector depends on the padding in its batch, even though padding is masked out of attention and out of mean pooling. Measured: "search_query: SSD" alone and in a batch with an identical text agree exactly (cosine 1.000000); batched with a longer text, cosine 0.989404. Dynamic quantisation computes activation scales over the whole padded tensor, so batch-mates change the numbers.
+  - A product's vector must not depend on which other products happened to share its batch, and query vectors (always single) must be comparable with product vectors. At 60–500 products, one call per product costs a few seconds at most.
 - **Session:** one `InferenceSession`, created lazily and reused (thread-safe for `Run`); CPU with default graph optimisations.
 - **Missing model:** a clear exception with the path and a link to `assets/models/README.md`, mapped to `503` ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 
@@ -106,3 +109,10 @@ Configuration (`appsettings.json`; secrets via `dotnet user-secrets`):
 - Read the model card: asymmetric models like Nomic need query/document prefixes.
 - Put embeddings behind an interface, like chat. Then record *which model* made every vector, because vectors from different models aren't comparable.
 - Embeddings are derived data. Committing them is fine if each vector carries its model and a hash of its source text.
+
+**For the talk (found while building, Phase 2):**
+- **Batching changed the answer.**
+  - With the int8 Nomic model, "search_query: SSD" embedded alone and in a batch with an identical text agree exactly (cosine 1.000000).
+  - Batched with a longer text, cosine drops to 0.989404, although padding is masked out of attention and out of mean pooling. Quantisation measures value ranges over the whole padded batch.
+  - The fix: one text per inference call. Lesson: "an optimisation that changes results is a bug, and only a test that compares numbers finds it."
+- **The tokenizer file matters.** `Microsoft.ML.Tokenizers` wanted a `vocab.txt`; the model ships `tokenizer.json`. Reading the vocabulary out of it took a few lines, but a *different* vocabulary would still have run and produced plausible, wrong vectors.

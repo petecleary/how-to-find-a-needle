@@ -1,6 +1,6 @@
 # ADR-0006: Database schema & seeding
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 2, 2026-09-14)
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0005, ADR-0008, ADR-0009, ADR-0010, ADR-0012; roadmap Phase 1
 
@@ -44,7 +44,8 @@ CREATE TABLE IF NOT EXISTS products (
     search_vector   TSVECTOR GENERATED ALWAYS AS (
         setweight(to_tsvector('english', name), 'A') ||
         setweight(to_tsvector('english', brand || ' ' || immutable_array_to_string(categories, ' ')), 'B') ||
-        setweight(to_tsvector('english', description), 'C')
+        setweight(to_tsvector('english', description), 'C') ||
+        setweight(to_tsvector('english', immutable_array_to_string(reviews, ' ')), 'D')
     ) STORED,
 
     -- Stages 3, 4, 6: dense embedding from the configured provider (ADR-0009)
@@ -69,7 +70,11 @@ CREATE INDEX IF NOT EXISTS ix_products_bge_sparse ON products USING hnsw (embedd
 ```
 
 Notes:
-- `reviews` are **not** in `search_vector`. Reviews add semantic colour for embeddings, but they also add lexical noise we don't want in Stage 2. Revisit if GQ-02 or GQ-03 need it.
+- `reviews` **are** in `search_vector`, at the lowest weight, D (changed in Phase 2; the first draft left them out to avoid lexical noise).
+  - *Why:* real shoppers' words live in reviews ("Cordless phone battery arrived quickly"), and GQ-03's keyword trap depends on them.
+  - GQ-02 is unaffected, because no review says "power brick".
+  - Weight D keeps a review match below a name, brand, category or description match.
+- **Changing a generated column in place:** PostgreSQL 16 can't alter a generated column's expression. So `init.sql` checks the stored expression, and if `reviews` is missing it drops and re-adds `search_vector` (the GIN index is then recreated by its `IF NOT EXISTS`). Existing volumes migrate on the next start, without a reset.
 - `pg_trgm` is **not** installed. Keyword search uses full-text search only ([ADR-0008](0008-keyword-search-bm25-style.md)).
 - Keep the `pgvector/pgvector:pg16` image unless Phase 1 finds a reason to move to pg17. Pin the tag in `AppHost.cs`.
 - At 60–500 rows the planner may choose a sequential scan over HNSW. That is correct behaviour, and the indexes are still created to teach the production shape ([ADR-0010](0010-vector-search-pgvector.md)).
