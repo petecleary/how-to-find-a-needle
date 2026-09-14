@@ -1,6 +1,6 @@
 # ADR-0007: Stage 1 — Structured search
 
-- **Status:** Accepted (Phase 2, 2026-09-14)
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour; code comments follow in the Phase 2 rework.
 - **Date:** 2026-09-13
 - **Related:** ADR-0003, ADR-0004, ADR-0006; golden query GQ-04; roadmap Phase 2
 
@@ -22,7 +22,7 @@ The talk opens with the argument that a simple `WHERE` clause is sometimes the b
 - `totalResults` is a real `COUNT(*)` over the filter, since this stage isn't bounded by candidate depth.
 - **Dynamic SQL, safely:** WHERE clauses are appended from a fixed set of fragments, and values are always parameters. Unknown `specs` keys are allowed, because containment is safe. Keys are validated against `^[a-zA-Z][a-zA-Z0-9]*$` for tidy traces.
 - Trace: the exact SQL, parameter values, row count and timing, plus a note: *"Structured search can't understand 'something to charge my laptop'. It only matches the attributes you give it."*
-- **The filter-building code is shared.** Stages 2–8 reuse the same `SqlFilterBuilder` (Stages 7–8 through the Stage 6 pipeline) so that filters mean the same thing in every stage ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
+- **The filter-building code is shared.** Stages 2–7 reuse the same `SqlFilterBuilder` (Stages 6–7 through the Stage 5 pipeline) so that filters mean the same thing in every stage ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 
 ## Consequences
 

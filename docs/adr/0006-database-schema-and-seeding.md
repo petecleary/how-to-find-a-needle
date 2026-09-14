@@ -1,8 +1,8 @@
 # ADR-0006: Database schema & seeding
 
-- **Status:** Accepted (Phase 2, 2026-09-14)
+- **Status:** Proposed. Accepted in Phase 2 (2026-09-14); reopened 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md), which removes the BGE-M3 columns and indexes (Phase 1 rework).
 - **Date:** 2026-09-13
-- **Related:** ADR-0002, ADR-0005, ADR-0008, ADR-0009, ADR-0010, ADR-0012; roadmap Phase 1
+- **Related:** ADR-0002, ADR-0005, ADR-0008, ADR-0009, ADR-0010, ADR-0018; roadmap Phase 1
 
 ## Context
 
@@ -48,12 +48,9 @@ CREATE TABLE IF NOT EXISTS products (
         setweight(to_tsvector('english', immutable_array_to_string(reviews, ' ')), 'D')
     ) STORED,
 
-    -- Stages 3, 4, 6: dense embedding from the configured provider (ADR-0009)
+    -- Stages 3, 4, 5: dense embedding from the configured provider (ADR-0009)
     embedding_dense      VECTOR(768),
     embedding_model      TEXT,              -- e.g. nomic-embed-text-v1.5-int8; models are never mixed
-    -- Stage 5, optional and built last (ADR-0012)
-    embedding_bge_dense  VECTOR(1024),
-    embedding_bge_sparse SPARSEVEC(250002),
 
     content_hash    TEXT NOT NULL,   -- hash of the text that is embedded
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -65,8 +62,6 @@ CREATE INDEX IF NOT EXISTS ix_products_price     ON products (price);
 CREATE INDEX IF NOT EXISTS ix_products_specs     ON products USING GIN (specs jsonb_path_ops);
 CREATE INDEX IF NOT EXISTS ix_products_search    ON products USING GIN (search_vector);
 CREATE INDEX IF NOT EXISTS ix_products_dense     ON products USING hnsw (embedding_dense vector_cosine_ops);
-CREATE INDEX IF NOT EXISTS ix_products_bge_dense ON products USING hnsw (embedding_bge_dense vector_cosine_ops);
-CREATE INDEX IF NOT EXISTS ix_products_bge_sparse ON products USING hnsw (embedding_bge_sparse sparsevec_ip_ops);
 ```
 
 Notes:
@@ -75,6 +70,7 @@ Notes:
   - GQ-02 is unaffected, because no review says "power brick".
   - Weight D keeps a review match below a name, brand, category or description match.
 - **Changing a generated column in place:** PostgreSQL 16 can't alter a generated column's expression. So `init.sql` checks the stored expression, and if `reviews` is missing it drops and re-adds `search_vector` (the GIN index is then recreated by its `IF NOT EXISTS`). Existing volumes migrate on the next start, without a reset.
+- **Removing the BGE-M3 columns in place** ([ADR-0018](0018-scope-and-going-further.md)): `init.sql` runs `DROP INDEX IF EXISTS` for `ix_products_bge_dense` and `ix_products_bge_sparse`, then `ALTER TABLE products DROP COLUMN IF EXISTS` for `embedding_bge_dense` and `embedding_bge_sparse`. Existing volumes lose them on the next start without a reset; the seeder no longer mentions them.
 - `pg_trgm` is **not** installed. Keyword search uses full-text search only ([ADR-0008](0008-keyword-search-bm25-style.md)).
 - Keep the `pgvector/pgvector:pg16` image unless Phase 1 finds a reason to move to pg17. Pin the tag in `AppHost.cs`.
 - At 60–500 rows the planner may choose a sequential scan over HNSW. That is correct behaviour, and the indexes are still created to teach the production shape ([ADR-0010](0010-vector-search-pgvector.md)).

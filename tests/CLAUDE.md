@@ -17,7 +17,7 @@ Repo-wide rules are in the [root CLAUDE.md](../CLAUDE.md). Decisions: [ADR-0002]
 - **Unit-test pure logic exhaustively**, especially RRF (ties, missing ranks, weights, k) and each domain rule operator.
 - **Catalog validation tests:** unique product IDs; golden-query product IDs exist; categories are taxonomy notations; vocabulary-backed spec values are known; units are numeric; `nomic.jsonl` hashes match `products.json`.
 - **Golden queries** assert per-stage expectations from `golden-queries.json` (hit in top N, miss, flagged with reason), not exact scores or full orderings.
-- **LLM stages (7–8): structural assertions only.** The answer completes; citations reference evidence product IDs; Stage 8 headings are present; the audience changes the text but not the facts. **Never assert exact wording.**
+- **LLM stages (6–7): structural assertions only.** The answer completes; citations reference evidence product IDs; Stage 7 headings are present; the audience and the pedagogy toggle change the text but not the facts. **Never assert exact wording.**
 - Integration tests **skip with a clear message** when ONNX models or the LLM are unavailable; they don't fail with a stack trace.
 
 ## Naming

@@ -1,8 +1,8 @@
 # ADR-0011: Stage 4 — Hybrid search with Reciprocal Rank Fusion
 
-- **Status:** Accepted (Phase 2, 2026-09-14)
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour; code comments follow in the Phase 2 rework.
 - **Date:** 2026-09-13
-- **Related:** ADR-0004, ADR-0008, ADR-0010, ADR-0012; golden queries GQ-01 to GQ-03; roadmap Phase 2
+- **Related:** ADR-0004, ADR-0008, ADR-0010, ADR-0018; golden queries GQ-01 to GQ-03; roadmap Phase 2
 
 ## Context
 
@@ -30,7 +30,7 @@ RRF(d) = Σᵢ  wᵢ / (k + rᵢ(d))        — a list that doesn't contain d co
   - `PROD-0031: 1/(60+7) + — = 0.01493 (not in vector list)`
 
   Also: list sizes, overlap count, k, weights.
-- **Signature** (generic, reused by Stage 5):
+- **Signature** (generic over any number of ranked lists):
 
 ```csharp
 IReadOnlyList<FusedItem> Fuse(IReadOnlyList<RankedList> lists, int k);
@@ -47,7 +47,7 @@ IReadOnlyList<FusedItem> Fuse(IReadOnlyList<RankedList> lists, int k);
 
 - No score normalisation or calibration is needed. The formula fits on a slide and the trace shows real numbers.
 - RRF ignores *how much* better one result is than the next. Close-scored and far-apart items fuse the same way. The talk mentions this.
-- Hybrid still ranks the incompatible charger well (GQ-01). Fusion improves relevance, **not** correctness, which sets up Stage 6.
+- Hybrid still ranks the incompatible charger well (GQ-01). Fusion improves relevance, **not** correctness, which sets up Stage 5.
 
 ## Alternatives considered
 
@@ -55,7 +55,7 @@ IReadOnlyList<FusedItem> Fuse(IReadOnlyList<RankedList> lists, int k);
 |---|---|
 | Weighted score sum (min-max or z-score normalised) | Needs per-query normalisation; fragile and harder to explain |
 | Postgres-side RRF in one SQL statement | Possible with CTEs, but hides the maths from the C# trace and tests |
-| Learned re-ranker / cross-encoder | Better quality, but another model; a possible "going further" note |
+| Learned re-ranker / cross-encoder | Better quality, but another model; covered in the talk's going-further step ([ADR-0018](0018-scope-and-going-further.md)) |
 | Convex combination with tuned α | Needs labelled data to tune; golden queries are too few |
 
 ## Teaching notes
@@ -68,5 +68,5 @@ IReadOnlyList<FusedItem> Fuse(IReadOnlyList<RankedList> lists, int k);
   - RRF: 1/(60+1) + 1/(60+7) = 0.01639 + 0.01493 = **0.03132**, 3rd overall.
   - The drill battery (4th in keyword, 2nd in vector): 1/(60+4) + 1/(60+2) = **0.03175**, 2nd.
   - Hybrid puts the right battery above the trap, but can't push the trap out of the top 3: being near the top of *one* list is worth almost as much as doing well in both.
-  - Only the ontology (Stage 6) removes it from contention, by knowing it's a phone battery.
+  - Only the ontology (Stage 5) removes it from contention, by knowing it's a phone battery.
 - **The margins are tiny.** 3rd and 4th place were 0.03132 and 0.03126. RRF rankings can flip on one rank change, which is why golden queries assert loose bounds rather than exact positions.

@@ -6,7 +6,7 @@
 
 ## Context
 
-Stages 7 and 8 need an LLM. Pete already runs Ollama locally, and learners without it should be able to use a hosted provider (OpenAI or Anthropic) with their own API key.
+Stages 6 and 7 need an LLM. Pete already runs Ollama locally, and learners without it should be able to use a hosted provider (OpenAI or Anthropic) with their own API key.
 
 We don't need to run a model in a container. Aspire doesn't manage the LLM at all; it only passes configuration to the API.
 
@@ -30,10 +30,10 @@ The original design put LiteLLM in front of the providers. .NET's `Microsoft.Ext
 
 ### Client (API)
 
-- **One `IChatClient` registered in DI**, built by a small `LlmClientFactory` that switches on `Provider`. This is the **only** provider-specific code; Stages 7–8 depend on `IChatClient` alone.
+- **One `IChatClient` registered in DI**, built by a small `LlmClientFactory` that switches on `Provider`. This is the **only** provider-specific code; Stages 6–7 depend on `IChatClient` alone.
 - **Middleware pipeline** (`ChatClientBuilder`): `.UseOpenTelemetry()`, so prompts and timings appear in the Aspire dashboard; `.UseLogging()` in development.
-- **Streaming:** Stages 7–8 call `IChatClient.GetStreamingResponseAsync`, which is supported by every provider, and forward text chunks to the browser as Server-Sent Events ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
-- **Markdown output, validated when complete.** The model writes markdown with inline `[PROD-…]` citations (and fixed headings in Stage 8). The API validates the finished text for every provider ([ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0017](0017-pedagogy-engine.md)). JSON-schema output isn't used, because it can't be shown progressively.
+- **Streaming:** Stages 6–7 call `IChatClient.GetStreamingResponseAsync`, which is supported by every provider, and forward text chunks to the browser as Server-Sent Events ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
+- **Markdown output, validated when complete.** The model writes markdown with inline `[PROD-…]` citations (and fixed headings in Stage 7). The API validates the finished text for every provider ([ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0017](0017-pedagogy-engine.md)). JSON-schema output isn't used, because it can't be shown progressively.
 - **Sampling parameters are provider-specific.**
   - Ollama and OpenAI: `Temperature = 0.1` for predictable demo output.
   - Anthropic: **do not send `temperature`**. Current Claude models (for example Claude Opus 5) reject sampling parameters. Use the provider's effort setting to trade depth for latency instead.
@@ -46,9 +46,9 @@ The original design put LiteLLM in front of the providers. .NET's `Microsoft.Ext
 ### Model defaults (confirm in Phase 4)
 
 - **Ollama:** chosen by a bake-off on the presenter laptop (Apple silicon, 64 GB), which comfortably runs mid-size models such as the ~30–35B Qwen class Pete already uses. Include one smaller model as the suggestion for learners on lighter hardware. The criteria:
-  1. Correct structure (Stage 8 headings, sentinel when needed) and no citation warnings on all golden queries in 10 of 10 runs.
+  1. Correct structure (Stage 7 headings, sentinel when needed) and no citation warnings on all golden queries in 10 of 10 runs.
   2. Correct citations.
-  3. Time to first token under ~1.5 s, and a complete Stage 7 answer under ~8 s, on the presenter laptop.
+  3. Time to first token under ~1.5 s, and a complete Stage 6 answer under ~8 s, on the presenter laptop.
 - **Anthropic:** `claude-opus-5` by default. A smaller or cheaper Claude model is a documented config change the learner can choose.
 - **OpenAI:** set by the learner in config. The README lists a suggested model at publish time, since model versions change quickly. The provider is wired to `IChatClient` but **built and tested late** (roadmap Phase 5), because there are no credits during the main build.
 

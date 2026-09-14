@@ -39,15 +39,15 @@ src/
     Extensions.cs                # Aspire service defaults (kept in-project; no separate ServiceDefaults project)
     Contracts/                   # shared request/response/trace types (ADR-0003)
     Data/                        # schema init, catalog loader, seeder (ADR-0006)
-    Embeddings/                  # ONNX embedders (ADR-0009, ADR-0012)
+    Embeddings/                  # ONNX embedder (ADR-0009)
     Pipeline/                    # one folder per technique service (ADR-0004)
-      Structured/ Keyword/ Vector/ Fusion/ BgeM3/ Ontology/ Rag/ Pedagogy/
+      Structured/ Keyword/ Vector/ Fusion/ Ontology/ Rag/ Pedagogy/
     Endpoints/
       Search/{Stage}/            # FastEndpoints REPR: Endpoint + Validator (thin)
       Demo/                      # golden queries + device list for the UI
     assets/
       data/                      # products.json, golden-queries.json, domain-ontology.ttl, init.sql
-        embeddings/              # nomic.jsonl, openai.jsonl (+ bge-m3.jsonl if built): committed product vectors (ADR-0009)
+        embeddings/              # nomic.jsonl, openai.jsonl: committed product vectors (ADR-0009)
       models/                    # downloaded ONNX models (gitignored, README committed)
   web-ui/                        # React + Vite: the talk, the demo, glossary and ADR pages (ADR-0014)
     content/                     # speaker.md, talk.json + talk/*.md, stages/*.md, glossary.json
@@ -69,7 +69,7 @@ tests/
 ### Testing
 
 - **`PI.SearchApi.Tests`** (xUnit): pure logic, including RRF maths, tokeniser/pooling helpers, catalog → RDF projection, compatibility rules and validators. No Docker; runs in seconds.
-- **`PI.SearchApi.IntegrationTests`** (xUnit + `Aspire.Hosting.Testing`): starts the AppHost, then runs every golden query ([ADR-0005](0005-curated-dataset-and-golden-queries.md)) against stages 1–6 and checks the expected hits and misses. The LLM stages (7–8) get *structural* assertions (the answer completes, citations reference evidence product IDs, Stage 8 headings are present), never exact wording.
+- **`PI.SearchApi.IntegrationTests`** (xUnit + `Aspire.Hosting.Testing`): starts the AppHost, then runs every golden query ([ADR-0005](0005-curated-dataset-and-golden-queries.md)) against stages 1–5 and checks the expected hits and misses. The LLM stages (6–7) get *structural* assertions (the answer completes, citations reference evidence product IDs, Stage 7 headings are present when `applyPedagogy` is on), never exact wording.
 - Integration tests skip with a clear message if the ONNX models are not downloaded.
 
 ### Continuous integration

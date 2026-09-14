@@ -10,19 +10,23 @@ System context, backend architecture, search pipeline stages, API conventions an
 
 - **Main thesis:** *"AI does not replace good search, data structures, or information architecture — it makes them more important."*
 - **The core hook ("Similarity ≠ Compatibility"):**
-  A vector search model may rate a *65W USB-C charger* and a *45W barrel-connector charger* as highly similar (cosine similarity ≈ 0.89), because both are "black rectangular power adapters for laptops". An explicit **domain ontology** checks connector type and wattage against the user's laptop and flags the 45W charger as **incompatible, with a reason** (`USB-C` ≠ `5.5mm barrel`, `45W` < `65W required`). The **pedagogy engine** then has the LLM explain *why* it doesn't fit and recommend the right charger.
+  A vector search model may rate a *65W USB-C charger* and a *45W barrel-connector charger* as highly similar (cosine similarity ≈ 0.89), because both are "black rectangular power adapters for laptops". An explicit **domain ontology** checks connector type and wattage against the user's laptop and flags the 45W charger as **incompatible, with a reason** (`USB-C` ≠ `5.5mm barrel`, `45W` < `65W required`). The **pedagogy engine** then has the LLM explain *why* it doesn't fit and recommend the right charger. A baseline prompt, with the same facts and audience, shows what the pedagogical design adds.
 
 ### The triad
 
-1. **Search** (structured / keyword / vector / hybrid / BGE-M3): *What is relevant?*
-2. **Ontology** (RDF / Turtle / SPARQL): *How is it related and constrained?*
-3. **Pedagogy** (RAG / prompt design): *How should I explain it to the user?*
+1. **Search** (structured / keyword / vector / hybrid): *What is relevant?*
+2. **Ontology** (SKOS taxonomy, synonyms and value vocabularies, plus a small class-level rule vocabulary; RDF / Turtle / SPARQL): *How is it related and constrained?*
+3. **Pedagogy** (RAG / audience-aware prompt design): *How should I explain it to the user?*
+
+### Scope
+
+Seven stages are built. Topics the talk discusses but doesn't build (chunking, BGE-M3 and learned sparse retrieval, re-ranking, query rewriting, OWL / SHACL / knowledge graphs, RAG evaluation) are gathered in one "Going further" talk step. Agent protocols are out of scope. → [ADR-0018](0018-scope-and-going-further.md)
 
 ---
 
 ## 2. Dataset Strategy
 
-The demo uses a **hand-curated, synthetic electronics catalog**, `products.json`. It starts at ~60 items and later grows to ~500 by adding generated distractors around the curated core. It uses **fictional brands** (proposed) and is built so that each stage produces a **visibly different** result for the same query. → [ADR-0005](0005-curated-dataset-and-golden-queries.md)
+The demo uses a **hand-curated, synthetic electronics catalog**, `products.json`. It starts at ~60 items and later grows to ~500 by adding generated distractors around the curated core. It uses **fictional brands** and is built so that each stage produces a **visibly different** result for the same query. → [ADR-0005](0005-curated-dataset-and-golden-queries.md)
 
 Items are authored to create:
 - **Near-miss semantic matches:** similar in vector space, wrong in reality (similarity ≠ compatibility).
@@ -55,9 +59,9 @@ src/
     Extensions.cs                 # Aspire service defaults (OpenTelemetry, health checks)
     Contracts/                    # SearchRequest, SearchResponse, ProductResult, DebugTrace
     Data/                         # DatabaseSeeder (schema, catalog upsert, embedding backfill), EmbeddingFile (jsonl)
-    Embeddings/                   # ISearchEmbedder, NomicOnnxEmbeddingGenerator (ONNX Runtime); BGE-M3 if built
+    Embeddings/                   # ISearchEmbedder, NomicOnnxEmbeddingGenerator (ONNX Runtime)
     Pipeline/                     # shared types (Candidate, StageResult, TraceStep, SqlFilterBuilder) + one technique per folder
-      Structured/  Keyword/  Vector/  Fusion/  Hybrid/  BgeM3/  Ontology/  Rag/  Pedagogy/
+      Structured/  Keyword/  Vector/  Fusion/  Hybrid/  Ontology/  Rag/  Pedagogy/
     Endpoints/
       Search/{Stage}/             # thin endpoint + validator per stage
       Demo/                       # golden queries, device list, taxonomy
@@ -65,14 +69,13 @@ src/
       data/
         products.json             # curated catalog: names, prices, descriptions, specs
         golden-queries.json       # talk moments + per-stage expectations
-        domain-ontology.ttl       # SKOS taxonomy, synonyms, value vocabularies, class-level rules (no product ids)
+        domain-ontology.ttl       # SKOS taxonomy, synonyms, value vocabularies + class-level rules (no product ids)
         queries/*.rq              # SPARQL lookups: labels, taxonomy, narrower concepts, rules
-        embeddings/               # nomic.jsonl, openai.jsonl (+ bge-m3.jsonl if built): committed product vectors
+        embeddings/               # nomic.jsonl, openai.jsonl: committed product vectors
         init.sql                  # idempotent schema + indexes
-      prompts/                    # rag-*.md, pedagogy-*.md
+      prompts/                    # rag-*.md, pedagogy-system.md, pedagogy-baseline.md
       models/                     # downloaded ONNX models (gitignored; README committed)
-        nomic/                    # model_int8.onnx, tokenizer
-        bge-m3/                   # model_quantized.onnx, tokenizer
+        nomic/                    # model_int8.onnx, tokenizer.json
 
   web-ui/                         # React + Vite + TS + Tailwind + shadcn/ui; the talk itself (no slides)
     content/                      # speaker.md, talk.json + talk/*.md, stages/*.md, glossary.json
@@ -83,7 +86,7 @@ src/
       App.tsx
 
 tests/
-  PI.SearchApi.Tests/             # unit: RRF, pooling, projection, rules, validators
+  PI.SearchApi.Tests/             # unit: RRF, pooling, rules, validators
   PI.SearchApi.IntegrationTests/  # Aspire.Hosting.Testing: golden queries per stage
 ```
 
@@ -93,12 +96,12 @@ tests/
 |---|---|---|
 | Backend | .NET 10 / ASP.NET Core, FastEndpoints (REPR), FluentValidation | [0002](0002-solution-structure-and-orchestration.md) |
 | Orchestration | .NET Aspire (Postgres, API, Vite app; OpenTelemetry dashboard) | [0002](0002-solution-structure-and-orchestration.md) |
-| Database | PostgreSQL + pgvector (`vector`, `sparsevec`, HNSW) + built-in full-text search, via `Aspire.Npgsql` + `Pgvector`, raw SQL | [0006](0006-database-schema-and-seeding.md) |
+| Database | PostgreSQL + pgvector (`vector`, HNSW) + built-in full-text search, via `Aspire.Npgsql` + `Pgvector`, raw SQL | [0006](0006-database-schema-and-seeding.md) |
 | Keyword ranking | Postgres FTS (`websearch_to_tsquery`, `ts_rank_cd`), labelled **BM25-style** | [0008](0008-keyword-search-bm25-style.md) |
-| Embeddings | `IEmbeddingGenerator` with a configured provider: local Nomic Embed v1.5 via ONNX Runtime (default, offline) or OpenAI `text-embedding-3-small` at 768d (tested later); BGE-M3 optional and last. Product vectors committed per provider in `assets/data/embeddings/*.jsonl`, regenerated with `Embeddings:Rebuild` | [0009](0009-local-embeddings-onnx-runtime.md), [0012](0012-bge-m3-dense-and-sparse.md) |
+| Embeddings | `IEmbeddingGenerator` with a configured provider: local Nomic Embed v1.5 via ONNX Runtime (default, offline) or OpenAI `text-embedding-3-small` at 768d (tested later). Product vectors committed per provider in `assets/data/embeddings/*.jsonl`, regenerated with `Embeddings:Rebuild` | [0009](0009-local-embeddings-onnx-runtime.md) |
 | Fusion | Reciprocal Rank Fusion (k = 60), pure C# | [0011](0011-hybrid-search-rrf.md) |
-| Ontology | dotNetRDF (in-memory), hand-written Turtle: SKOS taxonomy + synonyms + class-level domain rules; SPARQL lookups; no instance data | [0013](0013-domain-ontology-and-compatibility.md) |
-| LLM (stages 7–8) | `Microsoft.Extensions.AI` `IChatClient`, provider set in config: existing local **Ollama** (OpenAI-compatible `/v1`), **OpenAI**, or **Anthropic** (official `Anthropic` .NET SDK). No containers, **no LiteLLM** | [0015](0015-llm-hosting-and-client.md) |
+| Ontology | dotNetRDF (in-memory), hand-written Turtle: standard SKOS (taxonomy, synonyms, language-tagged labels, value vocabularies) plus a small class-level rule vocabulary beyond SKOS; SPARQL lookups; no instance data | [0013](0013-domain-ontology-and-compatibility.md) |
+| LLM (stages 6–7) | `Microsoft.Extensions.AI` `IChatClient`, provider set in config: existing local **Ollama** (OpenAI-compatible `/v1`), **OpenAI**, or **Anthropic** (official `Anthropic` .NET SDK). No containers, **no LiteLLM** | [0015](0015-llm-hosting-and-client.md) |
 | Frontend | React + Vite + TypeScript, Tailwind, shadcn/ui, Lucide, React Router, react-markdown; `openapi-typescript` types; Vite proxy (no CORS). Home, talk mode, demo, glossary and ADR pages **replace slides** | [0014](0014-web-ui-architecture.md) |
 | Testing | xUnit unit tests + `Aspire.Hosting.Testing` golden-query integration tests; Vitest for the UI hook | [0002](0002-solution-structure-and-orchestration.md) |
 | API docs | Scalar + `Microsoft.AspNetCore.OpenApi` | — |
@@ -107,7 +110,7 @@ tests/
 
 ## 4. API Conventions & Pipeline Stages
 
-All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 7–8 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices` and `GET /api/taxonomy` (the category tree, read from the ontology). → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
+All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 6–7 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices` and `GET /api/taxonomy` (the category tree, read from the ontology). → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
 
 **Request:** `POST /api/search/{stage}`
 
@@ -118,7 +121,7 @@ All search stages use **POST** with a shared JSON request and response, so the U
   "pageSize": 10,
   "filters": { "brand": "Voltline", "categories": ["laptop-chargers"], "minPrice": 20, "maxPrice": 150, "specs": { "connector": "usb-c" } },
   "context": { "targetProductId": "PROD-0001" },
-  "options": { "candidateDepth": 50, "rrfK": 60, "keywordWeight": 1.0, "vectorWeight": 1.0, "expandSynonyms": true, "applyConstraints": true, "audience": "novice" }
+  "options": { "candidateDepth": 50, "rrfK": 60, "keywordWeight": 1.0, "vectorWeight": 1.0, "expandSynonyms": true, "applyConstraints": true, "audience": "novice", "applyPedagogy": true }
 }
 ```
 
@@ -160,10 +163,11 @@ All search stages use **POST** with a shared JSON request and response, so the U
 | 2. Keyword | `/api/search/keyword` | Postgres FTS, **BM25-style** (`ts_rank_cd`, weighted fields). Fast and exact; misses synonyms. | — | [0008](0008-keyword-search-bm25-style.md) |
 | 3. Vector | `/api/search/vector` | Nomic embeddings (local ONNX) + pgvector cosine. Understands meaning; similar ≠ compatible. | — | [0009](0009-local-embeddings-onnx-runtime.md), [0010](0010-vector-search-pgvector.md) |
 | 4. Hybrid | `/api/search/hybrid` | RRF over keyword + vector ranks: RRF(d) = Σ wᵢ / (k + rᵢ(d)). | 2 + 3 | [0011](0011-hybrid-search-rrf.md) |
-| 5. BGE-M3 | `/api/search/bge-m3` | Multilingual dense + learned sparse from one model, fused with RRF. Cross-language queries. | — | [0012](0012-bge-m3-dense-and-sparse.md) |
-| 6. Ontology | `/api/search/ontology` | Resolves the target device first (a device name in the query is context, not search text), matches the query to SKOS concepts, expands synonyms and narrower concepts, re-runs Hybrid, demotes out-of-concept items, then applies class-level domain rules against the target device. **Flagged items are kept, with reasons.** Toggles: `expandSynonyms`, `applyConstraints`. Trace steps: understand → expand → keyword → vector (embed, search) → RRF → classify → constrain. | 4 | [0013](0013-domain-ontology-and-compatibility.md) |
-| 7. RAG | `/api/search/rag` | Results as JSON immediately; `/answer` streams a markdown summary from a bounded evidence set (compatible + incompatible-with-reasons), with `[PROD-…]` citations validated when complete. | 6 | [0016](0016-rag-grounding-and-citations.md) |
-| 8. Pedagogy | `/api/search/pedagogy` | Results as JSON immediately; `/answer` streams the Stage 7 summary, then an audience-aware markdown explanation with fixed headings: decision → concepts → near miss → rule of thumb → next step. | 7 | [0017](0017-pedagogy-engine.md) |
+| 5. Ontology | `/api/search/ontology` | SKOS first: resolves the target device (a device name in the query is context, not search text), matches the query to SKOS concepts in any language, expands synonyms and narrower concepts, re-runs Hybrid, demotes out-of-concept items. Then one step beyond SKOS: class-level domain rules against the target device. **Flagged items are kept, with reasons.** Toggles: `expandSynonyms`, `applyConstraints`. Trace steps: understand → expand → keyword → vector (embed, search) → RRF → classify → constrain. | 4 | [0013](0013-domain-ontology-and-compatibility.md) |
+| 6. RAG | `/api/search/rag` | Results as JSON immediately; `/answer` streams a markdown summary from a bounded evidence set (compatible + incompatible-with-reasons, concept definitions and labels), with `[PROD-…]` citations validated when complete. | 5 | [0016](0016-rag-grounding-and-citations.md) |
+| 7. Pedagogy | `/api/search/pedagogy` | Results as JSON immediately; `/answer` streams the Stage 6 summary, then an audience-aware explanation. Pedagogy on: fixed headings (decision → concepts → near miss → rule of thumb → next step), with words chosen from ontology labels for the audience. Toggle `applyPedagogy: false`: the same facts and audience through a plain baseline prompt, to show what the design adds. | 6 | [0017](0017-pedagogy-engine.md) |
+
+A **"Going further"** talk step follows Stage 7. It maps the discussed-not-built topics to where they sit in the pipeline ([ADR-0018](0018-scope-and-going-further.md)).
 
 ---
 
@@ -173,32 +177,31 @@ The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a 
 
 ```text
 +-------------------------------------------------------------------------------------+
-| Search: "charger for my Blackbird Aerobook 14"   [Golden query ▾]   [My device ▾]      |
-| Filters: brand · category · price · specs                          [Presentation ☐] |
+| Search: "charger for my Blackbird Aerobook 14"   [Golden query ▾]   [My device ▾]   |
+| Filters: brand · category · price · specs      [Audience ▾]      [Presentation ☐]   |
 +-------------------------------------------------------------------------------------+
-| Stages: [1 Struct] [2 Keyword] [3 Vector] [4 Hybrid] [5 BGE-M3] [6 Onto] [7 RAG] [8 Ped] |
+| Stages: [1 Struct] [2 Keyword] [3 Vector] [4 Hybrid] [5 Onto] [6 RAG] [7 Pedagogy]  |
+|         Stage 5: ☑ expand synonyms ☑ apply constraints · Stage 7: ☑ apply pedagogy  |
 +--------------------------------------------------+----------------------------------+
 | LEFT — user view                                 | RIGHT — debug drawer             |
-| (7-8) AI summary: streamed markdown + chips      | Trace steps, one per pipeline    |
-| (8)   + pedagogy sections, streamed              | step:                            |
+| (6-7) AI summary: streamed markdown + chips      | Trace steps, one per pipeline    |
+| (7)   + explanation, streamed (pedagogy/baseline)| step:                            |
 | Result cards: specs · price · signal badges      | SQL · tsquery/lexemes · distances|
-|   (keyword rank, cosine distance, RRF rank)      | RRF formulas · tokens & sparse   |
-|   · compatibility badge + reasons                | weights · SPARQL & triples ·     |
-|                                                  | prompts & raw LLM output         |
+|   (keyword rank, cosine distance, RRF rank)      | RRF formulas · SPARQL & rule     |
+|   · compatibility badge + reasons                | checks · prompts & raw LLM output|
 +--------------------------------------------------+----------------------------------+
 ```
 
-- **Fixed search state:** query, filters and device persist across stage switches (and live in the URL).
+- **Fixed search state:** query, filters, device, audience and toggles persist across stage switches (and live in the URL).
 - **Stepper:** click or use ←/→ to switch stages; each stage is bookmarkable for the talk.
 - **Debug drawer per stage:**
   1. SQL + parameters + row count.
   2. Parsed tsquery, matched lexemes, "BM25-style" note.
   3. Query embedding details + cosine distances.
   4. Per-item RRF formula table.
-  5. Tokens and top sparse weights + dense/sparse fusion.
-  6. Matched concepts, expanded terms, in/out-of-concept classification, domain rule checks with values, flagged items.
-  7. Evidence set, prompts, raw output, citation validation.
-  8. Pedagogy prompt (audience section), output validation.
+  5. Matched concepts, expanded terms, in/out-of-concept classification, domain rule checks with values, flagged items.
+  6. Evidence set, prompts, raw output, citation validation.
+  7. Pedagogy or baseline prompt (audience section, labels offered), output validation.
 - The 2D vector-space plot is a stretch goal, not in scope.
 
 ---

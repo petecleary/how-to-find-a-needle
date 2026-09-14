@@ -37,7 +37,7 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 | Utility | `camelCase.ts` | `parseSseEvents.ts` |
 | Trace renderer | Named after what it shows | `SqlBlock`, `RrfTable`, `RuleChecks` |
 | Types | PascalCase, no `I` prefix | `PipelineStage` |
-| Content files | kebab-case, stage files use the stage slug | `stages/bge-m3.md` |
+| Content files | kebab-case, stage files use the stage slug | `stages/ontology.md` |
 | Tests | Beside the code | `usePipelineSearch.test.ts` |
 
 - Booleans read as questions: `isStreaming`, `hasWarnings`. Event handlers: `onX` props, `handleX` functions.

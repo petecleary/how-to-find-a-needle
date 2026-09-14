@@ -1,6 +1,6 @@
 # CLAUDE.md — How to Find a Needle
 
-The supporting repo for the talk **"How to Find a Needle"**: a search pipeline built on one dataset, one stage at a time (structured → keyword → vector → hybrid → BGE-M3 → ontology → RAG → pedagogy).
+The supporting repo for the talk **"How to Find a Needle"**: a search pipeline built on one dataset, one stage at a time (structured → keyword → vector → hybrid → ontology → RAG → pedagogy).
 
 - **The code is teaching material.** Learners clone it and read it alongside the talk. Write every file as if a developer new to search will study it.
 - **One finished codebase** on `main`. Stages are features in one solution, not branches, tags or commits for learners to step through.
@@ -24,9 +24,9 @@ Area-specific standards (loaded when you work in that folder):
 
 ## Build order and scope
 
-- Follow the roadmap order: Data → Search APIs (stages 1–4, 6) → Frontend → AI stages (7–8) → Finish & publish.
+- Follow the roadmap order: Data → Search APIs (stages 1–5) → Frontend → AI stages (6–7) → Finish & publish.
 - When time is short, cut from the bottom of the Must / Should / Could table in the roadmap.
-- **Stage 5 BGE-M3 is optional and always built last**, after every other phase.
+- **Build only the seven stages.** BGE-M3, chunking, re-ranking, OWL/SHACL/knowledge graphs and RAG evaluation are *discussed* in the talk's going-further step, not built. Agent protocols (MCP, A2A, AG-UI) are out of scope entirely. Don't add code for a discussed topic without an ADR change ([ADR-0018](docs/adr/0018-scope-and-going-further.md)).
 - Working ADRs live in `docs/adr/` on the `build` branch. Public, learner-facing ADRs are written after the build is complete.
 - Don't add a package, service or framework the ADRs don't mention. If one is needed, propose an ADR change.
 
@@ -118,8 +118,8 @@ Use these names consistently in code, API, UI, content and tests.
 
 | Term | Meaning / form |
 |---|---|
-| Stage slugs | `structured`, `keyword`, `vector`, `hybrid`, `bge-m3`, `ontology`, `rag`, `pedagogy` |
-| Stage | One numbered technique in the talk (Stage 1–8) with its own endpoint |
+| Stage slugs | `structured`, `keyword`, `vector`, `hybrid`, `ontology`, `rag`, `pedagogy` |
+| Stage | One numbered technique in the talk (Stage 1–7) with its own endpoint |
 | Candidate | A retrieved product with a score and per-technique signals |
 | `StageResult` | Candidates plus the trace steps that produced them |
 | Trace step | One entry in `debugTrace.steps` |
@@ -130,8 +130,10 @@ Use these names consistently in code, API, UI, content and tests.
 | Near miss | Semantically similar but incompatible |
 | Compatibility status | `NotEvaluated`, `Compatible`, `Incompatible`, `Unknown` |
 | Concept match | `InConcept`, `OutOfConcept`, `NoConcept` |
-| Evidence set | The bounded candidates given to the LLM in Stages 7–8 |
+| Evidence set | The bounded candidates given to the LLM in Stages 6–7 |
 | Audience | `novice`, `enthusiast`, `expert` |
+| Baseline explanation | Stage 7 with `options.applyPedagogy: false`: same facts and audience, plain prompt, no pedagogical structure |
+| Going further | A topic the talk discusses but doesn't build ([ADR-0018](docs/adr/0018-scope-and-going-further.md)) |
 
 ## Data rules
 

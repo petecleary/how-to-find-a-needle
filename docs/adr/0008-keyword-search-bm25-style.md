@@ -1,6 +1,6 @@
 # ADR-0008: Stage 2 — Keyword search (BM25-style)
 
-- **Status:** Accepted (Phase 2, 2026-09-14)
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour; code comments follow in the Phase 2 rework.
 - **Date:** 2026-09-13
 - **Related:** ADR-0004, ADR-0006, ADR-0011; golden queries GQ-02, GQ-03; roadmap Phase 2
 
@@ -28,7 +28,7 @@ LIMIT @depth;
 - **Document:** the `search_vector` generated column, weighted A (name), B (brand + categories), C (description), D (reviews) ([ADR-0006](0006-database-schema-and-seeding.md)). Reviews were added in Phase 2, at the lowest weight.
 - **Ranking:** `ts_rank_cd` (cover density) with default weights; no normalisation flag to start with. The talk explains the difference.
 - **Matching:** `@@` requires *all* terms by default (AND semantics). This strictness is part of the lesson (GQ-02 synonym miss).
-- **Expansion hook for Stage 6:** `IKeywordSearch` also accepts optional synonym groups from the ontology ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+- **Expansion hook for Stage 5:** `IKeywordSearch` also accepts optional synonym groups from the ontology ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
   - Each group is OR-ed (`phraseto_tsquery(@t1) || phraseto_tsquery(@t2) …`) and AND-ed with the rest of the query.
   - `websearch_to_tsquery` can't express grouped ORs, so expanded queries are assembled from these parameterised fragments. The trace shows the final `tsquery`.
 - **Trace:**
@@ -60,7 +60,7 @@ LIMIT @depth;
 
 - There is no extra infrastructure, and the index is visible in `init.sql`.
 - The lack of IDF means very common words like "charger" can dominate. That makes the Stage 4 (Hybrid) improvement easier to show, and we are honest about why.
-- English-only stemming makes GQ-07 (cross-language) fail here. That is expected, and sets up Stage 6's multilingual ontology labels (and Stage 5, if built).
+- English-only stemming makes GQ-07 (cross-language) fail here. That is expected, and sets up Stage 5's multilingual ontology labels.
 
 ## Alternatives considered
 
@@ -80,7 +80,7 @@ LIMIT @depth;
 **For the talk (found while building, Phase 2):**
 - **Keyword search rewards the shopper for using the catalog's words.**
   - "power adapter for my laptop" (GQ-01) puts the official Blackbird charger in the top 3, because its description says "laptop power adapter". "charger for my laptop" ranked it 5th, behind barrel chargers whose descriptions say "laptop charger".
-  - Same intent, different words, different winner. The ontology's synonyms (Stage 6) are how you stop depending on the exact word.
+  - Same intent, different words, different winner. The ontology's synonyms (Stage 5) are how you stop depending on the exact word.
 - **A device name helps keyword search and hurts vector search.** "charger for my Blackbird Aerobook 14" finds the official charger, because its description names the Aerobook. Stage 3 on the same query ranks laptops and bags first (GQ-08, ADR-0010).
 - **Cover density in action (GQ-03).** Before reviews were indexed, "cordless drill battery" matched the phone battery pack, but it came 5th. Drills whose descriptions put "cordless … drill … battery" closer together outranked it. `ts_rank_cd` scores proximity, not meaning.
 - **Reviews are where shoppers' words live.** The phone battery's review says "Cordless phone battery arrived quickly". Once reviews were indexed (at the lowest weight, D), the phone battery became keyword search's **#1** result for "cordless drill battery", a textbook keyword trap. Which fields you index is a relevance decision, not just a storage one.

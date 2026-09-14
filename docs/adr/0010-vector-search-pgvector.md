@@ -1,6 +1,6 @@
 # ADR-0010: Stage 3 — Vector search (pgvector)
 
-- **Status:** Accepted (Phase 2, 2026-09-14)
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour; code comments follow in the Phase 2 rework.
 - **Date:** 2026-09-13
 - **Related:** ADR-0006, ADR-0009, ADR-0011; golden queries GQ-01, GQ-02, GQ-03; roadmap Phase 2
 
@@ -41,7 +41,7 @@ LIMIT @depth;
 ## Consequences
 
 - GQ-02 (synonym) succeeds here where keyword search failed.
-- GQ-01 shows the incompatible 45W barrel charger ranked near the top. That is the intended failure the ontology fixes in Stage 6.
+- GQ-01 shows the incompatible 45W barrel charger ranked near the top. That is the intended failure the ontology fixes in Stage 5.
 - GQ-03 (keyword trap) is corrected: "cordless phone battery" is less similar to "cordless drill battery" than real drill batteries.
 
 ## Alternatives considered
@@ -58,6 +58,7 @@ LIMIT @depth;
 - Nearest neighbour ≠ right answer. Vector search is a *candidate generator* with no notion of constraints.
 - Approximate indexes trade recall for speed. Know your `ef_search`.
 - Normalised filters remove whole classes of wrong answers that similarity never can. Filtering and vector ranking in one SQL statement is a strong reason to keep vectors next to your structured data.
+- The wider vector landscape (dedicated vector databases, multilingual and learned-sparse models such as BGE-M3, chunking long documents) is discussed in the talk's going-further step, not built ([ADR-0018](0018-scope-and-going-further.md)).
 
 **For the talk (found while building, Phase 2):**
 - **Named entities pull embeddings (GQ-08).** "charger for my Blackbird Aerobook 14" ranks:
@@ -69,5 +70,5 @@ LIMIT @depth;
 
   Only then comes the Voltline 65W charger, at 7th. The embedding captures "Blackbird things" more strongly than "a charger". A vector has no notion of which words are the goal and which are context.
 - **Same effect with brands:** "battery for Brakk 18V drill" ranked every Brakk item, including drills, an angle grinder and a work light, above the Tornio 20V MAX battery (11th). As "18V battery" the Tornio battery is in the top 5, and the near miss is visible again.
-- **The fix isn't a better embedding, it's understanding the query first** (Stage 6, ADR-0013). This is the thesis in one example.
+- **The fix isn't a better embedding, it's understanding the query first** (Stage 5, ADR-0013). This is the thesis in one example.
 - **Similarity scores are compressed.** For GQ-08 the top 10 spans cosine similarity 0.88 to 0.71. "Close" and "right" are not the same thing, and there is no threshold that separates them.

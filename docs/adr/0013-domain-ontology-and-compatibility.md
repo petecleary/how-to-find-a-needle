@@ -1,17 +1,21 @@
-# ADR-0013: Stage 6 — Domain ontology: taxonomy, synonyms & rules
+# ADR-0013: Stage 5 — Ontology: SKOS taxonomy, vocabularies & domain rules
 
-- **Status:** Accepted (Phase 2, 2026-09-14)
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): SKOS-first framing, BGE-M3 removed and stages renumbered, with no change in behaviour; code comments follow in the Phase 2 rework.
 - **Date:** 2026-09-13
-- **Related:** ADR-0003, ADR-0004, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0016, ADR-0017; golden queries GQ-01, GQ-02, GQ-03, GQ-05, GQ-06, GQ-07; roadmap Phase 1 (ontology file), Phase 2 (stage)
+- **Related:** ADR-0003, ADR-0004, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0016, ADR-0017, ADR-0018; golden queries GQ-01, GQ-02, GQ-03, GQ-05, GQ-06, GQ-07; roadmap Phase 1 (ontology file), Phase 2 (stage)
 
 ## Context
 
-Stages 2–5 answer *"what is relevant?"* using words and vectors. They don't know what things **are**, what people **call** them, or which **domain rules** apply:
+Stages 2–4 answer *"what is relevant?"* using words and vectors. They don't know what things **are**, what people **call** them, or which **domain rules** apply:
 - A "power brick" is a charger.
 - A cordless *phone* battery isn't a power-tool battery.
 - A charger has to match a laptop's port and power needs.
 
 The talk's triad makes this the "Ontology: how is it related and constrained?" layer.
+
+**Start with SKOS.** Most of what search needs from a domain model is vocabulary: what things are called (including synonyms and other languages), how categories nest, and which values a spec may take. Developers already build this, usually as enums, lookup tables and scattered JSON config. [SKOS](https://www.w3.org/TR/skos-reference/) (Simple Knowledge Organization System) is the W3C standard for it. It lives in a Turtle file that any language can read with an off-the-shelf RDF parser. The talk presents this stage as taxonomy and vocabulary first, not as graph theory or formal logic.
+
+**Then take one step beyond it.** SKOS can say that a laptop charger is a kind of charger. It can't say that a charger must fit a laptop's port. Compatibility needs rules, so we add the smallest rule vocabulary that shows the idea, and we say plainly that this is where SKOS ends and where OWL, SHACL and knowledge graphs begin ([ADR-0018](0018-scope-and-going-further.md)).
 
 We want a **domain-level ontology**: a small, stable model of concepts, their names and their rules. It never describes individual products. Facts about specific products belong in the catalog. Storing them as triples would turn this into a knowledge graph or graph database, which is a different talk.
 
@@ -26,13 +30,14 @@ We want a **domain-level ontology**: a small, stable model of concepts, their na
 - `ex:icon` names a Lucide icon for the UI.
 - Device types are marked `ex:isDeviceType true`, which is how `GET /api/demo/devices` knows which products can be a target device.
 
-**2. Synonyms and labels.**
+**2. Synonyms and labels (SKOS).**
 - `skos:prefLabel`, `skos:altLabel` ("power brick", "AC adapter", "PSU") and `skos:hiddenLabel` (common misspellings).
 - **Language-tagged labels** (`"Cargadores"@es`), so query understanding works beyond English (GQ-07).
 
-**3. Value vocabularies and class-level domain rules.**
+**3. Value vocabularies (SKOS) and class-level domain rules (beyond SKOS).**
 - Value vocabularies are small concept schemes for constrained spec values: connectors (`usb-c`, `barrel-5.5mm`), storage interfaces (`nvme`, `sata`), memory types (`ddr4-sodimm`, `ddr5-sodimm`), battery platforms (`brakk-18v`, `tornio-20v-max`). Each has labels and synonyms ("Type-C" → `usb-c`).
 - Rules are stated **once per pair of product types**. Each compares a spec on the accessory with a spec on the device.
+- **The rules are not SKOS.** `ex:CompatibilityRule`, `ex:check` and the operators are this repo's own small vocabulary, like `ex:icon` and `ex:isDeviceType`. They are written in RDF so they live in the same file and are read with the same SPARQL, but no standard defines them. This is the deliberate edge of SKOS in the talk: the point where a real system would reach for SHACL or OWL.
 
 ```turtle
 @prefix ex:   <https://needle.example/ontology#> .
@@ -106,9 +111,9 @@ Returns the concept tree for the UI's category filter ([ADR-0014](0014-web-ui-ar
                   "definition": "A device that supplies…", "icon": "plug", "narrower": [] }] }]
 ```
 
-The same file drives navigation (filters), query understanding (Stage 6), validation (catalog tests, request validators) and explanation (Stages 7–8).
+The same file drives navigation (filters), query understanding (Stage 5), validation (catalog tests, request validators) and explanation (Stages 6–7: concept definitions, and labels chosen for the audience, [ADR-0017](0017-pedagogy-engine.md)).
 
-### Stage 6 pipeline (`IOntologySearch`)
+### Stage 5 pipeline (`IOntologySearch`)
 
 Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0004](0004-pipeline-composition.md)).
 
@@ -152,7 +157,7 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 - Target-device resolution method.
 - The rules found (SPARQL text and bindings) and every check with its values and result.
 
-**Toggles for the talk:** Stage 4 → Stage 6 with only `expandSynonyms` (recall improves) → Stage 6 with both (precision and correctness improve).
+**Toggles for the talk:** Stage 4 → Stage 5 with only `expandSynonyms` (recall improves) → Stage 5 with both (precision and correctness improve).
 
 ### Tests
 
@@ -176,8 +181,9 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 
 ## Consequences
 
+- The model is mostly standard SKOS, which developers can read in minutes and reuse from any language. The rules are the one home-made part, and this ADR, the trace and the talk say so.
 - The ontology is small, readable and product-agnostic: roughly a page of Turtle per product family. Catalog growth to ~500 products needs no ontology edits.
-- Stage 6 shows the ontology improving **recall** (synonym and narrower expansion) as well as **precision and correctness** (classification and domain rules). The similarity ≠ compatibility example still lands, explained by a general rule instead of a stored fact.
+- Stage 5 shows the ontology improving **recall** (synonym and narrower expansion) as well as **precision and correctness** (classification and domain rules). The similarity ≠ compatibility example still lands, explained by a general rule instead of a stored fact.
 - Spec naming in `products.json` becomes part of the contract with the ontology, enforced by tests.
 - Label matching is lexical and brittle ("brick" alone won't match "power brick"). The trace makes this visible, and the talk names entity recognition as the next step.
 - The rule language is intentionally tiny. Rules that need more (e.g. "USB-C PD *profile* supports 20V") would need a richer model, which is noted as the boundary where SHACL or a knowledge graph starts to earn its keep.
@@ -191,20 +197,26 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 | SHACL shapes for constraints | The standard for validating RDF *instance* data, so it needs product triples; a good "going further" note |
 | OWL classes + reasoner | Powerful but opaque; SKOS matches how people name and browse things, and is easier to explain |
 | Compatibility rules hard-coded in C# | Hides "knowledge as data"; rules can't be listed, explained or reused by the UI and LLM stages |
-| Separate "Ontology expansion" stage | A ninth stage; toggles inside Stage 6 show the same before and after more compactly |
+| Separate "Ontology expansion" stage | An eighth stage; toggles inside Stage 5 show the same before and after more compactly |
 | LLM for query understanding | Exactly the black box the talk argues against; explicit labels are inspectable and deterministic |
 | Remove incompatible or out-of-concept items | Hides the most important result: *why* something was demoted |
+| Present SKOS and the rules as one undifferentiated "ontology" | Hides where the standard ends; learners should know which part they can reuse as it is |
 
 ## Teaching notes
 
 - **Ontology ≠ knowledge graph.** An ontology describes the *domain* (concepts, names, rules); a knowledge graph describes the *things*. Start with the ontology; many search problems stop there.
 - SKOS gives you taxonomy, synonyms and multilingual labels in a standard, tiny vocabulary.
+- **SKOS replaces code you already write.** Enums for categories, lookup tables for synonyms and JSON files of allowed values become one standard file that .NET, Python, Java or TypeScript can load.
+- **One file, two payoffs.** Today it drives the app: navigation, filters and query expansion. With an LLM it becomes context: the definitions and labels of the *matched* concepts go into the prompt, so explanations use the domain's own terms (Stages 6–7). Only matched concepts go in, which keeps the prompt small.
+- **Grounding in definitions reduces invented terminology; it doesn't prevent it.** Stage 6's validation catches the rest (ADR-0016).
+- **Labels hang off concepts.** Falling back from a missing Spanish label to the English one is a lookup on the same concept, not a join or a `COALESCE`. Large domains can split into several Turtle files loaded into one graph. Both are mentioned in the talk, not built.
+- **Where SKOS ends: constraints.** SKOS names and organises; it doesn't state rules. Our small rule vocabulary is the first step past it, and OWL, SHACL and knowledge graphs are the next ([ADR-0018](0018-scope-and-going-further.md)).
 - One domain model serves many jobs: navigation, query understanding, validation and explanation.
 - Similarity is a guess, and a rule is knowledge. Keep demoted results and their reasons visible.
 
 **For the talk (found while building, Phase 2):**
-- **"A device name is context, not intent."** People search the way they think: "charger for my Blackbird Aerobook 14". Stages 2–4 can't tell what you *want* from what you *own*. The device name is the most distinctive part of the query, so it wins: in Stage 3 the Aerobook itself ranks 2nd and a Blackbird laptop sleeve 5th, while the compatible Voltline charger is 7th (GQ-08). Stage 6 understands the query before retrieving: it recognises the device, removes it from the search text, uses it as the target device, and the compatible chargers come first.
-- **Show the trace of GQ-08 in Stage 6.** Put `deviceMention: "Blackbird Aerobook 14"` next to `queryWithoutDevice: "charger for my"`. That one line is query understanding.
+- **"A device name is context, not intent."** People search the way they think: "charger for my Blackbird Aerobook 14". Stages 2–4 can't tell what you *want* from what you *own*. The device name is the most distinctive part of the query, so it wins: in Stage 3 the Aerobook itself ranks 2nd and a Blackbird laptop sleeve 5th, while the compatible Voltline charger is 7th (GQ-08). Stage 5 understands the query before retrieving: it recognises the device, removes it from the search text, uses it as the target device, and the compatible chargers come first.
+- **Show the trace of GQ-08 in Stage 5.** Put `deviceMention: "Blackbird Aerobook 14"` next to `queryWithoutDevice: "charger for my"`. That one line is query understanding.
 - **"Laptop" can be context too.** In "power adapter for my laptop" (GQ-01) with an Aerobook as the target, "laptop" describes what you own. Treating it as a wanted category would put every laptop above the chargers.
 - **Honest limits to mention.**
   - Device matching is exact: "my Aerobook" alone isn't found, and product names like "Brakk 18V Combi Drill (Body Only)" are rarely typed in full.

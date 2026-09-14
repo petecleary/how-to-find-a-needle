@@ -2,7 +2,7 @@
 
 - **Status:** Proposed
 - **Date:** 2026-09-13
-- **Related:** ADR-0002, ADR-0003, ADR-0005, ADR-0013; roadmap Phase 3 (pages, talk and stages 1–4 and 6), Phase 4 (AI stages), Phase 5 (content and public ADRs)
+- **Related:** ADR-0002, ADR-0003, ADR-0005, ADR-0013, ADR-0017, ADR-0018; roadmap Phase 3 (pages, talk and stages 1–5), Phase 4 (AI stages), Phase 5 (content, going-further step and public ADRs)
 
 ## Context
 
@@ -36,7 +36,7 @@ builder.AddViteApp("web-ui", "../web-ui")
 | Route | Page | Content |
 |---|---|---|
 | `/` | **Home** | Speaker details (from `speaker.md`), talk title and abstract, the thesis, the triad (Search → Ontology → Pedagogy), buttons: *Start the talk* and *Explore the demo* |
-| `/talk/:step` | **Talk mode** | A linear sequence that replaces slides, driven by ←/→. Intro and summary steps are full-width content. **Stage steps show the live demo** with the stage explanation panel, a preset golden query and preset options (e.g. Stage 6 toggles) |
+| `/talk/:step` | **Talk mode** | A linear sequence that replaces slides, driven by ←/→. Intro and summary steps are full-width content. **Stage steps show the live demo** with the stage explanation panel, a preset golden query and preset options (e.g. Stage 5 toggles) |
 | `/demo` | **Demo** | The free-exploration screen: search, filters, stepper, results, debug drawer; the explanation panel is collapsible |
 | `/glossary` | **Glossary** | Searchable terms and acronyms, grouped by topic |
 | `/decisions`, `/decisions/:id` | **Decisions** | The ADR index and each ADR, rendered |
@@ -50,8 +50,9 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 | `speaker.md` | Name, role, bio, photo path, links. **Placeholder values until Pete supplies them** |
 | `talk.json` + `talk/*.md` | Ordered talk steps: `{ id, kind: intro \| stage \| summary, title, file, stage?, goldenQuery?, options? }`. A JSON manifest instead of front-matter avoids a parser dependency |
 | `stages/{stage}.md` | One explanation per stage with fixed headings: *What it is · How it works · What to look for · Strength · Failure mode · Try this · Read the decision* |
-| `glossary.json` | `[{ id, term, acronym?, definition, topic, seeAlso?, adr? }]`, e.g. BM25, FTS, tsvector, embedding, cosine distance, HNSW, RRF, dense/sparse, SKOS, RAG, ONNX |
+| `glossary.json` | `[{ id, term, acronym?, definition, topic, seeAlso?, adr? }]`, e.g. BM25, FTS, tsvector, embedding, cosine distance, HNSW, RRF, dense/sparse, SKOS, RAG, ONNX, plus the going-further terms (chunking, re-ranking, cross-encoder, learned sparse, OWL, SHACL, knowledge graph) |
 
+- **A "Going further" talk step** follows the last stage step and comes before the summary. It is a `summary`-kind step with no live demo: one table of the topics the talk discusses but doesn't build, grouped by where they sit in the pipeline ([ADR-0018](0018-scope-and-going-further.md)).
 - **Inline terms:** in any markdown content, `[RRF](term:rrf)` renders as an underlined term with a hover card showing its definition and a link to the glossary. A custom `a` renderer in `react-markdown` does this, with no remark plugin. Trace notes from the API may use the same syntax.
 - **ADRs are read straight from the repo at build time.** `import.meta.glob` loads `docs/adr/*.md` as raw text (`server.fs.allow` includes the repo root), and links between ADRs are rewritten to `/decisions/:id`. There's no copy to drift and no API endpoint. In Phase 5 the glob points at the public learner ADRs instead.
 
@@ -65,29 +66,31 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 - **One hook, `usePipelineSearch`**, holds `{ request, stage, response, status, error }`. It is used by `/demo` and by talk stage steps.
   - Changing the stage or submitting re-runs `POST /api/search/{stage}` with the **same request**.
   - An `AbortController` cancels in-flight calls when the stage changes quickly.
-- **`useAnswerStream`** (Stages 7–8) runs **in parallel** with `usePipelineSearch`, so the results list never waits for the LLM ([ADR-0016](0016-rag-grounding-and-citations.md)).
+- **`useAnswerStream`** (Stages 6–7) runs **in parallel** with `usePipelineSearch`, so the results list never waits for the LLM ([ADR-0016](0016-rag-grounding-and-citations.md)).
   - It POSTs the same request to `/api/search/{rag|pedagogy}/answer`.
   - It reads the response with `fetch` and a small, readable SSE parser, because `EventSource` can't POST.
   - It appends `delta` text to the summary and applies `final` citations and warnings.
   - `[PROD-…]` renders as a chip that scrolls to its result card. The same `AbortController` cancels it, and the Vite proxy passes `text/event-stream` through unbuffered.
 - **No global state library** (Redux, Zustand) and **no TanStack Query**. Plain React state is enough and easier to read.
-- The URL holds demo state (`/demo?stage=hybrid&q=...&gq=GQ-01`), and talk position lives in the route (`/talk/stage-hybrid`), so the presenter can bookmark and the browser back button works.
+- The URL holds demo state, including the audience and toggles (`/demo?stage=pedagogy&q=...&gq=GQ-01&audience=novice`), and talk position lives in the route (`/talk/stage-hybrid`), so the presenter can bookmark and the browser back button works.
 
 ### Demo layout and components (architecture §5)
 
 ```text
 Demo / talk stage step
 ├─ SearchBar            query input · golden-query preset picker (GET /api/demo/queries) · target-device picker (GET /api/demo/devices)
+│                       audience picker: novice / enthusiast / expert (only Stage 7 reads it; its trace says so)
 ├─ FilterBar            brand · category tree (GET /api/taxonomy) · price · spec chips (collapsible)
-├─ PipelineStepper      stage tabs, with keyboard ←/→ · Stage 6 toggles: expand synonyms / apply constraints
+├─ PipelineStepper      stage tabs, with keyboard ←/→ · Stage 5 toggles: expand synonyms / apply constraints
+│                       Stage 7 toggle: apply pedagogy (off = baseline prompt, same facts and audience)
 ├─ StageExplanation     content/stages/{stage}.md with inline glossary terms (always shown in talk mode, collapsible in demo)
 ├─ ResultsPanel (left)
-│   ├─ SummaryPanel     stages 7–8: streamed markdown from /answer · [PROD-…] citation chips · warning badges · time to first token (Phase 4)
-│   │                   stage 8 streams its pedagogy sections below the answer
+│   ├─ SummaryPanel     stages 6–7: streamed markdown from /answer · [PROD-…] citation chips · warning badges · time to first token (Phase 4)
+│   │                   stage 7 streams its explanation below the answer: pedagogy sections, or the baseline when the toggle is off
 │   └─ ResultCard[]     name · brand · price · key specs · SignalBadges · CompatibilityBadge (+ reasons popover)
 └─ DebugDrawer (right)
     └─ TraceStep[]      one collapsible section per trace step, rendered by stage type:
-        SqlBlock · TsQueryView · DistanceTable · RrfTable · ConceptMatches · ExpansionView · RuleChecks · PromptView (· TokenWeights if Stage 5 is built)
+        SqlBlock · TsQueryView · DistanceTable · RrfTable · ConceptMatches · ExpansionView · RuleChecks · PromptView
 ```
 
 - **Trace renderers** map the known `details` keys to purpose-built views, falling back to pretty-printed JSON ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).

@@ -68,13 +68,13 @@ Each golden query records the talk moment it demonstrates and the **expected out
 | ID | Query (draft) | Moment it demonstrates |
 |---|---|---|
 | GQ-01 | "power adapter for my laptop" (+ target device) | **Similarity ≠ compatibility**: Vector ranks the 45W barrel charger highly; Ontology flags it Incompatible (connector and wattage) |
-| GQ-02 | "power brick for laptop" | **Synonym miss**: Keyword finds nothing useful (catalog says "adapter"/"charger"); Vector succeeds; Stage 6 synonym expansion rescues the keyword side |
+| GQ-02 | "power brick for laptop" | **Synonym miss**: Keyword finds nothing useful (catalog says "adapter"/"charger"); Vector succeeds; Stage 5 synonym expansion rescues the keyword side |
 | GQ-03 | "cordless drill battery" | **Keyword trap**: Keyword ranks a *cordless phone battery* 1st; Vector ranks the drill battery first; Hybrid lifts the drill battery above the trap but can't remove it from the top 3; Ontology marks it OutOfConcept |
 | GQ-04 | filters only: brand = Brakk, voltageV = 18, maxPrice = 100 | **Structured wins**: exact, fast, no ranking needed |
 | GQ-05 | "18V battery" (+ target device) | **Platform compatibility**: the Tornio 20V MAX battery looks similar; Ontology rejects it (platform) |
 | GQ-06 | "SSD upgrade for my laptop" (+ target device) | **Interface compatibility**: a SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; Ontology flags it |
-| GQ-07 | cross-language (e.g. "cargador USB-C para portátil") | **Multilingual**: Keyword and Vector alone are weak. Stage 6 matches the Spanish ontology label ("cargador" → *Chargers*) and expands to English terms, so the right chargers appear. If Stage 5 is built, BGE-M3 handles full-sentence cross-language retrieval |
-| GQ-08 | "charger for my Blackbird Aerobook 14" (no target device) | **The device name trap**: Vector ranks the named laptop and a Blackbird sleeve above the chargers; Stage 6 recognises the device name as context, uses it as the target device, and puts the compatible chargers first ([ADR-0013](0013-domain-ontology-and-compatibility.md)) |
+| GQ-07 | cross-language (e.g. "cargador USB-C para portátil") | **Multilingual**: Keyword and Vector alone are weak. Stage 5 matches the Spanish ontology label ("cargador" → *Chargers*) and expands to English terms, so the right chargers appear. Full-sentence cross-language retrieval with a multilingual embedding model is discussed in the talk, not built ([ADR-0018](0018-scope-and-going-further.md)) |
+| GQ-08 | "charger for my Blackbird Aerobook 14" (no target device) | **The device name trap**: Vector ranks the named laptop and a Blackbird sleeve above the chargers; Stage 5 recognises the device name as context, uses it as the target device, and puts the compatible chargers first ([ADR-0013](0013-domain-ontology-and-compatibility.md)) |
 
 Queries GQ-01, GQ-05 and GQ-06 take their target device from `context.targetProductId`, as if from a "my device" picker, and don't name it (changed in Phase 2, after running the golden queries against real embeddings):
 - With "Blackbird Aerobook 14" or "Brakk 18V drill" in the query text, vector search ranked every product of that brand (laptops, bags, other tools) above the accessories the moment is about. Each query should isolate one moment, so the device-name failure has its own golden query, GQ-08.
@@ -132,7 +132,7 @@ Golden queries have three uses:
 - **Real embeddings rewrote our golden queries, and that's the point of having them.** The first drafts named the device ("charger for my Blackbird Aerobook 14"), and three expectations failed. Vector search ranked Blackbird laptops and bags above the chargers, because the brand was the loudest thing in the query.
   - We didn't loosen the tests. We asked what each query was meant to prove.
   - The talk moments now take the device from a picker.
-  - The device-name failure got its own golden query (GQ-08), and Stage 6 learned to handle it.
+  - The device-name failure got its own golden query (GQ-08), and Stage 5 learned to handle it.
 - **Each golden query should isolate one failure mode.** "battery for Brakk 18V drill" mixed three things: a brand pull, a device-type word ("drill") and the platform near miss. "18V battery" with a target device shows only the platform near miss.
 - **Sometimes the expectation, not the data, was wrong.** GQ-03 first expected hybrid search to push the phone battery out of its top 3 *and* keyword search to rank it in its top 3.
   - Under RRF those two pull against each other (ADR-0011).

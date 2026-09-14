@@ -1,4 +1,4 @@
-# ADR-0016: Stage 7 — RAG: streamed, grounded summary with citations
+# ADR-0016: Stage 6 — RAG: streamed, grounded summary with citations
 
 - **Status:** Proposed
 - **Date:** 2026-09-13
@@ -6,7 +6,7 @@
 
 ## Context
 
-After Stage 6 we have relevant candidates, their concept matches *and* domain rule checks with reasons. Stage 7 lets an LLM answer the user's question in natural language, **using only that evidence**, and cite it.
+After Stage 5 we have relevant candidates, their concept matches *and* domain rule checks with reasons. Stage 6 lets an LLM answer the user's question in natural language, **using only that evidence**, and cite it.
 
 Without grounding, an LLM will happily recommend the 45W barrel charger, or invent a product. Grounding and citations make the answer checkable, and the UI can link each claim back to a product card.
 
@@ -18,10 +18,10 @@ Retrieval takes milliseconds; generation takes seconds. Users shouldn't wait for
 
 | Request | Returns |
 |---|---|
-| `POST /api/search/rag` | The normal JSON `SearchResponse`: the Stage 6 pipeline's results and trace, with an `evidence` trace step listing the product IDs the summary will use. Renders immediately |
+| `POST /api/search/rag` | The normal JSON `SearchResponse`: the Stage 5 pipeline's results and trace, with an `evidence` trace step listing the product IDs the summary will use. Renders immediately |
 | `POST /api/search/rag/answer` | The summary as **Server-Sent Events**, or as one JSON object when `Accept: application/json` (tests, Scalar) |
 
-The UI sends both at once with the same body ([ADR-0014](0014-web-ui-architecture.md)). The answer endpoint is **stateless**: it re-runs the Stage 6 pipeline with the same request and builds the same evidence set, because retrieval is deterministic.
+The UI sends both at once with the same body ([ADR-0014](0014-web-ui-architecture.md)). The answer endpoint is **stateless**: it re-runs the Stage 5 pipeline with the same request and builds the same evidence set, because retrieval is deterministic.
 
 ### Evidence set (`IAnswerGenerator`)
 
@@ -32,7 +32,7 @@ The UI sends both at once with the same body ([ADR-0014](0014-web-ui-architectur
   - Up to **2 Unknown** products.
 - **Each item** is rendered as a compact, labelled block: `[PROD-0012] Voltline 65W USB-C GaN Charger — £49.99 — connector: USB-C, 65W — Compatibility: Compatible (connector USB-C matches; 65W ≥ 65W)`.
 - Descriptions are truncated to about 300 characters, and reviews are excluded (to save tokens and reduce noise).
-- The matched concepts and the domain rules that fired are included once, with their `skos:definition` text, so the answer explains constraints in the domain's own words ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+- The matched concepts and the domain rules that fired are included once, with their `skos:definition` text, so the answer explains constraints in the domain's own words. Each concept also carries its English `prefLabel` and `altLabel`s (never `hiddenLabel` misspellings), which Stage 7 uses to choose words for its audience ([ADR-0013](0013-domain-ontology-and-compatibility.md), [ADR-0017](0017-pedagogy-engine.md)).
 
 ### Prompt (versioned files in `assets/prompts/rag-system.md` and `rag-user.md`)
 

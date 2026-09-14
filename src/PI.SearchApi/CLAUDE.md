@@ -10,8 +10,8 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 | `Extensions.cs` | Aspire service defaults (kept in-project; no ServiceDefaults project) |
 | `Contracts/` | `SearchRequest`, `SearchResponse`, `ProductResult`, `DebugTrace`: shared by every stage |
 | `Pipeline/` | Shared types (`Candidate`, `StageResult`, `TraceStep`, `SqlFilterBuilder`) |
-| `Pipeline/{Technique}/` | One technique service + interface: `Structured/ Keyword/ Vector/ Fusion/ BgeM3/ Ontology/ Rag/ Pedagogy/` |
-| `Embeddings/` | `ISearchEmbedder`, `NomicOnnxEmbeddingGenerator` (and BGE-M3 if built) |
+| `Pipeline/{Technique}/` | One technique service + interface: `Structured/ Keyword/ Vector/ Fusion/ Ontology/ Rag/ Pedagogy/` |
+| `Embeddings/` | `ISearchEmbedder`, `NomicOnnxEmbeddingGenerator` |
 | `Endpoints/Search/{Stage}/` | Thin FastEndpoints endpoint + validator |
 | `Endpoints/Demo/` | Golden queries, devices, taxonomy |
 | `Data/` | `init.sql` runner, catalog loader, `DatabaseSeeder` |
@@ -20,7 +20,7 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 ## Endpoints (FastEndpoints, REPR)
 
 - **Thin:** validate → call **one** top-level pipeline service → page once → map to `SearchResponse`. No SQL, ranking or rule logic in an endpoint.
-- Search is **POST** with the shared contract. Stages 7–8 also have `/answer` (SSE, or JSON when `Accept: application/json`).
+- Search is **POST** with the shared contract. Stages 6–7 also have `/answer` (SSE, or JSON when `Accept: application/json`).
 - One FluentValidation validator per endpoint, in the same folder. Limits are in ADR-0003 (e.g. `pageSize` 1–50, `candidateDepth` 10–200).
 - Errors are ProblemDetails. Missing models or an unreachable LLM return **503** with fix-it guidance in `detail`, never a stack trace.
 - Every stage starts an OpenTelemetry `Activity`, so the Aspire dashboard shows the same pipeline as the trace.
@@ -99,7 +99,7 @@ public sealed class KeywordSearch(NpgsqlDataSource dataSource) : IKeywordSearch
 
 Composed stages call earlier services and **append** their own trace step after the steps they received.
 
-## LLM code (Stages 7–8)
+## LLM code (Stages 6–7)
 
 - Depend on `IChatClient` only. All provider differences live in `LlmClientFactory` ([ADR-0015](../../docs/adr/0015-llm-hosting-and-client.md)).
 - Sampling is provider-specific: `Temperature = 0.1` for Ollama/OpenAI; **never send `temperature` to Anthropic**.
