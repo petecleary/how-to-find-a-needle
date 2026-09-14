@@ -1,5 +1,17 @@
+using System.Text.Json.Serialization;
+using FastEndpoints;
+using Microsoft.Extensions.AI;
 using Npgsql;
 using PI.SearchApi.Data;
+using PI.SearchApi.Embeddings;
+using PI.SearchApi.Endpoints;
+using PI.SearchApi.Pipeline;
+using PI.SearchApi.Pipeline.Fusion;
+using PI.SearchApi.Pipeline.Hybrid;
+using PI.SearchApi.Pipeline.Keyword;
+using PI.SearchApi.Pipeline.Ontology;
+using PI.SearchApi.Pipeline.Structured;
+using PI.SearchApi.Pipeline.Vector;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,11 +19,23 @@ var builder = WebApplication.CreateBuilder(args);
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 
-// Add services to the container.
+// --- API plumbing (ADR-0003) --------------------------------------------------
+// Errors are RFC 9457 ProblemDetails. Missing models become a 503 with fix-it guidance.
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ServiceUnavailableExceptionHandler>();
+builder.Services.AddFastEndpoints();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Enums travel as PascalCase strings ("Incompatible", "InConcept"), both in responses and in the
+// OpenAPI document the UI generates its types from (ADR-0003, ADR-0014). Strict number handling
+// stops the document describing every number as "number | string".
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    o.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
+});
 builder.Services.AddOpenApi();
+
+var dataDirectory = Path.Combine(AppContext.BaseDirectory, "assets", "data");
 
 // --- Data (ADR-0006) --------------------------------------------------------
 // Aspire injects the connection string by name; the API is not supported standalone
@@ -19,6 +43,44 @@ builder.Services.AddOpenApi();
 // UseVector() registers the Npgsql <-> pgvector type mappings (Vector, SparseVector).
 builder.AddNpgsqlDataSource("pi-teach-db-search", configureDataSourceBuilder: b => b.UseVector());
 builder.Services.AddSingleton<DatabaseSeeder>();
+
+// --- Embeddings (ADR-0009) --------------------------------------------------
+// The generator loads its ONNX model once, on first use, so it's a singleton. Models are downloaded
+// into the project folder (not copied to bin/), so the path is relative to the content root.
+builder.Services.Configure<EmbeddingsOptions>(builder.Configuration.GetSection(EmbeddingsOptions.SectionName));
+builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(services => new NomicOnnxEmbeddingGenerator(
+    Path.Combine(builder.Environment.ContentRootPath, "assets", "models", "nomic"),
+    services.GetRequiredService<ILogger<NomicOnnxEmbeddingGenerator>>()));
+builder.Services.AddSingleton<ISearchEmbedder, SearchEmbedder>();
+
+// --- Shared pipeline services (ADR-0004, ADR-0013) ----------------------------
+// The ontology loads the Turtle graph once, so it's a singleton. The filter builder only reads it.
+builder.Services.AddSingleton<IOntology>(_ => new DomainOntology(dataDirectory));
+builder.Services.AddSingleton<SqlFilterBuilder>();
+builder.Services.AddTransient<ProductLookup>();
+
+// --- Stage 1: Structured search (ADR-0007) ----------------------------------
+builder.Services.AddTransient<IStructuredSearch, StructuredSearch>();
+
+// --- Stage 2: Keyword search, BM25-style (ADR-0008) -------------------------
+builder.Services.AddTransient<IKeywordSearch, KeywordSearch>();
+
+// --- Stage 3: Vector search, pgvector (ADR-0010) ----------------------------
+builder.Services.AddTransient<IVectorSearch, VectorSearch>();
+
+// --- Stage 4: Hybrid search, Reciprocal Rank Fusion (ADR-0011) ---------------
+// RRF is a pure function with no state, so one instance serves every request.
+builder.Services.AddSingleton<IRankFusion, ReciprocalRankFusion>();
+builder.Services.AddTransient<IHybridSearch, HybridSearch>();
+
+// --- Stage 6: Ontology — concepts, expansion and domain rules (ADR-0013) ------
+// The matcher indexes every label once, and the other steps only read the ontology: singletons.
+builder.Services.AddSingleton<LabelMatcher>();
+builder.Services.AddSingleton<QueryExpander>();
+builder.Services.AddSingleton<ConceptClassifier>();
+builder.Services.AddSingleton<CompatibilityEvaluator>();
+builder.Services.AddTransient<TargetDeviceResolver>();
+builder.Services.AddTransient<IOntologySearch, OntologySearch>();
 
 var app = builder.Build();
 
@@ -35,10 +97,12 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-// TODO(Phase 2): builder.Services.AddFastEndpoints() and app.UseFastEndpoints() come back
-// with the first endpoint (ADR-0003's GET /api/demo/queries). FastEndpoints throws at
-// startup if it finds no endpoint declarations at all, so Phase 1 — which has none yet —
-// leaves both calls out rather than adding a placeholder endpoint just to satisfy it.
+app.UseFastEndpoints(c =>
+{
+    c.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
+    c.Serializer.Options.NumberHandling = JsonNumberHandling.Strict;
+    c.Errors.UseProblemDetails();
+});
 
 app.MapDefaultEndpoints();
 

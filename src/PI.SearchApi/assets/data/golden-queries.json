@@ -4,7 +4,7 @@
     "title": "Similarity is not compatibility",
     "moment": "Vector search ranks the 45W barrel charger highly because it reads like the right one; the ontology flags it Incompatible on connector and wattage.",
     "request": {
-      "query": "charger for my Blackbird Aerobook 14",
+      "query": "power adapter for my laptop",
       "context": { "targetProductId": "PROD-0001" }
     },
     "expectations": {
@@ -107,7 +107,7 @@
     "title": "Same numbers, different platform",
     "moment": "A Tornio 20V MAX battery looks almost identical to a Brakk 18V one; the ontology rejects it because the battery platform doesn't match the drill.",
     "request": {
-      "query": "battery for Brakk 18V drill",
+      "query": "18V battery",
       "context": { "targetProductId": "PROD-0006" }
     },
     "expectations": {
@@ -127,7 +127,7 @@
     "title": "Same slot, different interface",
     "moment": "A SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; the ontology flags the interface mismatch.",
     "request": {
-      "query": "SSD upgrade for my Blackbird Aerobook 14",
+      "query": "SSD upgrade for my laptop",
       "context": { "targetProductId": "PROD-0001" }
     },
     "expectations": {

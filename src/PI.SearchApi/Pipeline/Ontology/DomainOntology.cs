@@ -4,16 +4,16 @@ using VDS.RDF.Query;
 
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6 vocabulary — Domain ontology loader (ADR-0013)
+// Stage 6 knowledge — Domain ontology loader (ADR-0013)
 //
-// What:     Loads domain-ontology.ttl (SKOS taxonomy, value vocabularies and class-level
-//           compatibility rules) into an in-memory RDF graph, and answers lookups with the
-//           SPARQL queries in assets/data/queries/*.rq via the Leviathan engine.
-// Strength: The taxonomy, synonyms and rules are data, not code: adding a category or a rule
-//           never touches C#, and the exact SPARQL a learner reads is the SPARQL that runs.
-// Failure:  This is the Phase 1 vocabulary surface only — no label matching, no rule
-//           evaluation. Those need a candidate and a target device, and land with the
-//           Stage 6 pipeline in Phase 2.
+// What:     Loads domain-ontology.ttl (SKOS taxonomy, multilingual labels, value vocabularies
+//           and class-level compatibility rules) into an in-memory RDF graph, and answers
+//           lookups with the SPARQL queries in assets/data/queries/*.rq (Leviathan engine).
+// Strength: The taxonomy, synonyms and rules are data, not code: adding a category, a Spanish
+//           label or a rule never touches C#, and the SPARQL a learner reads is what runs.
+// Failure:  No OWL reasoning and no instance data: subsumption is skos:broader* only, and the
+//           ontology knows product *types*, never individual products. That boundary is on
+//           purpose; past it you're building a knowledge graph.
 // Decision: docs/adr/0013-domain-ontology-and-compatibility.md
 public sealed class DomainOntology : IOntology
 {
@@ -26,7 +26,11 @@ public sealed class DomainOntology : IOntology
 
     public IReadOnlyList<OntologyConcept> Concepts { get; }
 
+    public IReadOnlyList<ConceptLabel> Labels { get; }
+
     public IReadOnlyList<CompatibilityRule> Rules { get; }
+
+    public string RulesSparql { get; }
 
     /// <param name="dataDirectory">The assets/data directory containing domain-ontology.ttl and queries/.</param>
     public DomainOntology(string dataDirectory)
@@ -37,12 +41,16 @@ public sealed class DomainOntology : IOntology
         var graph = new Graph();
         FileLoader.Load(graph, ttlPath);
 
-        _conceptsByNotation = LoadConcepts(graph, queriesDirectory);
+        Labels = LoadLabels(graph, queriesDirectory);
+
+        _conceptsByNotation = LoadConcepts(graph, queriesDirectory, Labels);
         Concepts = [.. _conceptsByNotation.Values.OrderBy(c => c.Notation, StringComparer.Ordinal)];
 
         _narrowerOrSelfByAncestor = LoadNarrowerOrSelf(graph, queriesDirectory);
-        _vocabularyValuesByScheme = LoadVocabularyValues(graph, queriesDirectory);
-        Rules = LoadRules(graph, queriesDirectory);
+        _vocabularyValuesByScheme = GroupVocabularyValues(Labels);
+
+        RulesSparql = File.ReadAllText(Path.Combine(queriesDirectory, "rules.rq"));
+        Rules = LoadRules(graph, RulesSparql);
     }
 
     public bool TryGetConcept(string notation, out OntologyConcept concept) =>
@@ -52,19 +60,91 @@ public sealed class DomainOntology : IOntology
         _narrowerOrSelfByAncestor.TryGetValue(ancestorNotation, out var descendants)
         && descendants.Contains(notation);
 
+    public IReadOnlySet<string> NarrowerOrSelf(string notation) =>
+        _narrowerOrSelfByAncestor.TryGetValue(notation, out var descendants)
+            ? descendants
+            : new HashSet<string>();
+
+    public IReadOnlyList<string> BroaderChain(string notation)
+    {
+        var chain = new List<string>();
+        var current = notation;
+
+        // The taxonomy is a tree (one skos:broader per concept), so walking up terminates at a root.
+        while (_conceptsByNotation.TryGetValue(current, out var concept))
+        {
+            chain.Add(concept.Notation);
+
+            if (concept.BroaderNotation is null)
+            {
+                break;
+            }
+
+            current = concept.BroaderNotation;
+        }
+
+        return chain;
+    }
+
     public IReadOnlyList<VocabularyValue> VocabularyValues(string schemeNotation) =>
         _vocabularyValuesByScheme.TryGetValue(schemeNotation, out var values)
             ? values
             : [];
 
-    private static Dictionary<string, OntologyConcept> LoadConcepts(IGraph graph, string queriesDirectory)
+    public bool TryResolveVocabularyValue(string schemeNotation, string value, out string notation)
     {
-        var results = RunQuery(graph, queriesDirectory, "taxonomy.rq");
+        var match = VocabularyValues(schemeNotation).FirstOrDefault(v =>
+            string.Equals(v.Notation, value, StringComparison.OrdinalIgnoreCase)
+            || v.Labels.Any(label => string.Equals(label, value, StringComparison.OrdinalIgnoreCase)));
 
-        // taxonomy.rq returns one row per (concept, label) pair, so a concept with an
-        // English and a Spanish label produces two rows sharing the same broader/icon/
-        // isDeviceType bindings. Group by notation and merge the labels.
-        var byNotation = new Dictionary<string, (string? Broader, string? Icon, bool IsDeviceType, Dictionary<string, string> Labels)>();
+        notation = match?.Notation ?? "";
+        return match is not null;
+    }
+
+    public IReadOnlyList<CompatibilityRule> RulesFor(
+        IEnumerable<string> accessoryCategories,
+        IEnumerable<string> deviceCategories)
+    {
+        var accessory = accessoryCategories.ToList();
+        var device = deviceCategories.ToList();
+
+        return
+        [
+            .. Rules.Where(rule =>
+                accessory.Any(c => IsNarrowerOrSelf(c, rule.AccessoryTypeNotation))
+                && device.Any(c => IsNarrowerOrSelf(c, rule.DeviceTypeNotation))),
+        ];
+    }
+
+    private static List<ConceptLabel> LoadLabels(IGraph graph, string queriesDirectory)
+    {
+        var results = RunQuery(graph, File.ReadAllText(Path.Combine(queriesDirectory, "labels.rq")), "labels.rq");
+
+        return
+        [
+            .. results.Select(row => new ConceptLabel(
+                LiteralValue(row, "notation")!,
+                LiteralValue(row, "schemeNotation"),
+                LiteralValue(row, "label")!,
+                LiteralValue(row, "lang") ?? "",
+                LiteralValue(row, "kind") switch
+                {
+                    "pref" => LabelKind.Preferred,
+                    "alt" => LabelKind.Alternative,
+                    _ => LabelKind.Hidden,
+                })),
+        ];
+    }
+
+    private static Dictionary<string, OntologyConcept> LoadConcepts(
+        IGraph graph, string queriesDirectory, IReadOnlyList<ConceptLabel> labels)
+    {
+        var results = RunQuery(graph, File.ReadAllText(Path.Combine(queriesDirectory, "taxonomy.rq")), "taxonomy.rq");
+
+        // taxonomy.rq returns one row per (concept, preferred label) pair, so a concept with an
+        // English and a Spanish label produces two rows sharing the same broader/icon/definition
+        // bindings. Group by notation and merge the labels.
+        var byNotation = new Dictionary<string, (string? Broader, string? Icon, bool IsDeviceType, string? Definition, Dictionary<string, string> Labels)>();
 
         foreach (var row in results)
         {
@@ -78,6 +158,7 @@ public sealed class DomainOntology : IOntology
                     LiteralValue(row, "broaderNotation"),
                     LiteralValue(row, "icon"),
                     ParseBool(LiteralValue(row, "isDeviceType")),
+                    LiteralValue(row, "definition"),
                     []);
             }
 
@@ -85,14 +166,26 @@ public sealed class DomainOntology : IOntology
             byNotation[notation] = entry;
         }
 
+        var altLabelsByNotation = labels
+            .Where(l => l.IsTaxonomyConcept && l.Kind == LabelKind.Alternative)
+            .GroupBy(l => l.ConceptNotation)
+            .ToDictionary(g => g.Key, g => g.Select(l => l.Label).ToList());
+
         return byNotation.ToDictionary(
             kv => kv.Key,
-            kv => new OntologyConcept(kv.Key, kv.Value.Broader, kv.Value.IsDeviceType, kv.Value.Icon, kv.Value.Labels));
+            kv => new OntologyConcept(
+                kv.Key,
+                kv.Value.Broader,
+                kv.Value.IsDeviceType,
+                kv.Value.Icon,
+                kv.Value.Labels,
+                altLabelsByNotation.GetValueOrDefault(kv.Key) ?? [],
+                kv.Value.Definition));
     }
 
     private static Dictionary<string, HashSet<string>> LoadNarrowerOrSelf(IGraph graph, string queriesDirectory)
     {
-        var results = RunQuery(graph, queriesDirectory, "narrower.rq");
+        var results = RunQuery(graph, File.ReadAllText(Path.Combine(queriesDirectory, "narrower.rq")), "narrower.rq");
         var byAncestor = new Dictionary<string, HashSet<string>>();
 
         foreach (var row in results)
@@ -112,57 +205,25 @@ public sealed class DomainOntology : IOntology
         return byAncestor;
     }
 
-    private static Dictionary<string, List<VocabularyValue>> LoadVocabularyValues(IGraph graph, string queriesDirectory)
+    private static Dictionary<string, List<VocabularyValue>> GroupVocabularyValues(IReadOnlyList<ConceptLabel> labels)
     {
-        var results = RunQuery(graph, queriesDirectory, "labels.rq");
-
-        // Group by (scheme, concept notation), collecting preferred and alternate labels.
-        // Hidden labels (misspellings) exist for query-time tolerance, not as "known" values,
-        // so they don't count here.
-        var byScheme = new Dictionary<string, Dictionary<string, List<string>>>();
-
-        foreach (var row in results)
-        {
-            var schemeNotation = LiteralValue(row, "schemeNotation");
-            if (schemeNotation is null)
-            {
-                continue; // Taxonomy concepts (ex:Taxonomy has no notation) aren't a value vocabulary.
-            }
-
-            var kind = LiteralValue(row, "kind");
-            if (kind == "hidden")
-            {
-                continue;
-            }
-
-            var notation = LiteralValue(row, "notation")!;
-            var label = LiteralValue(row, "label")!;
-
-            if (!byScheme.TryGetValue(schemeNotation, out var byNotation))
-            {
-                byNotation = [];
-                byScheme[schemeNotation] = byNotation;
-            }
-
-            if (!byNotation.TryGetValue(notation, out var labels))
-            {
-                labels = [];
-                byNotation[notation] = labels;
-            }
-
-            labels.Add(label);
-        }
-
-        return byScheme.ToDictionary(
-            scheme => scheme.Key,
-            scheme => scheme.Value
-                .Select(concept => new VocabularyValue(concept.Key, concept.Value))
-                .ToList());
+        // Group vocabulary labels by (scheme, concept notation), collecting preferred and alternative
+        // labels. Hidden labels (misspellings) exist for query-time tolerance, not as "known" values,
+        // so they don't count here. Taxonomy concepts have no scheme notation and are skipped.
+        return labels
+            .Where(l => !l.IsTaxonomyConcept && l.Kind != LabelKind.Hidden)
+            .GroupBy(l => l.SchemeNotation!)
+            .ToDictionary(
+                scheme => scheme.Key,
+                scheme => scheme
+                    .GroupBy(l => l.ConceptNotation)
+                    .Select(concept => new VocabularyValue(concept.Key, [.. concept.Select(l => l.Label)]))
+                    .ToList());
     }
 
-    private static List<CompatibilityRule> LoadRules(IGraph graph, string queriesDirectory)
+    private static List<CompatibilityRule> LoadRules(IGraph graph, string rulesSparql)
     {
-        var results = RunQuery(graph, queriesDirectory, "rules.rq");
+        var results = RunQuery(graph, rulesSparql, "rules.rq");
 
         // One row per check; group into rules by (accessoryType, deviceType).
         var checksByType = new Dictionary<(string AccessoryType, string DeviceType), List<RuleCheck>>();
@@ -189,13 +250,9 @@ public sealed class DomainOntology : IOntology
         return [.. checksByType.Select(kv => new CompatibilityRule(kv.Key.AccessoryType, kv.Key.DeviceType, kv.Value))];
     }
 
-    private static SparqlResultSet RunQuery(IGraph graph, string queriesDirectory, string fileName)
-    {
-        var queryText = File.ReadAllText(Path.Combine(queriesDirectory, fileName));
-
-        return graph.ExecuteQuery(queryText) as SparqlResultSet
+    private static SparqlResultSet RunQuery(IGraph graph, string queryText, string fileName) =>
+        graph.ExecuteQuery(queryText) as SparqlResultSet
             ?? throw new InvalidOperationException($"{fileName} did not produce a SPARQL result set.");
-    }
 
     private static string? LiteralValue(ISparqlResult row, string variable) =>
         row.HasValue(variable) && row[variable] is ILiteralNode literal ? literal.Value : null;

@@ -114,4 +114,75 @@ public sealed class DomainOntologyTests
 
         Assert.Equal(4, ontology.Rules.Count);
     }
+
+    [Fact]
+    public void NarrowerOrSelf_Chargers_IncludesItselfAndEveryNarrowerCharger()
+    {
+        var ontology = Load();
+
+        var set = ontology.NarrowerOrSelf("chargers");
+
+        Assert.Equal(["chargers", "laptop-chargers", "phone-chargers", "usb-c-pd-chargers"], set.Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void NarrowerOrSelf_UnknownNotation_IsEmpty()
+    {
+        Assert.Empty(Load().NarrowerOrSelf("not-a-concept"));
+    }
+
+    [Fact]
+    public void BroaderChain_LaptopChargers_WalksUpToPower()
+    {
+        Assert.Equal(["laptop-chargers", "chargers", "power"], Load().BroaderChain("laptop-chargers"));
+    }
+
+    [Fact]
+    public void Labels_IncludeSpanishAltLabelAndHiddenMisspelling()
+    {
+        var labels = Load().Labels;
+
+        Assert.Contains(labels, l => l.ConceptNotation == "chargers" && l.Label == "cargador" && l.Language == "es" && l.Kind == LabelKind.Alternative);
+        Assert.Contains(labels, l => l.ConceptNotation == "chargers" && l.Label == "chager" && l.Kind == LabelKind.Hidden);
+    }
+
+    [Theory]
+    [InlineData("connectors", "usb-c", "usb-c")]
+    [InlineData("connectors", "Type-C", "usb-c")]
+    [InlineData("connectors", "type-c", "usb-c")]
+    [InlineData("storage-interfaces", "PCIe SSD", "nvme")]
+    public void TryResolveVocabularyValue_NotationOrLabel_ResolvesToNotation(string scheme, string value, string expected)
+    {
+        Assert.True(Load().TryResolveVocabularyValue(scheme, value, out var notation));
+        Assert.Equal(expected, notation);
+    }
+
+    [Fact]
+    public void TryResolveVocabularyValue_UnknownValue_ReturnsFalse()
+    {
+        Assert.False(Load().TryResolveVocabularyValue("connectors", "lightning", out _));
+    }
+
+    [Fact]
+    public void RulesFor_NvmeSsdAndLaptop_FindsTheSsdRuleThroughNarrowerCategory()
+    {
+        var rules = Load().RulesFor(["nvme-ssds"], ["laptops"]);
+
+        var rule = Assert.Single(rules);
+        Assert.Equal("ssds", rule.AccessoryTypeNotation);
+    }
+
+    [Fact]
+    public void RulesFor_PhoneBatteryAndDrill_FindsNoRule()
+    {
+        Assert.Empty(Load().RulesFor(["phone-batteries"], ["drills"]));
+    }
+
+    [Fact]
+    public void Concepts_Chargers_HasAltLabelsAndDefinition()
+    {
+        Assert.True(Load().TryGetConcept("chargers", out var concept));
+        Assert.Contains("AC adapter", concept.AltLabels);
+        Assert.NotNull(concept.Definition);
+    }
 }

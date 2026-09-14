@@ -1,0 +1,38 @@
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using PI.SearchApi.Embeddings;
+
+namespace PI.SearchApi.Endpoints;
+
+/// <summary>
+/// Turns "a dependency isn't available" into an RFC 9457 ProblemDetails <c>503</c>, with the fix in
+/// <c>detail</c> (ADR-0003). Every other exception falls through to the default handler.
+/// </summary>
+public sealed class ServiceUnavailableExceptionHandler(
+    IProblemDetailsService problemDetails,
+    ILogger<ServiceUnavailableExceptionHandler> logger) : IExceptionHandler
+{
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    {
+        if (exception is not EmbeddingModelUnavailableException)
+        {
+            return false;
+        }
+
+        logger.LogWarning("Returning 503: {Reason}", exception.Message);
+
+        httpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+
+        return await problemDetails.TryWriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = httpContext,
+            Exception = exception,
+            ProblemDetails = new ProblemDetails
+            {
+                Status = StatusCodes.Status503ServiceUnavailable,
+                Title = "Embedding model unavailable",
+                Detail = exception.Message,
+            },
+        });
+    }
+}

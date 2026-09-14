@@ -135,9 +135,37 @@ Build strictly in this order. Each step ends with its golden-query integration t
 - Missing ONNX models give a `503` with fix-it guidance, not a stack trace.
 - ADRs 0003, 0004, 0007–0011 and 0013 → **Accepted**.
 
+### Build status (2026-09-14) 🚧 built; golden-query data decisions pending
+
+**Built:** the shared contract and trace; `SqlFilterBuilder`; the three demo GETs; Stages 1, 2, 3, 4 and 6 with thin endpoints and validators; the Nomic ONNX embedder; the seeder's embedding step, with a committed `nomic.jsonl`; 503 handling; the golden-query integration harness.
+
+**Verified:**
+- `dotnet build`: 0 warnings. Unit tests: 151 pass.
+- Integration tests: 19 of 25 pass. The 6 failures are ranking expectations, listed below.
+- OpenAPI: FastEndpoints works with `Microsoft.AspNetCore.OpenApi`, so no switch was needed. Nested request types, string enums and strict numbers all appear in `/openapi/v1.json`.
+- The seeder loads 60 vectors from `nomic.jsonl` into empty rows, reports "60 already current" on restart, and rewrites the file with `Embeddings__Rebuild=true`.
+- With the model moved away, Stages 3, 4 and 6 return 503 with guidance, while Stages 1–2 and the demo GETs still work.
+
+**Decisions recorded while building** (ADRs updated first):
+- **0003:** adds `options.explain`; `audience` is a lower-case string.
+- **0004:** `Candidate` has a nullable score and a compatibility result; `StageResult` has an optional total; Stage 1 pages in SQL.
+- **0009:** `tokenizer.json` is the only tokenizer file needed. Embed **one text per inference call**: padding shifts int8 vectors (cosine 0.989 against 1.000).
+- **0013:** label normalisation (case, accents, simple plurals), term order before the cap, and the scope of `applyConstraints`.
+
+**Checkpoint — needs Pete (ADR-0005: fix the data, not the assertions).** Nothing below has been changed.
+
+| Test | Expected | Actual | Why | Options |
+|---|---|---|---|---|
+| Keyword GQ-03 | PROD-0032 in top 3 | rank 5 | Drill products (PROD-0006, -0008, -0009) and PROD-0026 also contain *cordless*, *drill* and *battery* | (a) Add `reviews` to `search_vector` (open question below); PROD-0032's review says "Cordless phone battery…". (b) Reword PROD-0032 so the three words sit closer together, which `ts_rank_cd` rewards |
+| ~~Vector GQ-01, hybrid GQ-01, vector GQ-06, vector GQ-05, ontology GQ-05~~ | | | Device and brand names in the query text; "drill" matching *Drills* | ✅ **Resolved** (Pete approved): queries no longer name the device. GQ-01 "power adapter for my laptop", GQ-05 "18V battery", GQ-06 "SSD upgrade for my laptop"; the device comes from `targetProductId` ([ADR-0005](0005-curated-dataset-and-golden-queries.md)) |
+
+ADRs 0003, 0004, 0007–0011 and 0013 stay **Proposed** until these pass.
+
 ### Open questions
-- ❓ Keep `reviews` out of `search_vector`? Revisit after GQ-02 and GQ-03 results.
-- ✅ Language for GQ-07: Spanish ("cargador USB-C para portátil").
+- ❓ Keep `reviews` out of `search_vector`? GQ-02 passes either way. Keyword GQ-03 currently misses its bound (rank 5); including reviews is one candidate fix, see the checkpoint above.
+- ✅ Language for GQ-07: Spanish ("cargador USB-C para portátil"). Passes in Stage 6.
+- ✅ Tokenizer file: `tokenizer.json` only (ADR-0009).
+- ✅ OpenAPI: FastEndpoints + `Microsoft.AspNetCore.OpenApi` is sufficient (ADR-0014).
 
 ---
 

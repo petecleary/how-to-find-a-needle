@@ -113,9 +113,12 @@ The same file drives navigation (filters), query understanding (Stage 6), valida
 Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0004](0004-pipeline-composition.md)).
 
 1. **Understand.** Match the normalised query against all labels in any language: longest match first, no overlaps, phrases of 1–3 words.
+   - *Normalised* means lower-cased, accents folded ("portátil" = "portatil") and simple English plurals folded on both sides ("chargers" = "charger", "batteries" = "battery"). Without plural folding, "charger" would never match the preferred label "Chargers". It is still lexical, and the trace says so.
+   - Both taxonomy concepts (categories) and value concepts (e.g. `usb-c`) are matched and shown. Only taxonomy concepts are expanded and used for classification; a matched value phrase stays in the rest of the query.
    - Output: the matched taxonomy concepts and value concepts, e.g. "power brick for laptop" → *Chargers*, *Laptops*.
    - This is lexical and simple, and the trace shows exactly which phrase matched which label.
 2. **Expand** (`options.expandSynonyms`, default on). For each matched taxonomy concept, collect the labels of the concept and its narrower concepts, capped at 10 terms per concept.
+   - Term order before the cap: the matched phrase, then English preferred and alternative labels (the concept first, then its narrower concepts), then labels in other languages. Hidden labels (misspellings) help match queries, not documents, so they aren't expanded.
    - **Keyword:** the matched phrase becomes an OR group (`phraseto_tsquery('power brick') || phraseto_tsquery('ac adapter') || …`), AND-ed with the rest of the query ([ADR-0008](0008-keyword-search-bm25-style.md)).
    - **Vector:** the query is embedded with the concepts' preferred labels appended: `"power brick for laptop (chargers, laptop chargers)"`.
 3. **Retrieve.** Keyword + Vector with the expansions, fused with RRF. This is the Stage 4 pipeline with better input ([ADR-0011](0011-hybrid-search-rrf.md)).
@@ -135,6 +138,8 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
    Reasons quote the rule definition and the values, e.g. *"The charger's plug must fit the laptop's charging port: charger has 5.5 mm barrel, Blackbird Aerobook 14 needs USB-C."*
 
 **Ordering, with flagged items kept:** unflagged items first, then `OutOfConcept`, then `Incompatible`. Within each group items keep their fused rank. **Nothing is silently removed.**
+- `options.applyConstraints` switches off both demotions and the rule checks. `signals.conceptMatch` is still reported, so the presenter can show the classification before turning it on.
+- An item that is both `OutOfConcept` and `Incompatible` goes in the `Incompatible` group.
 
 **Trace:**
 - Matched phrases → concepts.

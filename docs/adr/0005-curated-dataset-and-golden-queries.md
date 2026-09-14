@@ -67,12 +67,17 @@ Each golden query records the talk moment it demonstrates and the **expected out
 
 | ID | Query (draft) | Moment it demonstrates |
 |---|---|---|
-| GQ-01 | "charger for my Blackbird Aerobook 14" (+ target device) | **Similarity ≠ compatibility**: Vector ranks the 45W barrel charger highly; Ontology flags it Incompatible (connector and wattage) |
+| GQ-01 | "power adapter for my laptop" (+ target device) | **Similarity ≠ compatibility**: Vector ranks the 45W barrel charger highly; Ontology flags it Incompatible (connector and wattage) |
 | GQ-02 | "power brick for laptop" | **Synonym miss**: Keyword finds nothing useful (catalog says "adapter"/"charger"); Vector succeeds; Stage 6 synonym expansion rescues the keyword side |
 | GQ-03 | "cordless drill battery" | **Keyword trap**: Keyword ranks a *cordless phone battery* highly; Vector and Hybrid correct it |
 | GQ-04 | filters only: brand = Brakk, voltageV = 18, maxPrice = 100 | **Structured wins**: exact, fast, no ranking needed |
-| GQ-05 | "battery for Brakk 18V drill" (+ target device) | **Platform compatibility**: the Tornio 20V MAX battery looks similar; Ontology rejects it (platform) |
-| GQ-06 | "SSD upgrade for my Blackbird Aerobook 14" (+ target device) | **Interface compatibility**: a SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; Ontology flags it |
+| GQ-05 | "18V battery" (+ target device) | **Platform compatibility**: the Tornio 20V MAX battery looks similar; Ontology rejects it (platform) |
+| GQ-06 | "SSD upgrade for my laptop" (+ target device) |
+
+Queries that need a target device don't name it (changed in Phase 2, after running the golden queries against real embeddings):
+- With "Blackbird Aerobook 14" or "Brakk 18V drill" in the query text, vector search ranked every product of that brand (laptops, bags, other tools) above the accessories the moment is about. The device comes from `context.targetProductId` instead, as it would from a "my device" picker.
+- GQ-05 also avoids the word "drill". It matches the *Drills* concept in Stage 6, so drills would be in concept and rank above the batteries.
+- GQ-01 says "power adapter", which the catalog uses. With "charger for my laptop", keyword search ranked the official charger 5th; the exact wording is the point of its keyword expectation. **Interface compatibility**: a SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; Ontology flags it |
 | GQ-07 | cross-language (e.g. "cargador USB-C para portátil") | **Multilingual**: Keyword and Vector alone are weak. Stage 6 matches the Spanish ontology label ("cargador" → *Chargers*) and expands to English terms, so the right chargers appear. If Stage 5 is built, BGE-M3 handles full-sentence cross-language retrieval |
 
 Shape:
