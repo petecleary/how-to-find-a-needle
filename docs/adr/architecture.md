@@ -203,16 +203,6 @@ The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a 
 
 ---
 
-## 6. Guidelines for AI coding assistants
+## 6. Coding standards & guidelines for AI coding assistants
 
-- **Read the ADR first.** Each stage has one; follow it, or propose an ADR change before deviating.
-- **REPR, thin endpoints:** the endpoint and validator live in `Endpoints/Search/{Stage}/`; search logic lives in `Pipeline/{Technique}/`; shared DTOs in `Contracts/`.
-- **Catalog vs ontology:** product records live in `products.json` (loaded into Postgres); the domain model (taxonomy, synonyms, rules) lives in `domain-ontology.ttl` and never names a product. Categories and vocabulary-backed spec values use the ontology's notations, and validation tests enforce that.
-- **POST for search, same contract for every stage**; filters apply in every stage via `SqlFilterBuilder`.
-- **Always populate `debugTrace`** with the exact parameterised SQL, parameters and stage-specific details. The trace is a feature.
-- **Be honest in naming:** Postgres FTS is "BM25-style"; vector similarity is not compatibility; never hide rejected items.
-- **Retrieve deep, page late:** fuse and evaluate over `candidateDepth`, page once in the endpoint.
-- **Never make results wait for the LLM:** results are JSON from the stage endpoint; LLM text streams separately from `/answer`.
-- **LLM output is untrusted:** validate the finished markdown and its citations; show warnings rather than hiding failures.
-- **Tests:** unit-test pure logic; express talk claims as golden-query integration tests; never assert exact LLM wording.
-- **Teaching-quality code:** each pipeline service opens with a short comment covering the technique, its strength and its failure mode; comments explain *why*.
+Coding standards, commenting and naming conventions, and guidelines for AI assistants live in [CLAUDE.md](../../CLAUDE.md), with area-specific files in [src/PI.SearchApi](../../src/PI.SearchApi/CLAUDE.md), [src/web-ui](../../src/web-ui/CLAUDE.md) and [tests](../../tests/CLAUDE.md).

@@ -64,6 +64,7 @@ tests/
 - **`Directory.Build.props`:** `Nullable=enable`, `ImplicitUsings=enable`, `TreatWarningsAsErrors=true`, `AnalysisLevel=latest`. **`Directory.Packages.props`:** central package management, so versions live in one place.
 - **Comments explain *why* and teach.** Every pipeline service opens with a short comment covering the technique, its strength, and its failure mode.
 - **Primary constructors and `sealed` records/classes** by default, matching the existing code.
+- Detailed standards (naming, commenting, style) are in [CLAUDE.md](../../CLAUDE.md) and its area-specific files.
 
 ### Testing
 
