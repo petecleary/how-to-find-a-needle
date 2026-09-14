@@ -44,7 +44,7 @@ If time runs short, cut from the bottom up. Anyone building, human or agent, fol
 
 ---
 
-## Phase 1 — Data
+## Phase 1 — Data ✅ (done)
 
 **ADRs:** [0002](0002-solution-structure-and-orchestration.md), [0005](0005-curated-dataset-and-golden-queries.md), [0006](0006-database-schema-and-seeding.md), [0013](0013-domain-ontology-and-compatibility.md) (vocabulary and facts only)
 
@@ -59,7 +59,7 @@ If time runs short, cut from the bottom up. Anyone building, human or agent, fol
 3. **CI** (0002)
    - GitHub Actions workflow that builds and runs unit tests on every push.
 4. **Golden queries first** (0005)
-   - Draft `assets/data/golden-queries.json` (GQ-01 to GQ-07) with the talk moment each demonstrates. ❓ Review with Pete.
+   - Draft `assets/data/golden-queries.json` (GQ-01 to GQ-07) with the talk moment each demonstrates. ✅ Reviewed and approved.
 5. **Catalog** (0005)
    - Author `assets/data/products.json` (~60 items) to create each golden-query moment: targets, correct answers, near misses, keyword traps, filler.
    - Write a JSON schema file (`products.schema.json`) to catch typos.
@@ -91,10 +91,11 @@ If time runs short, cut from the bottom up. Anyone building, human or agent, fol
 - A clean clone runs Phase 1 by following the README alone.
 
 ### Resolved
-- ✅ Fictional brands and golden queries GQ-01 to GQ-07 (GQ-06 is an SSD interface mismatch rather than camera lenses). Draft wording is still reviewed in task 4.
+- ✅ Fictional brands and golden queries GQ-01 to GQ-07 (GQ-06 is an SSD interface mismatch rather than camera lenses). Reviewed and approved.
 - ✅ Category icons, no product images.
 - ✅ GBP, with `en-GB` price formatting.
 - ✅ The repo is on GitHub, so the CI task applies.
+- ✅ ADR-0002, 0005 and 0006 stay **Proposed**: each has more scope landing in a later phase (0002: web-ui CI in Phase 3; 0005: dataset growth in Phase 5; 0006: embedding backfill in Phase 2), so none moves to Accepted until its whole decision is built — the same pattern Phase 2 uses for ADR-0013.
 
 ---
 
