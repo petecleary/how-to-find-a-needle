@@ -1,0 +1,20 @@
+# Every value vocabulary — a skos:ConceptScheme with a notation, such as "connectors"
+# (the taxonomy's own scheme, ex:Taxonomy, carries no notation, so it's left out) —
+# with its English name, and every concept in it with its preferred label in each
+# language. DomainOntology.cs groups these rows per scheme and concept; synonyms
+# (skos:altLabel) come from labels.rq, exactly as they do for the taxonomy.
+# GET /api/vocabularies builds the UI's spec filters from the result (ADR-0013).
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?schemeNotation ?schemeLabel ?notation ?label ?lang
+WHERE {
+    ?scheme a skos:ConceptScheme ;
+            skos:notation ?schemeNotation ;
+            skos:prefLabel ?schemeLabel .
+    FILTER(LANGMATCHES(LANG(?schemeLabel), "en"))
+    ?concept skos:inScheme ?scheme ;
+             skos:notation ?notation ;
+             skos:prefLabel ?label .
+    BIND(LANG(?label) AS ?lang)
+}
+ORDER BY ?schemeNotation ?notation ?lang

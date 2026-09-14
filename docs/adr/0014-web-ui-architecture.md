@@ -80,7 +80,7 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 Demo / talk stage step
 ├─ SearchBar            query input · golden-query preset picker (GET /api/demo/queries) · target-device picker (GET /api/demo/devices)
 │                       audience picker: novice / enthusiast / expert (only Stage 7 reads it; its trace says so)
-├─ FilterBar            brand · category tree (GET /api/taxonomy) · price · spec chips (collapsible)
+├─ FilterBar            brand · category tree (GET /api/taxonomy) · price · spec filters (GET /api/vocabularies) (collapsible)
 ├─ PipelineStepper      stage tabs, with keyboard ←/→ · Stage 5 toggles: expand synonyms / apply constraints
 │                       Stage 7 toggle: apply pedagogy (off = baseline prompt, same facts and audience)
 ├─ StageExplanation     content/stages/{stage}.md with inline glossary terms (always shown in talk mode, collapsible in demo)
@@ -94,6 +94,7 @@ Demo / talk stage step
 ```
 
 - **Trace renderers** map the known `details` keys to purpose-built views, falling back to pretty-printed JSON ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
+- **Filters come from the ontology.** The category tree comes from `GET /api/taxonomy`, and each spec filter from `GET /api/vocabularies`: its label, its values (with synonyms as hints) and the spec key to send ([ADR-0013](0013-domain-ontology-and-compatibility.md)). No category or spec value is hard-coded in the UI, so an edit to the TTL appears after re-running the AppHost and refreshing the page.
 - **Maths as text:** RRF formulas and distances are rendered as monospaced strings from the API. No KaTeX dependency.
 - **Presentation mode:** a global toggle that increases font size and hides non-essential controls, for projector readability. It is on by default in talk mode.
 - **No product images** (confirmed). Each taxonomy concept names a Lucide icon in the TTL (`ex:icon`), and a result card uses the icon of its first category.

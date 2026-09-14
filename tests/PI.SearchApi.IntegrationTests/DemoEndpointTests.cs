@@ -47,6 +47,19 @@ public sealed class DemoEndpointTests(AppHostFixture fixture)
     }
 
     [Fact]
+    public async Task Vocabularies_ReturnsConnectorsWithSpecKeysAndSynonyms()
+    {
+        using var client = fixture.CreateSearchApiClient();
+
+        var vocabularies = await client.GetFromJsonAsync<JsonArray>("/api/vocabularies", TestContext.Current.CancellationToken);
+
+        var connectors = vocabularies!.Single(v => v!["notation"]!.GetValue<string>() == "connectors")!;
+        Assert.Equal(new[] { "chargingPort", "connector" }, connectors["specs"]!.AsArray().Select(s => s!.GetValue<string>()));
+        var usbC = connectors["values"]!.AsArray().Single(v => v!["notation"]!.GetValue<string>() == "usb-c")!;
+        Assert.Contains("Type-C", usbC["altLabels"]!.AsArray().Select(l => l!.GetValue<string>()));
+    }
+
+    [Fact]
     public async Task Search_InvalidRequest_ReturnsProblemDetails400()
     {
         using var client = fixture.CreateSearchApiClient();

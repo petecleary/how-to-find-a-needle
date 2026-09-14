@@ -1,6 +1,6 @@
 # ADR-0013: Stage 5 — Ontology: SKOS taxonomy, vocabularies & domain rules
 
-- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): SKOS-first framing, BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework).
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): SKOS-first framing, BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework). Amended again 2026-09-14 to add `GET /api/vocabularies`, built and verified the same day.
 - **Date:** 2026-09-13
 - **Related:** ADR-0003, ADR-0004, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0016, ADR-0017, ADR-0018; golden queries GQ-01, GQ-02, GQ-03, GQ-05, GQ-06, GQ-07; roadmap Phase 1 (ontology file), Phase 2 (stage)
 
@@ -93,6 +93,7 @@ ex:ChargerFitsLaptop a ex:CompatibilityRule ;
 - **SPARQL lookups in `.rq` files** under `assets/data/queries/`, so learners read them as queries:
   - `labels.rq`: every label → concept, loaded once into an in-memory matcher.
   - `taxonomy.rq`: the concept tree for `GET /api/taxonomy`.
+  - `vocabularies.rq`: every value vocabulary, with its name and its values' preferred labels, for `GET /api/vocabularies`.
   - `narrower.rq`: transitive narrower concepts (`skos:broader*`).
   - `rules.rq`: every compatibility rule and its checks (accessory/device type, spec names, operator, value scheme).
 - **Rule checks run in C#** with a small generic evaluator (one method per operator) over the specs of the candidate and the target device. The rules are data from the TTL; the C# never names a rule.
@@ -112,6 +113,28 @@ Returns the concept tree for the UI's category filter ([ADR-0014](0014-web-ui-ar
 ```
 
 The same file drives navigation (filters), query understanding (Stage 5), validation (catalog tests, request validators) and explanation (Stages 6–7: concept definitions, and labels chosen for the audience, [ADR-0017](0017-pedagogy-engine.md)).
+
+### `GET /api/vocabularies`
+
+Returns every value vocabulary, for the UI's spec filters ([ADR-0014](0014-web-ui-architecture.md)). Added 2026-09-14 so the filters are built from the ontology rather than hard-coded:
+
+```json
+[{ "notation": "connectors", "label": "Connectors",
+   "specs": ["chargingPort", "connector"],
+   "values": [{ "notation": "usb-c", "label": "USB-C", "labels": { "en": "USB-C" },
+                "altLabels": ["Type-C", "USB Type-C"] }] }]
+```
+
+- **Values** come from `vocabularies.rq` (each scheme's English name, each value's preferred labels) and `labels.rq` (synonyms). Hidden labels (misspellings) are never returned: they help match queries, and a filter never shows them.
+- **`specs` comes from the rules.** Every check with an `ex:valueScheme` names the accessory spec and the device spec that hold values from that vocabulary, so "connectors" lists `connector` (on chargers) and `chargingPort` (on laptops).
+  - A filter sends `filters.specs: { "connector": "usb-c" }`, which Stage 1's JSONB containment matches because products store notations ([ADR-0007](0007-structured-search.md)).
+  - A vocabulary that no rule uses still appears, with an empty `specs` list.
+- Vocabularies and values are ordered by notation, so the response is stable.
+- Brand and price aren't ontology data. They describe products, so any options for those filters would come from the catalog, not from this endpoint.
+
+### Editing the ontology
+
+`IOntology` loads the TTL once, at startup, from the copy the build places next to the API. To see an edit (a new category, synonym, value or rule), stop the AppHost and run `aspire run` again. The build copies the edited file, the API loads it, and a browser refresh shows the new categories and filter values, with no UI code change. Catalog validation tests check that products still use known categories and values.
 
 ### Stage 5 pipeline (`IOntologySearch`)
 
@@ -168,11 +191,13 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
   - Rule evaluator: each operator; pass, fail and missing-spec cases; synonym-equal values ("Type-C" = `usb-c`).
   - Classification, including the broader chain.
   - Taxonomy endpoint shape.
+  - Value vocabularies: every scheme except the taxonomy, synonyms without hidden labels, and spec keys taken from the rules.
 - **Catalog validation (Phase 1):**
   - Every product category is a taxonomy notation.
   - Every vocabulary-backed spec value is a known notation or label.
   - Every device and accessory type has the specs its rules need.
 - **Integration:**
+  - `GET /api/vocabularies` returns connectors with both spec keys and the "Type-C" synonym.
   - GQ-01 and GQ-06: incompatible items flagged.
   - GQ-02: expansion rescues the keyword side.
   - GQ-03: phone battery `OutOfConcept`.
@@ -200,6 +225,9 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 | Separate "Ontology expansion" stage | An eighth stage; toggles inside Stage 5 show the same before and after more compactly |
 | LLM for query understanding | Exactly the black box the talk argues against; explicit labels are inspectable and deterministic |
 | Remove incompatible or out-of-concept items | Hides the most important result: *why* something was demoted |
+| Hard-code category and spec filter values in the UI | Duplicates the ontology in a second language and drifts from it; a new value would need a UI change |
+| Return value vocabularies inside `GET /api/taxonomy` | Categories and spec values do different jobs; two small responses are easier to read and render than one mixed tree |
+| Hot-reload the TTL with a file watcher | Swaps the ontology while requests are running, which is hidden state; re-running the AppHost takes seconds and is visible |
 | Present SKOS and the rules as one undifferentiated "ontology" | Hides where the standard ends; learners should know which part they can reuse as it is |
 
 ## Teaching notes
@@ -212,6 +240,7 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 - **Labels hang off concepts.** Falling back from a missing Spanish label to the English one is a lookup on the same concept, not a join or a `COALESCE`. Large domains can split into several Turtle files loaded into one graph. Both are mentioned in the talk, not built.
 - **Where SKOS ends: constraints.** SKOS names and organises; it doesn't state rules. Our small rule vocabulary is the first step past it, and OWL, SHACL and knowledge graphs are the next ([ADR-0018](0018-scope-and-going-further.md)).
 - One domain model serves many jobs: navigation, query understanding, validation and explanation.
+- **Filters are data too.** When the category tree and the allowed spec values come from the ontology, a value added to a vocabulary appears in the filters, the validation tests and the rule checks at once, with no UI or C# change.
 - Similarity is a guess, and a rule is knowledge. Keep demoted results and their reasons visible.
 
 **For the talk (found while building, Phase 2):**

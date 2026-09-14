@@ -28,6 +28,8 @@ public sealed class DomainOntology : IOntology
 
     public IReadOnlyList<ConceptLabel> Labels { get; }
 
+    public IReadOnlyList<OntologyVocabulary> Vocabularies { get; }
+
     public IReadOnlyList<CompatibilityRule> Rules { get; }
 
     public string RulesSparql { get; }
@@ -48,6 +50,7 @@ public sealed class DomainOntology : IOntology
 
         _narrowerOrSelfByAncestor = LoadNarrowerOrSelf(graph, queriesDirectory);
         _vocabularyValuesByScheme = GroupVocabularyValues(Labels);
+        Vocabularies = LoadVocabularies(graph, queriesDirectory, Labels);
 
         RulesSparql = File.ReadAllText(Path.Combine(queriesDirectory, "rules.rq"));
         Rules = LoadRules(graph, RulesSparql);
@@ -219,6 +222,56 @@ public sealed class DomainOntology : IOntology
                     .GroupBy(l => l.ConceptNotation)
                     .Select(concept => new VocabularyValue(concept.Key, [.. concept.Select(l => l.Label)]))
                     .ToList());
+    }
+
+    private static List<OntologyVocabulary> LoadVocabularies(
+        IGraph graph, string queriesDirectory, IReadOnlyList<ConceptLabel> labels)
+    {
+        var results = RunQuery(graph, File.ReadAllText(Path.Combine(queriesDirectory, "vocabularies.rq")), "vocabularies.rq");
+
+        // Like taxonomy.rq, vocabularies.rq returns one row per (value, preferred label) pair, so a
+        // value with labels in two languages is two rows. Collect each scheme's name, then merge
+        // each value's labels by language.
+        var schemeLabels = new Dictionary<string, string>();
+        var prefLabelsByValue = new Dictionary<(string Scheme, string Notation), Dictionary<string, string>>();
+
+        foreach (var row in results)
+        {
+            var scheme = LiteralValue(row, "schemeNotation")!;
+            var notation = LiteralValue(row, "notation")!;
+            schemeLabels[scheme] = LiteralValue(row, "schemeLabel")!;
+
+            if (!prefLabelsByValue.TryGetValue((scheme, notation), out var prefLabels))
+            {
+                prefLabels = [];
+                prefLabelsByValue[(scheme, notation)] = prefLabels;
+            }
+
+            prefLabels[LiteralValue(row, "lang") ?? ""] = LiteralValue(row, "label")!;
+        }
+
+        // Synonyms come from labels.rq. Hidden labels (misspellings) help match a typed query;
+        // a filter never displays them, so they're left out.
+        var altLabelsByValue = labels
+            .Where(l => !l.IsTaxonomyConcept && l.Kind == LabelKind.Alternative)
+            .GroupBy(l => (Scheme: l.SchemeNotation!, Notation: l.ConceptNotation))
+            .ToDictionary(g => g.Key, g => g.Select(l => l.Label).ToList());
+
+        return
+        [
+            .. schemeLabels.Keys.Order(StringComparer.Ordinal).Select(scheme => new OntologyVocabulary(
+                scheme,
+                schemeLabels[scheme],
+                [
+                    .. prefLabelsByValue.Keys
+                        .Where(key => key.Scheme == scheme)
+                        .OrderBy(key => key.Notation, StringComparer.Ordinal)
+                        .Select(key => new OntologyVocabularyConcept(
+                            key.Notation,
+                            prefLabelsByValue[key],
+                            altLabelsByValue.GetValueOrDefault(key) ?? [])),
+                ])),
+        ];
     }
 
     private static List<CompatibilityRule> LoadRules(IGraph graph, string rulesSparql)

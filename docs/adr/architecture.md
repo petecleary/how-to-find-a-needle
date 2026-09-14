@@ -64,13 +64,13 @@ src/
       Structured/  Keyword/  Vector/  Fusion/  Hybrid/  Ontology/  Rag/  Pedagogy/
     Endpoints/
       Search/{Stage}/             # thin endpoint + validator per stage
-      Demo/                       # golden queries, device list, taxonomy
+      Demo/                       # golden queries, device list, taxonomy, value vocabularies
     assets/
       data/
         products.json             # curated catalog: names, prices, descriptions, specs
         golden-queries.json       # talk moments + per-stage expectations
         domain-ontology.ttl       # SKOS taxonomy, synonyms, value vocabularies + class-level rules (no product ids)
-        queries/*.rq              # SPARQL lookups: labels, taxonomy, narrower concepts, rules
+        queries/*.rq              # SPARQL lookups: labels, taxonomy, vocabularies, narrower concepts, rules
         embeddings/               # nomic.jsonl, openai.jsonl: committed product vectors
         init.sql                  # idempotent schema + indexes
       prompts/                    # rag-*.md, pedagogy-system.md, pedagogy-baseline.md
@@ -110,7 +110,7 @@ tests/
 
 ## 4. API Conventions & Pipeline Stages
 
-All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 6–7 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices` and `GET /api/taxonomy` (the category tree, read from the ontology). → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
+All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 6–7 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices`, `GET /api/taxonomy` (the category tree) and `GET /api/vocabularies` (the allowed spec values). The last two are read from the ontology, so the UI's filters are data. → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
 
 **Request:** `POST /api/search/{stage}`
 

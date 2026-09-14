@@ -17,6 +17,12 @@ public interface IOntology
     /// <summary>Every label (preferred, alternative, hidden) for every concept, taxonomy and vocabulary alike.</summary>
     IReadOnlyList<ConceptLabel> Labels { get; }
 
+    /// <summary>
+    /// Every value vocabulary (connectors, storage interfaces, …) with its values, ordered by notation.
+    /// <c>GET /api/vocabularies</c> returns them so the UI's spec filters come from the ontology.
+    /// </summary>
+    IReadOnlyList<OntologyVocabulary> Vocabularies { get; }
+
     /// <summary>Every class-level compatibility rule.</summary>
     IReadOnlyList<CompatibilityRule> Rules { get; }
 

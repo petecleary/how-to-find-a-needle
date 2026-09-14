@@ -1,6 +1,6 @@
 # ADR-0003: Search API contract & debug trace
 
-- **Status:** Accepted (Phase 2, 2026-09-14). Amended by [ADR-0018](0018-scope-and-going-further.md), which removed the `bge-m3` route and BGE signals and added `options.applyPedagogy`; re-accepted after the Phase 2 rework was verified (2026-09-14).
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended by [ADR-0018](0018-scope-and-going-further.md), which removed the `bge-m3` route and BGE signals and added `options.applyPedagogy`; re-accepted after the Phase 2 rework was verified (2026-09-14). Amended 2026-09-14 to add `GET /api/vocabularies` (built and verified).
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0004, ADR-0014, ADR-0017, ADR-0018; roadmap Phase 2
 
@@ -52,6 +52,7 @@ Supporting read-only endpoints for the UI:
 - `GET /api/demo/queries` returns the golden queries ([ADR-0005](0005-curated-dataset-and-golden-queries.md)) as presets.
 - `GET /api/demo/devices` returns products in device categories (per the taxonomy) that can be a *target device*.
 - `GET /api/taxonomy` returns the SKOS concept tree read from `domain-ontology.ttl`: notations, language-tagged labels, synonyms, definitions, icons and narrower concepts. The UI builds its category filter from it ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+- `GET /api/vocabularies` returns the value vocabularies (connectors, storage interfaces, memory types, battery platforms): each value's notation, labels and synonyms, and the spec keys that use the vocabulary. The UI builds its spec filters from it ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
 
 The legacy `GET /api/products` endpoint is removed.
 

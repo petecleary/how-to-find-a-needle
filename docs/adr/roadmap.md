@@ -172,6 +172,13 @@ Not built at any priority: BGE-M3 and the other going-further topics ([ADR-0018]
 - The leftover grep over `src`, `tests` and `README.md` is clean.
 - **Found while verifying:** `/openapi/v1.json` has no operation summaries at all, so FastEndpoints' `Summary(...)` text (for example "Stage 5 — Ontology") doesn't reach Scalar or the generated UI types. This was already true before the rework. Look at it in Phase 3, when the UI types are generated.
 
+### Added after the rework: `GET /api/vocabularies` ✅ (2026-09-14)
+
+Lets the UI build its spec filters from the ontology, the same way it builds the category filter ([ADR-0013](0013-domain-ontology-and-compatibility.md), [ADR-0014](0014-web-ui-architecture.md)).
+- Built: `assets/data/queries/vocabularies.rq`; `IOntology.Vocabularies`; `ValueVocabularyBuilder` (spec keys read from the rules' `ex:valueScheme` checks); `VocabulariesEndpoint`; contracts `ValueVocabulary` and `ValueVocabularyEntry`.
+- README "After editing the ontology": re-run `aspire run` to load TTL edits.
+- **Verified:** `dotnet build` 0 warnings; unit tests 166 pass (5 new); integration tests 29 of 29 pass (1 new).
+
 ### Original build order ✅ (done)
 
 Build strictly in this order. Each step ends with its golden-query integration tests passing.
@@ -255,7 +262,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 2. Re-add `Aspire.Hosting.JavaScript`; `AddViteApp` with `WithReference(searchApi)`; Vite `/api` proxy from the service-discovery environment variable. Spike a dummy SSE endpoint through the proxy to confirm streaming isn't buffered, since Phase 4 depends on it.
 3. `npm run gen:api` with `openapi-typescript` → committed `src/api/schema.d.ts`; typed `fetch` client.
 4. `usePipelineSearch` hook (same request across stages, AbortController, URL state) + Vitest tests.
-5. Layout: `SearchBar` (golden-query presets, device picker), `FilterBar`, `PipelineStepper` (seven tabs, keyboard ←/→, Stage 5 toggles), `ResultCard` with `SignalBadges` and `CompatibilityBadge`.
+5. Layout: `SearchBar` (golden-query presets, device picker), `FilterBar` (category tree from `/api/taxonomy`, spec filters from `/api/vocabularies`; no hard-coded values), `PipelineStepper` (seven tabs, keyboard ←/→, Stage 5 toggles), `ResultCard` with `SignalBadges` and `CompatibilityBadge`.
 6. `DebugDrawer` renderers: `SqlBlock`, `TsQueryView`, `DistanceTable`, `RrfTable`, `ConceptMatches`/`ExpansionView`/`RuleChecks`, JSON fallback.
 7. **Pages & content** (0014)
    - React Router routes `/`, `/talk/:step`, `/demo`, `/glossary`, `/decisions`, `/decisions/:id`.

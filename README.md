@@ -92,7 +92,7 @@ Try the talk's opening example on each stage:
 { "query": "power adapter for my laptop", "context": { "targetProductId": "PROD-0001" } }
 ```
 
-`GET /api/demo/queries` lists every golden query, `GET /api/demo/devices` lists the products that can be a target device, and `GET /api/taxonomy` returns the category tree from the ontology.
+`GET /api/demo/queries` lists every golden query, `GET /api/demo/devices` lists the products that can be a target device, `GET /api/taxonomy` returns the category tree from the ontology, and `GET /api/vocabularies` returns the allowed spec values (connectors, storage interfaces, memory types, battery platforms) with their synonyms.
 
 **Run the tests**
 
@@ -110,6 +110,10 @@ A changed product's vector no longer matches its text, so the seeder embeds it l
 ```sh
 Embeddings__Rebuild=true dotnet run --project src/PI.AppHost
 ```
+
+**After editing the ontology**
+
+The API loads `assets/data/domain-ontology.ttl` once, at startup. After adding a category, synonym, spec value or rule, stop the AppHost and run `aspire run` again: the build copies the edited file, and `/api/taxonomy` and `/api/vocabularies` return the change. The unit tests (`dotnet test tests/PI.SearchApi.Tests`) check that products still use known categories and values.
 
 **Reset the data**
 
