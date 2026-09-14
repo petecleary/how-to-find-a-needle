@@ -1,0 +1,13 @@
+# Every (ancestor, descendant) notation pair reachable by one or more
+# skos:broader steps, plus each concept related to itself (zero steps).
+# This is how "chargers" is known to subsume "laptop-chargers": a category
+# filter or a compatibility rule's accessoryType matches a product whose own
+# category is narrower-or-equal, without walking the tree in C#.
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?ancestorNotation ?descendantNotation
+WHERE {
+    ?descendant skos:broader* ?ancestor .
+    ?ancestor skos:notation ?ancestorNotation .
+    ?descendant skos:notation ?descendantNotation .
+}

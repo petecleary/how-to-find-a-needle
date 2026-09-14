@@ -1,0 +1,285 @@
+@prefix ex:   <https://needle.example/ontology#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# ============================================================================
+# Domain ontology — how-to-find-a-needle (ADR-0013)
+#
+# Three parts, in order: taxonomy (product categories), value vocabularies
+# (constrained spec values) and class-level compatibility rules.
+# This file names no products: facts about specific items live in
+# products.json. The ontology only knows about *types* of things.
+# ============================================================================
+
+ex:Taxonomy a skos:ConceptScheme ;
+    skos:prefLabel "Product categories"@en .
+
+# ----------------------------------------------------------------------------
+# Power
+# ----------------------------------------------------------------------------
+ex:Power a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:topConceptOf ex:Taxonomy ;
+    skos:notation "power" ; ex:icon "zap" ;
+    skos:prefLabel "Power"@en ;
+    skos:definition "Devices that supply, store or transfer electrical power."@en .
+
+ex:Chargers a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Power ;
+    skos:notation "chargers" ; ex:icon "plug" ;
+    skos:prefLabel "Chargers"@en , "Cargadores"@es ;
+    skos:altLabel "power adapter"@en , "AC adapter"@en , "power brick"@en , "PSU"@en , "cargador"@es ;
+    skos:hiddenLabel "chager"@en ;
+    skos:definition "A device that supplies electrical power to run or recharge another device."@en .
+
+ex:LaptopChargers a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Chargers ;
+    skos:notation "laptop-chargers" ; ex:icon "laptop" ;
+    skos:prefLabel "Laptop chargers"@en ;
+    skos:altLabel "laptop power supply"@en , "notebook charger"@en ;
+    skos:definition "A charger sized and wired to power a laptop."@en .
+
+ex:UsbCPdChargers a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Chargers ;
+    skos:notation "usb-c-pd-chargers" ; ex:icon "usb" ;
+    skos:prefLabel "USB-C PD chargers"@en ;
+    skos:altLabel "USB-C power delivery charger"@en ;
+    skos:definition "A charger that delivers power over USB-C using the USB Power Delivery standard."@en .
+
+ex:PhoneChargers a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Chargers ;
+    skos:notation "phone-chargers" ; ex:icon "smartphone" ;
+    skos:prefLabel "Phone chargers"@en ;
+    skos:definition "A charger sized for a phone's smaller battery, sold separately from laptop chargers."@en .
+
+ex:PowerBanks a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Power ;
+    skos:notation "power-banks" ; ex:icon "battery-charging" ;
+    skos:prefLabel "Power banks"@en ;
+    skos:altLabel "portable battery"@en ;
+    skos:definition "A portable battery pack used to recharge other devices away from a socket."@en .
+
+# ----------------------------------------------------------------------------
+# Computers
+# ----------------------------------------------------------------------------
+ex:Computers a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:topConceptOf ex:Taxonomy ;
+    skos:notation "computers" ; ex:icon "cpu" ;
+    skos:prefLabel "Computers"@en ;
+    skos:definition "Laptop and desktop computers."@en .
+
+ex:Laptops a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Computers ; ex:isDeviceType true ;
+    skos:notation "laptops" ; ex:icon "laptop" ;
+    skos:prefLabel "Laptops"@en , "Portátiles"@es ;
+    skos:altLabel "notebook"@en , "ultrabook"@en , "portátil"@es ;
+    skos:definition "A portable computer. Laptops can be a target device: the charger, SSD and memory rules compare a candidate accessory's specs against the laptop the shopper owns."@en .
+
+# ----------------------------------------------------------------------------
+# Storage
+# ----------------------------------------------------------------------------
+ex:Storage a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:topConceptOf ex:Taxonomy ;
+    skos:notation "storage" ; ex:icon "hard-drive" ;
+    skos:prefLabel "Storage"@en ;
+    skos:definition "Devices that store data."@en .
+
+ex:Ssds a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Storage ;
+    skos:notation "ssds" ; ex:icon "hard-drive" ;
+    skos:prefLabel "SSDs"@en ;
+    skos:altLabel "solid state drive"@en ;
+    skos:definition "A solid-state drive sold as a laptop upgrade."@en .
+
+ex:NvmeSsds a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Ssds ;
+    skos:notation "nvme-ssds" ; ex:icon "hard-drive" ;
+    skos:prefLabel "NVMe SSDs"@en ;
+    skos:definition "An SSD that connects over the NVMe protocol for the fastest laptop upgrade speeds."@en .
+
+ex:SataSsds a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Ssds ;
+    skos:notation "sata-ssds" ; ex:icon "hard-drive" ;
+    skos:prefLabel "SATA SSDs"@en ;
+    skos:definition "An SSD that connects over the older SATA protocol, sold in the same M.2 2280 shape as NVMe drives — the interface, not the shape, decides compatibility."@en .
+
+ex:ExternalStorage a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Storage ;
+    skos:notation "external-storage" ; ex:icon "hard-drive" ;
+    skos:prefLabel "External storage"@en ;
+    skos:altLabel "USB drive"@en , "flash drive"@en ;
+    skos:definition "Storage that plugs in externally rather than fitting inside the laptop."@en .
+
+# ----------------------------------------------------------------------------
+# Memory
+# ----------------------------------------------------------------------------
+ex:Memory a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:topConceptOf ex:Taxonomy ;
+    skos:notation "memory" ; ex:icon "memory-stick" ;
+    skos:prefLabel "Memory"@en ;
+    skos:definition "RAM sold as a laptop upgrade."@en .
+
+ex:SoDimmMemory a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Memory ;
+    skos:notation "so-dimm-memory" ; ex:icon "memory-stick" ;
+    skos:prefLabel "SO-DIMM memory"@en ;
+    skos:altLabel "laptop RAM"@en , "laptop memory"@en ;
+    skos:definition "RAM in the smaller SO-DIMM form factor laptops use."@en .
+
+# ----------------------------------------------------------------------------
+# Power tools
+# ----------------------------------------------------------------------------
+ex:PowerTools a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:topConceptOf ex:Taxonomy ;
+    skos:notation "power-tools" ; ex:icon "wrench" ;
+    skos:prefLabel "Power tools"@en ;
+    skos:definition "Cordless tools and the batteries and chargers that power them."@en .
+
+ex:Drills a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:PowerTools ; ex:isDeviceType true ;
+    skos:notation "drills" ; ex:icon "drill" ;
+    skos:prefLabel "Drills"@en ;
+    skos:altLabel "combi drill"@en , "impact driver"@en ;
+    skos:definition "A cordless drill or driver. Drills can be a target device: the battery rule compares a candidate battery's platform against the drill's."@en .
+
+ex:AngleGrinders a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:PowerTools ;
+    skos:notation "angle-grinders" ; ex:icon "disc" ;
+    skos:prefLabel "Angle grinders"@en ;
+    skos:definition "A cordless angle grinder."@en .
+
+ex:Batteries a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:PowerTools ;
+    skos:notation "batteries" ; ex:icon "battery" ;
+    skos:prefLabel "Batteries"@en ;
+    skos:altLabel "power tool battery"@en , "battery pack"@en ;
+    skos:definition "A rechargeable battery pack for a cordless power tool platform — not a phone battery, despite the shared words."@en .
+
+ex:BatteryChargers a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:PowerTools ;
+    skos:notation "battery-chargers" ; ex:icon "battery-charging" ;
+    skos:prefLabel "Battery chargers"@en ;
+    skos:definition "A charger for a cordless power tool battery platform."@en .
+
+ex:PowerToolAccessories a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:PowerTools ;
+    skos:notation "power-tool-accessories" ; ex:icon "toolbox" ;
+    skos:prefLabel "Power tool accessories"@en ;
+    skos:definition "Bits, cases and other accessories sold alongside cordless tools, with no compatibility rule of their own."@en .
+
+# ----------------------------------------------------------------------------
+# Telephony
+# ----------------------------------------------------------------------------
+ex:Telephony a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:topConceptOf ex:Taxonomy ;
+    skos:notation "telephony" ; ex:icon "phone" ;
+    skos:prefLabel "Telephony"@en ;
+    skos:definition "Cordless home phones and their accessories — unrelated to power tools, despite sharing the word \"cordless\"."@en .
+
+ex:CordlessPhones a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Telephony ;
+    skos:notation "cordless-phones" ; ex:icon "phone" ;
+    skos:prefLabel "Cordless phones"@en ;
+    skos:definition "A cordless home telephone handset and base."@en .
+
+ex:PhoneBatteries a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Telephony ;
+    skos:notation "phone-batteries" ; ex:icon "battery" ;
+    skos:prefLabel "Phone batteries"@en ;
+    skos:altLabel "cordless phone battery"@en ;
+    skos:definition "A replacement battery for a cordless phone handset. Keyword search confuses it with power-tool batteries; the taxonomy does not."@en .
+
+ex:PhoneAccessories a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Telephony ;
+    skos:notation "phone-accessories" ; ex:icon "smartphone" ;
+    skos:prefLabel "Phone accessories"@en ;
+    skos:definition "Cases, cradles and screen protectors for phones."@en .
+
+# ----------------------------------------------------------------------------
+# Accessories — general filler categories, no compatibility rules
+# ----------------------------------------------------------------------------
+ex:Accessories a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:topConceptOf ex:Taxonomy ;
+    skos:notation "accessories" ; ex:icon "package" ;
+    skos:prefLabel "Accessories"@en ;
+    skos:definition "General computer and desk accessories that carry no compatibility rules."@en .
+
+ex:Audio a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Accessories ;
+    skos:notation "audio" ; ex:icon "headphones" ;
+    skos:prefLabel "Audio"@en ;
+    skos:definition "Speakers and headphones."@en .
+
+ex:Peripherals a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Accessories ;
+    skos:notation "peripherals" ; ex:icon "mouse" ;
+    skos:prefLabel "Peripherals"@en ;
+    skos:definition "Mice, keyboards, webcams and other desk peripherals."@en .
+
+ex:Bags a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Accessories ;
+    skos:notation "bags" ; ex:icon "backpack" ;
+    skos:prefLabel "Bags"@en ;
+    skos:definition "Laptop sleeves and backpacks."@en .
+
+ex:UsbHubs a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Accessories ;
+    skos:notation "usb-hubs" ; ex:icon "usb" ;
+    skos:prefLabel "USB hubs"@en ;
+    skos:definition "A hub that adds USB, video or power pass-through ports."@en .
+
+ex:Cables a skos:Concept ; skos:inScheme ex:Taxonomy ; skos:broader ex:Accessories ;
+    skos:notation "cables" ; ex:icon "cable" ;
+    skos:prefLabel "Cables"@en ;
+    skos:definition "Charging and data cables."@en .
+
+# ============================================================================
+# Value vocabularies — constrained spec values the compatibility rules compare
+# ============================================================================
+
+ex:Connectors a skos:ConceptScheme ; skos:notation "connectors" ; skos:prefLabel "Connectors"@en .
+
+ex:UsbC a skos:Concept ; skos:inScheme ex:Connectors ; skos:notation "usb-c" ;
+    skos:prefLabel "USB-C"@en ; skos:altLabel "Type-C"@en , "USB Type-C"@en .
+
+ex:Barrel55mm a skos:Concept ; skos:inScheme ex:Connectors ; skos:notation "barrel-5.5mm" ;
+    skos:prefLabel "5.5mm barrel"@en ; skos:altLabel "barrel connector"@en , "DC barrel jack"@en .
+
+ex:StorageInterfaces a skos:ConceptScheme ; skos:notation "storage-interfaces" ; skos:prefLabel "Storage interfaces"@en .
+
+ex:Nvme a skos:Concept ; skos:inScheme ex:StorageInterfaces ; skos:notation "nvme" ;
+    skos:prefLabel "NVMe"@en ; skos:altLabel "PCIe SSD"@en .
+
+ex:Sata a skos:Concept ; skos:inScheme ex:StorageInterfaces ; skos:notation "sata" ;
+    skos:prefLabel "SATA"@en ; skos:altLabel "SATA III"@en , "SATA 3"@en .
+
+ex:MemoryTypes a skos:ConceptScheme ; skos:notation "memory-types" ; skos:prefLabel "Memory types"@en .
+
+ex:Ddr4Sodimm a skos:Concept ; skos:inScheme ex:MemoryTypes ; skos:notation "ddr4-sodimm" ;
+    skos:prefLabel "DDR4 SO-DIMM"@en ; skos:altLabel "DDR4"@en .
+
+ex:Ddr5Sodimm a skos:Concept ; skos:inScheme ex:MemoryTypes ; skos:notation "ddr5-sodimm" ;
+    skos:prefLabel "DDR5 SO-DIMM"@en ; skos:altLabel "DDR5"@en .
+
+ex:BatteryPlatforms a skos:ConceptScheme ; skos:notation "battery-platforms" ; skos:prefLabel "Battery platforms"@en .
+
+ex:Brakk18v a skos:Concept ; skos:inScheme ex:BatteryPlatforms ; skos:notation "brakk-18v" ;
+    skos:prefLabel "Brakk 18V"@en .
+
+ex:Brakk12v a skos:Concept ; skos:inScheme ex:BatteryPlatforms ; skos:notation "brakk-12v" ;
+    skos:prefLabel "Brakk 12V"@en .
+
+ex:Tornio20vMax a skos:Concept ; skos:inScheme ex:BatteryPlatforms ; skos:notation "tornio-20v-max" ;
+    skos:prefLabel "Tornio 20V MAX"@en ;
+    skos:altLabel "Tornio 20V"@en ;
+    skos:definition "Tornio's 20V MAX platform is built around the same nominal 18V cell voltage as Brakk's 18V platform — the number on the box differs, the platform still doesn't fit."@en .
+
+# ============================================================================
+# Class-level compatibility rules
+#
+# A rule states, once, how one product type constrains another. Products
+# never carry compatibility facts; they only carry the spec values the rules
+# compare (ADR-0005). Adding a product needs no ontology change; adding a
+# new accessory or device *type* does.
+# ============================================================================
+
+# Stated for every charger, not just laptop chargers: a shopper can plug a phone charger into a
+# laptop too, and the rule is what says a 20W phone charger isn't enough.
+ex:ChargerFitsLaptop a ex:CompatibilityRule ;
+    ex:accessoryType ex:Chargers ;
+    ex:deviceType    ex:Laptops ;
+    ex:check [ ex:accessorySpec "connector" ; ex:operator ex:equals ;         ex:deviceSpec "chargingPort" ;
+               ex:valueScheme ex:Connectors ;
+               skos:definition "The charger's plug must fit the laptop's charging port."@en ] ,
+             [ ex:accessorySpec "wattageW"  ; ex:operator ex:greaterOrEqual ; ex:deviceSpec "minChargerWattageW" ;
+               skos:definition "The charger must supply at least the power the laptop needs."@en ] .
+
+ex:SsdFitsLaptop a ex:CompatibilityRule ;
+    ex:accessoryType ex:Ssds ;
+    ex:deviceType    ex:Laptops ;
+    ex:check [ ex:accessorySpec "interface" ; ex:operator ex:equals ; ex:deviceSpec "m2SlotInterface" ;
+               ex:valueScheme ex:StorageInterfaces ;
+               skos:definition "The SSD's interface must match what the laptop's M.2 slot wires up — NVMe and SATA drives can share the same physical M.2 2280 shape and still not work."@en ] .
+
+ex:MemoryFitsLaptop a ex:CompatibilityRule ;
+    ex:accessoryType ex:SoDimmMemory ;
+    ex:deviceType    ex:Laptops ;
+    ex:check [ ex:accessorySpec "memoryType" ; ex:operator ex:equals ; ex:deviceSpec "memoryType" ;
+               ex:valueScheme ex:MemoryTypes ;
+               skos:definition "The memory module's generation must match what the laptop's memory controller supports."@en ] .
+
+ex:BatteryFitsTool a ex:CompatibilityRule ;
+    ex:accessoryType ex:Batteries ;
+    ex:deviceType    ex:Drills ;
+    ex:check [ ex:accessorySpec "platform" ; ex:operator ex:equals ; ex:deviceSpec "batteryPlatform" ;
+               ex:valueScheme ex:BatteryPlatforms ;
+               skos:definition "The battery must be built for the same cordless platform as the tool, whatever the voltage printed on the box."@en ] .

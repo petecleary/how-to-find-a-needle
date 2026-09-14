@@ -1,0 +1,23 @@
+# Builds the solution (warnings are errors) and runs the fast unit tests on every push (ADR-0002).
+# Integration tests need Docker and downloaded models, so they run locally or on demand.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build how-to-find-a-needle.slnx -c Release
+
+      - name: Unit tests
+        run: dotnet test tests/PI.SearchApi.Tests -c Release --no-build

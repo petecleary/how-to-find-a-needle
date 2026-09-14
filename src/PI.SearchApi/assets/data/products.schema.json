@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://needle.example/schemas/products.schema.json",
+  "title": "Product catalog",
+  "description": "Catches typos before they reach the seeder. Categories and vocabulary-backed spec values are checked against the real ontology by the catalog validation tests (ADR-0005), not by this file.",
+  "type": "object",
+  "required": ["products"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "products": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/product" }
+    }
+  },
+  "$defs": {
+    "product": {
+      "type": "object",
+      "required": ["id", "name", "brand", "categories", "price", "currency", "description", "reviews", "specs"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^PROD-\\d{4}$",
+          "description": "PROD-0001 style, per the domain vocabulary (root CLAUDE.md)."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "brand": { "type": "string", "minLength": 1 },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+            "description": "A skos:notation from domain-ontology.ttl. The first entry supplies the UI icon (ADR-0005)."
+          }
+        },
+        "price": { "type": "number", "exclusiveMinimum": 0 },
+        "currency": { "const": "GBP" },
+        "description": { "type": "string", "minLength": 1 },
+        "reviews": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "specs": {
+          "type": "object",
+          "additionalProperties": true,
+          "patternProperties": {
+            "(W|V|Gb|Ah|Mah|In|Kg)$": {
+              "type": "number",
+              "description": "Units are normalised into the key name (wattageW, voltageV, …), so the value is always a number, never a string like \"65W\" (ADR-0005)."
+            }
+          }
+        }
+      }
+    }
+  }
+}

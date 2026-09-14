@@ -1,0 +1,185 @@
+[
+  {
+    "id": "GQ-01",
+    "title": "Similarity is not compatibility",
+    "moment": "Vector search ranks the 45W barrel charger highly because it reads like the right one; the ontology flags it Incompatible on connector and wattage.",
+    "request": {
+      "query": "power adapter for my laptop",
+      "context": { "targetProductId": "PROD-0001" }
+    },
+    "expectations": {
+      "keyword": [
+        { "productId": "PROD-0011", "rank": { "max": 3 } }
+      ],
+      "vector": [
+        { "productId": "PROD-0014", "rank": { "max": 5 } },
+        { "productId": "PROD-0012", "rank": { "max": 5 } }
+      ],
+      "hybrid": [
+        { "productId": "PROD-0014", "rank": { "max": 5 } }
+      ],
+      "ontology": [
+        { "productId": "PROD-0012", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0011", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0014", "compatibility": "Incompatible" },
+        { "productId": "PROD-0015", "compatibility": "Incompatible" },
+        { "productId": "PROD-0016", "compatibility": "Incompatible" }
+      ]
+    }
+  },
+  {
+    "id": "GQ-02",
+    "title": "The synonym miss",
+    "moment": "Nobody's catalog says \"power brick\": keyword search finds nothing useful, vector search finds the laptop chargers, and Stage 6 synonym expansion rescues the keyword side.",
+    "request": {
+      "query": "power brick for laptop"
+    },
+    "expectations": {
+      "keyword": [
+        { "productId": "PROD-0012", "absentFromTop": 10 },
+        { "productId": "PROD-0011", "absentFromTop": 10 }
+      ],
+      "vector": [
+        { "productId": "PROD-0012", "rank": { "max": 5 } }
+      ],
+      "hybrid": [
+        { "productId": "PROD-0012", "rank": { "max": 5 } }
+      ],
+      "ontology": [
+        { "productId": "PROD-0012", "conceptMatch": "InConcept", "rank": { "max": 3 }, "keywordRank": { "max": 10 } }
+      ]
+    }
+  },
+  {
+    "id": "GQ-03",
+    "title": "The keyword trap",
+    "moment": "Keyword search ranks a cordless phone battery first because it shares the words; vector search puts the drill battery first; hybrid lifts the drill battery above the trap but can't push it out of the top 3; the ontology marks the phone battery OutOfConcept.",
+    "request": {
+      "query": "cordless drill battery"
+    },
+    "expectations": {
+      "keyword": [
+        { "productId": "PROD-0032", "rank": { "max": 3 } }
+      ],
+      "vector": [
+        { "productId": "PROD-0026", "rank": { "max": 3 } },
+        { "productId": "PROD-0032", "absentFromTop": 5 }
+      ],
+      "hybrid": [
+        { "productId": "PROD-0026", "rank": { "max": 2 } },
+        { "productId": "PROD-0032", "rank": { "min": 3 } }
+      ],
+      "ontology": [
+        { "productId": "PROD-0026", "conceptMatch": "InConcept", "rank": { "max": 3 } },
+        { "productId": "PROD-0032", "conceptMatch": "OutOfConcept" }
+      ]
+    }
+  },
+  {
+    "id": "GQ-04",
+    "title": "Structured search wins",
+    "moment": "The user already knows the attributes: an exact filter returns precisely the Brakk 18V items under £100, with no ranking needed.",
+    "request": {
+      "query": "",
+      "filters": {
+        "brand": "Brakk",
+        "maxPrice": 100.00,
+        "specs": { "voltageV": 18 }
+      }
+    },
+    "expectations": {
+      "structured": [
+        { "productId": "PROD-0006", "present": true },
+        { "productId": "PROD-0008", "present": true },
+        { "productId": "PROD-0010", "present": true },
+        { "productId": "PROD-0026", "present": true },
+        { "productId": "PROD-0027", "present": true },
+        { "productId": "PROD-0030", "present": true },
+        { "productId": "PROD-0007", "present": false },
+        { "productId": "PROD-0041", "present": false },
+        { "productId": "PROD-0029", "present": false },
+        { "productId": "PROD-0028", "present": false }
+      ]
+    }
+  },
+  {
+    "id": "GQ-05",
+    "title": "Same numbers, different platform",
+    "moment": "A Tornio 20V MAX battery looks almost identical to a Brakk 18V one; the ontology rejects it because the battery platform doesn't match the drill.",
+    "request": {
+      "query": "18V battery",
+      "context": { "targetProductId": "PROD-0006" }
+    },
+    "expectations": {
+      "vector": [
+        { "productId": "PROD-0028", "rank": { "max": 5 } }
+      ],
+      "ontology": [
+        { "productId": "PROD-0026", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0027", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0028", "compatibility": "Incompatible" },
+        { "productId": "PROD-0029", "compatibility": "Incompatible" }
+      ]
+    }
+  },
+  {
+    "id": "GQ-06",
+    "title": "Same slot, different interface",
+    "moment": "A SATA M.2 2280 SSD reads almost identically to the NVMe one the laptop needs; the ontology flags the interface mismatch.",
+    "request": {
+      "query": "SSD upgrade for my laptop",
+      "context": { "targetProductId": "PROD-0001" }
+    },
+    "expectations": {
+      "vector": [
+        { "productId": "PROD-0019", "rank": { "max": 5 } }
+      ],
+      "ontology": [
+        { "productId": "PROD-0018", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0019", "compatibility": "Incompatible" },
+        { "productId": "PROD-0021", "compatibility": "Incompatible" }
+      ]
+    }
+  },
+  {
+    "id": "GQ-07",
+    "title": "Beyond English",
+    "moment": "A Spanish query shares no words with the English catalog; Stage 6 matches the Spanish ontology label \"cargador\" to Chargers and expands to English terms, so the right chargers appear.",
+    "request": {
+      "query": "cargador USB-C para portátil"
+    },
+    "expectations": {
+      "keyword": [
+        { "productId": "PROD-0012", "absentFromTop": 10 }
+      ],
+      "ontology": [
+        { "productId": "PROD-0012", "conceptMatch": "InConcept", "rank": { "max": 5 } }
+      ]
+    }
+  },
+  {
+    "id": "GQ-08",
+    "title": "The device name trap",
+    "moment": "Shoppers name the device they own. Vector search treats \"Blackbird Aerobook 14\" as what's wanted, so the laptop itself and a Blackbird sleeve outrank the chargers; Stage 6 recognises the device name, uses it as the target device instead of search text, and puts the compatible chargers first.",
+    "request": {
+      "query": "charger for my Blackbird Aerobook 14"
+    },
+    "expectations": {
+      "keyword": [
+        { "productId": "PROD-0011", "rank": { "max": 3 } }
+      ],
+      "vector": [
+        { "productId": "PROD-0001", "rank": { "max": 3 } },
+        { "productId": "PROD-0037", "rank": { "max": 5 } },
+        { "productId": "PROD-0012", "absentFromTop": 5 }
+      ],
+      "ontology": [
+        { "productId": "PROD-0011", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0012", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0014", "compatibility": "Incompatible" },
+        { "productId": "PROD-0015", "compatibility": "Incompatible" },
+        { "productId": "PROD-0001", "absentFromTop": 5 }
+      ]
+    }
+  }
+]
