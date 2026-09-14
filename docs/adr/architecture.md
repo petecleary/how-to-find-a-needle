@@ -81,7 +81,7 @@ src/
     content/                      # speaker.md, talk.json + talk/*.md, stages/*.md, glossary.json
     src/
       api/                        # schema.d.ts (openapi-typescript), client.ts
-      components/                 # SearchBar, PipelineStepper, ResultCard, DebugDrawer, trace renderers
+      components/                 # SearchBar, PipelineStepper, StageTabs, ResultRow, trace renderers
       hooks/usePipelineSearch.ts
       App.tsx
 
@@ -173,28 +173,33 @@ A **"Going further"** talk step follows Stage 7. It maps the discussed-not-built
 
 ## 5. Frontend Layout
 
-The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a keyboard-driven talk mode that replaces slides, the live demo with a per-stage explanation panel, a glossary with inline term definitions, and the ADRs. The demo shows how the same query changes across the stages. → [ADR-0014](0014-web-ui-architecture.md)
+The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a keyboard-driven talk mode that replaces slides, the live demo, a glossary with inline term definitions, and the ADRs. The demo shows how the same query changes across the stages. It is branded Pi & Mash, in light and dark themes. → [ADR-0014](0014-web-ui-architecture.md), pictures in [docs/design](../design/README.md)
 
 ```text
-+-------------------------------------------------------------------------------------+
-| Search: "charger for my Blackbird Aerobook 14"   [Golden query ▾]   [My device ▾]   |
-| Filters: brand · category · price · specs      [Audience ▾]      [Presentation ☐]   |
-+-------------------------------------------------------------------------------------+
-| Stages: [1 Struct] [2 Keyword] [3 Vector] [4 Hybrid] [5 Onto] [6 RAG] [7 Pedagogy]  |
-|         Stage 5: ☑ expand synonyms ☑ apply constraints · Stage 7: ☑ apply pedagogy  |
-+--------------------------------------------------+----------------------------------+
-| LEFT — user view                                 | RIGHT — debug drawer             |
-| (6-7) AI summary: streamed markdown + chips      | Trace steps, one per pipeline    |
-| (7)   + explanation, streamed (pedagogy/baseline)| step:                            |
-| Result cards: specs · price · signal badges      | SQL · tsquery/lexemes · distances|
-|   (keyword rank, cosine distance, RRF rank)      | RRF formulas · SPARQL & rule     |
-|   · compatibility badge + reasons                | checks · prompts & raw LLM output|
-+--------------------------------------------------+----------------------------------+
++------------------------------------------------------------------------------------------+
+| (logo) How to Find a Needle / Stage 5 of 7                    ←/→  [Presentation]  [☾]   |
++------------------------------------------------------------------------------------------+
+| SEARCH · what is relevant?            | ONTOLOGY · how related? | PEDAGOGY · explain it?  |
+| (1) Structured (2) Keyword (3) Vector (4) Hybrid | (5) Ontology | (6) RAG (7) Pedagogy    |
++------------------------------------------------------------------------------------------+
+| [GQ-01 ▾] [ power adapter for my laptop           ] [I own: Aerobook 14 ▾] [Filters 0]    |
++------------------------------------------------------------------------------------------+
+| How it works | Results 50 | Answer (6–7) | Under the hood 8     stage options: toggles, |
+|                                                                 audience, apply pedagogy |
++------------------------------------------------------------------------------------------+
+| The selected tab, full width:                                                            |
+|   How it works    stage explanation with glossary hover cards                            |
+|   Results         badges · Stage 5: in concept | out of concept | flagged, with checks   |
+|   Answer          answer + citation chips | streamed explanation | evidence set          |
+|   Under the hood  trace steps as a flow → the selected step's renderer                   |
++------------------------------------------------------------------------------------------+
 ```
 
-- **Fixed search state:** query, filters, device, audience and toggles persist across stage switches (and live in the URL).
-- **Stepper:** click or use ←/→ to switch stages; each stage is bookmarkable for the talk.
-- **Debug drawer per stage:**
+- **Fixed search state:** query, filters, device, audience, toggles and the tab persist across stage switches (and live in the URL).
+- **Stepper:** stages grouped by triad colour (purple Search, green Ontology, orange Pedagogy); click, or use ←/→ in the demo.
+- **Tabs:** in talk mode → steps through a stage's tabs, then to the next step; H / R / A / U jump to a tab.
+- **Filters:** a Filters button in the search bar; a sidebar in the demo, a drawer in talk mode; every value comes from the ontology.
+- **Under the hood, per stage:**
   1. SQL + parameters + row count.
   2. Parsed tsquery, matched lexemes, "BM25-style" note.
   3. Query embedding details + cosine distances.

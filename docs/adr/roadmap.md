@@ -254,36 +254,75 @@ Build strictly in this order. Each step ends with its golden-query integration t
 
 ## Phase 3 — Frontend (stages 1–5)
 
-**ADRs:** [0014](0014-web-ui-architecture.md)
+**ADRs:** [0014](0014-web-ui-architecture.md) (visual design and stage tabs amended 2026-09-14), [0002](0002-solution-structure-and-orchestration.md) (web-ui CI)
+**Design reference:** [docs/design](../design/README.md): the agreed screens, light and dark.
 
 The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain no BGE signals.
 
-1. Scaffold `src/web-ui` (Vite + React + TS strict, Tailwind, shadcn/ui init, Lucide, ESLint, Prettier, Vitest, `.nvmrc`).
-2. Re-add `Aspire.Hosting.JavaScript`; `AddViteApp` with `WithReference(searchApi)`; Vite `/api` proxy from the service-discovery environment variable. Spike a dummy SSE endpoint through the proxy to confirm streaming isn't buffered, since Phase 4 depends on it.
-3. `npm run gen:api` with `openapi-typescript` → committed `src/api/schema.d.ts`; typed `fetch` client.
-4. `usePipelineSearch` hook (same request across stages, AbortController, URL state) + Vitest tests.
-5. Layout: `SearchBar` (golden-query presets, device picker), `FilterBar` (category tree from `/api/taxonomy`, spec filters from `/api/vocabularies`; no hard-coded values), `PipelineStepper` (seven tabs, keyboard ←/→, Stage 5 toggles), `ResultCard` with `SignalBadges` and `CompatibilityBadge`.
-6. `DebugDrawer` renderers: `SqlBlock`, `TsQueryView`, `DistanceTable`, `RrfTable`, `ConceptMatches`/`ExpansionView`/`RuleChecks`, JSON fallback.
-7. **Pages & content** (0014)
-   - React Router routes `/`, `/talk/:step`, `/demo`, `/glossary`, `/decisions`, `/decisions/:id`.
-   - `src/web-ui/content/`: placeholder `speaker.md`; `talk.json` with intro, hook, stages 1–5, and summary steps; `stages/*.md` explanations (Stage 5's explanation presents SKOS first and the rules as the step beyond it, [ADR-0013](0013-domain-ontology-and-compatibility.md)); `glossary.json`.
-   - Inline `term:` links with hover cards; ADRs rendered from `docs/adr/*.md` via `import.meta.glob`.
-   - Vitest content-integrity tests.
-   - ❓ Review the talk/demo split with Pete in the running UI before writing full content.
-8. Presentation mode (large type, on by default in talk mode); accessibility pass.
-9. CI: add `typecheck`, `lint` and `build` for `web-ui`.
+**Build order.** Risky plumbing first (hosting, streaming, types), then the stage screen from the outside in, then content and polish. Every step ends with `npm run typecheck`, `npm run lint`, `npm run build` and its own Vitest tests passing, and `dotnet build` still at 0 warnings.
+
+1. **Scaffold and theme** (0014 § Stack, § Visual design)
+   - Vite + React + TypeScript strict **into the existing `src/web-ui` folder** (keep `CLAUDE.md` and `assets/images/`). Tailwind; shadcn/ui init; Lucide; ESLint (typescript-eslint, react-hooks); Prettier; Vitest; `.nvmrc` (Node LTS).
+   - shadcn primitives, copied into `src/components/ui`: button, input, tabs, switch, toggle-group, checkbox, collapsible, select, hover-card, sheet, badge, tooltip. Add others only when a component needs them.
+   - Theme tokens in `src/index.css`: light on `:root`, dark on `.dark`; triad fills, inks and tints; status colours; neutrals; mapped into Tailwind and shadcn's variables.
+   - Self-hosted fonts in `src/assets/fonts/` (Dosis, Atkinson Hyperlegible, JetBrains Mono `.woff2` + each `OFL.txt`), `@font-face` rules, and font utilities (`font-brand` for logo and title only).
+   - `ThemeProvider` (system default, header override stored in `localStorage`) and the logo component (filled on light, outline on dark).
+   - `stageGroup(stage)` → `search | ontology | pedagogy` and its colour, with a unit test, so every component colours stages the same way.
+2. **Aspire hosting and the SSE spike** (0014 § Stack)
+   - Re-add `Aspire.Hosting.JavaScript`; `AddViteApp("web-ui", "../web-ui")` with `WithReference(searchApi)`, `WaitFor`, `WithExternalHttpEndpoints`.
+   - Vite `/api` proxy from `services__searchapi__https__0`.
+   - Spike a throwaway SSE endpoint through the proxy and confirm chunks arrive unbuffered (Phase 4 depends on it). Record the result here, then delete the spike.
+3. **API types and client** (0014 § API types)
+   - `npm run gen:api` (`openapi-typescript`) → committed `src/api/schema.d.ts`; `src/api/client.ts` typed `fetch` wrapper that surfaces ProblemDetails (503 guidance) instead of throwing opaque errors.
+   - Fix the Phase 2 finding first: FastEndpoints `Summary(...)` text doesn't reach `/openapi/v1.json`. Then regenerate.
+4. **State: `usePipelineSearch` and URL state** (0014 § State)
+   - Same request across stages; `AbortController` per request; `pageSize: 50`.
+   - URL state: `stage`, `tab`, `q`, `gq`, device, filters, toggles, audience. Talk position in `/talk/:step/:tab?`.
+   - Vitest: re-run on stage change, cancellation, URL round-trip, golden-query preset fills the request.
+5. **Stage screen shell** (0014 § Stage screen)
+   - `AppHeader`, `SearchBar` (golden-query picker from `/api/demo/queries`, device picker from `/api/demo/devices`, Filters button with count), `PipelineStepper` (three triad groups, ARIA tablist), `StageTabs` (How it works · Results · Answer · Under the hood; Answer disabled before Stage 6; H / R / A / U), `StageOptions` on the tab row (Stage 5 toggles; the audience picker is added in Phase 4).
+   - Loading, empty and 503 states for the tab content.
+6. **Filters** (0014, 0013)
+   - `FilterPanel`: brand, price range, category checkbox tree from `/api/taxonomy` (a parent includes its narrower concepts), spec vocabularies from `/api/vocabularies` with synonyms as hints. No hard-coded values.
+   - Demo: collapsible sidebar. Talk: `Sheet` drawer from the Filters button.
+   - Vitest: selecting values builds the right `filters` object.
+7. **Results tab** (0014, 0003, 0013)
+   - `ResultRow` with `SignalBadges` (keyword rank, vector rank, RRF), `CompatibilityBadge`, `ConceptBadge`, category icon from the taxonomy.
+   - Stages 1–4: one list. Stage 5: in concept · out of concept (collapsed) · Flagged column of `FlaggedCard` (every check with has / needs values; "#n before rules" from `signals.fusedRank`).
+   - Vitest: Stage 5 grouping, with GQ-01's response as a fixture.
+   - ✋ **Checkpoint with Pete:** review the running talk/demo split and the stage screen before writing full content.
+8. **Under the hood tab** (0014, 0003)
+   - `TraceFlow` (one chip per trace step, coloured by the step's stage) and the selected step's renderer: `SqlBlock` (SQL + parameters), `TsQueryView`, `EmbeddingView`, `DistanceTable`, `RrfTable`, `ConceptMatches`, `ExpansionView`, `ClassificationTable`, `RuleChecks`, JSON fallback.
+   - Vitest: renderer selection by `details` keys; every Stage 1–5 trace step for GQ-01 to GQ-08 gets a purpose-built renderer (no fallback).
+9. **How it works tab, glossary and content** (0014 § Content)
+   - `StageExplanation` renders `content/stages/{stage}.md` with the fixed headings. Stage 5 presents SKOS first and the rules as the step beyond it ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+   - Inline `[term](term:id)` links with hover cards that also open on focus; `glossary.json`.
+   - Vitest content-integrity tests (step files, golden-query IDs, `term:` links, one explanation per stage, valid `tabs` values).
+10. **Pages and talk mode** (0014 § Pages)
+    - Routes `/`, `/talk/:step/:tab?`, `/demo`, `/glossary`, `/decisions`, `/decisions/:id`.
+    - Home: title in Dosis, thesis, triad, *Start the talk* / *Explore the demo*, speaker card from `speaker.md` (placeholders for name, title, bio, email, LinkedIn, and a LinkedIn QR code image).
+    - Talk: `talk.json` with intro, hook, stages 1–5 and summary steps; → walks each stage step's `tabs`, then the next step. Vitest for the navigation order.
+    - Glossary page; Decisions pages from `docs/adr/*.md` via `import.meta.glob`, with ADR links rewritten.
+11. **Presentation mode, themes and accessibility pass**
+    - Presentation mode: large type, non-essential controls hidden; on by default in talk mode.
+    - Check both themes against the design screens at 1280×720; contrast ≥ 4.5:1 (3:1 large text); visible focus; landmarks; keyboard-only run through the talk.
+12. **CI** (0002)
+    - Add `npm ci`, `typecheck`, `lint`, `build` and `test` for `web-ui` to the GitHub Actions workflow.
 
 ### Acceptance criteria
-- `aspire run` opens the UI. Choosing GQ-01 and stepping 1 → 5 shows the results changing and the near miss flagged in Stage 5 with its reason.
+- `aspire run` opens the UI. Choosing GQ-01 and stepping 1 → 5 shows the results changing, and in Stage 5 the near miss appears in the Flagged column with its failed checks, **with no paging**.
 - Every trace step renders with a purpose-built view (no raw JSON for stages 1–5).
+- Both themes match the design screens in [docs/design](../design/README.md) closely: triad colours, status badges with text, Dosis only on the logo and title, fonts loading with the network disconnected.
 - Readable on a 1280×720 projector in presentation mode; keyboard-only operable.
-- Talk mode walks from Home through the intro and stages 1–5 using only the keyboard. Each stage step shows its explanation and live results; glossary terms show definitions on hover and focus; ADR pages render with working cross-links.
+- Talk mode walks from Home through the intro and stages 1–5 using only the keyboard, stepping through each stage's tabs; H / R / A / U jump to a tab. Glossary terms show definitions on hover and focus; ADR pages render with working cross-links.
+- Filters are built entirely from `/api/taxonomy` and `/api/vocabularies`: an ontology label edit appears after re-running the AppHost.
+- CI runs the web-ui checks.
 - ADR-0014 → **Accepted** (for stages 1–5).
 
 ### Open questions
-- ❓ Visual style and branding for the talk (colours, logo), if any.
-- ❓ Speaker details for `speaker.md` (name, role, bio, photo, links). Placeholders until supplied.
-- ❓ `docs/adr/thoughts.md` (untracked walk notes) would be picked up by the `docs/adr/*.md` glob. Move or delete it before the Decisions pages are built.
+- ✅ Visual style and branding: Pi & Mash; see ADR-0014 § Visual design and [docs/design](../design/README.md).
+- ❓ Speaker details for `speaker.md` (name, title, bio, email, LinkedIn, photo, LinkedIn QR code image). Placeholders until supplied.
+- ✅ `docs/adr/thoughts.md` no longer exists, so the Decisions glob is clean.
 
 ---
 
@@ -308,9 +347,9 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - Heading parser; validator (Decision Compatible, Near miss Incompatible, concept-label heuristic), skipped for the baseline apart from citations; parsed structure in `final` (`null` for the baseline); per-section timings and the prompt used in the trace; tests.
 5. **UI** (0014)
    - `useAnswerStream` (fetch + SSE parser, in parallel with the results request).
-   - `SummaryPanel` rendering streamed markdown with `[PROD-…]` chips that scroll to result cards, warning badges and time to first token.
-   - **Audience picker in the `SearchBar`** (part of URL state); **"Apply pedagogy" toggle** for Stage 7 in the `PipelineStepper`.
-   - `PromptView` trace renderer; loading states for multi-second calls.
+   - Enable the **Answer tab**: `AnswerPanel` (streamed answer, `[PROD-…]` chips, citation validation badges, time to first token), `ExplanationPanel` (Stage 7's five headings, or the baseline), `EvidenceSet` (what the model was given; chips jump here). The Results tab badge shows results are ready before the first token ([design](../design/screens/stage-7-answer.png)).
+   - **Audience picker** and Stage 7's **"Apply pedagogy" toggle** in `StageOptions` on the tab row (both part of URL state).
+   - `PromptView` renderer in the Under the hood tab; loading states for multi-second calls.
    - Talk-mode steps, stage explanations and glossary entries for Stages 6–7, including the baseline-then-pedagogy sequence for GQ-01.
 
 ### Acceptance criteria
@@ -320,7 +359,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 - Switching audience visibly changes the explanation's wording (novice uses everyday labels; expert is spec-first) without changing the facts.
 - In Stages 6–7 the results list renders before any LLM text, and the summary's first token appears within ~1.5 s on the presenter laptop (local Ollama). Stage 7's answer and explanation complete in under ~15 s combined.
 - Switching stage mid-stream cancels generation (visible in Ollama/the trace).
-- With Ollama stopped, Stages 6–7 still show results, the summary panel shows the 503 guidance, and Stages 1–5 are unaffected.
+- With Ollama stopped, Stages 6–7 still show results, the Answer tab shows the 503 guidance, and Stages 1–5 are unaffected.
 - ADRs 0015–0017 → **Accepted**.
 
 ### Open questions

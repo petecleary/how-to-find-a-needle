@@ -1,7 +1,7 @@
 # ADR-0017: Stage 7 — Pedagogy engine (streamed)
 
 - **Status:** Proposed
-- **Date:** 2026-09-13 (amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): renumbered from Stage 8; adds the baseline toggle and audience-aware labels)
+- **Date:** 2026-09-13 (amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): renumbered from Stage 8; adds the baseline toggle and audience-aware labels. Amended 2026-09-14 by the ADR-0014 visual design: the audience picker sits in the stage options on the tab row)
 - **Related:** ADR-0003, ADR-0013, ADR-0014, ADR-0015, ADR-0016, ADR-0018; golden queries GQ-01, GQ-05, GQ-06; roadmap Phase 4
 
 ## Context
@@ -14,7 +14,7 @@ To *show* that, the talk needs a fair comparison.
 - Comparing Stage 6's answer with Stage 7's explanation changes several things at once: a second call, an audience and a different prompt. The audience can't tell which one made the difference.
 - A plain LLM asked to "explain this for a beginner" also changes its tone. The question is what pedagogical design adds *on top of* that.
 
-Like Stage 6, it streams: results appear immediately, and the explanation writes itself in the summary panel ([ADR-0016](0016-rag-grounding-and-citations.md)).
+Like Stage 6, it streams: results appear immediately, and the explanation writes itself in the Answer tab ([ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0014](0014-web-ui-architecture.md)).
 
 ## Decision
 
@@ -44,7 +44,7 @@ Like Stage 6, it streams: results appear immediately, and the explanation writes
 | `expert` | Terse and spec-first | Preferred labels and spec terms (connector, wattage, interface) |
 
 - `hiddenLabel` values (misspellings) are never given to the model.
-- The audience is chosen once, in the search bar, and sent with every request like any other option. Only Stage 7 reads it, and each stage's trace lists the options it used, so this is visible ([ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0014](0014-web-ui-architecture.md)).
+- The audience is chosen once, in the stage options on the tab row, and sent with every request like any other option. Only Stage 7 reads it, and each stage's trace lists the options it used, so this is visible ([ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0014](0014-web-ui-architecture.md)).
 - The presenter can switch audience live to show the same facts explained three ways.
 
 ### The baseline toggle: `options.applyPedagogy` (default `true`)
