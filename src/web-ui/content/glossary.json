@@ -1,0 +1,339 @@
+[
+  {
+    "id": "precision",
+    "term": "Precision",
+    "definition": "The share of returned results that are right. Structured filters have perfect precision: everything they return matches.",
+    "topic": "Evaluation",
+    "seeAlso": ["recall"]
+  },
+  {
+    "id": "recall",
+    "term": "Recall",
+    "definition": "The share of right results that are returned. Synonym expansion raises recall: \"power brick\" finds chargers the catalogue never calls that.",
+    "topic": "Evaluation",
+    "seeAlso": ["precision"]
+  },
+  {
+    "id": "golden-query",
+    "term": "Golden query",
+    "definition": "A fixed query with expected results at each stage, GQ-01 to GQ-08. Each one is a moment in the talk, checked by an integration test.",
+    "topic": "Evaluation",
+    "adr": "0005-curated-dataset-and-golden-queries"
+  },
+  {
+    "id": "parameterised-sql",
+    "term": "Parameterised SQL",
+    "definition": "SQL whose values are sent separately from its text (@brand, @maxPrice), so user input can never change the statement. The trace shows the values beside the SQL, never pasted into it.",
+    "topic": "Structured search",
+    "adr": "0007-structured-search"
+  },
+  {
+    "id": "jsonb-containment",
+    "term": "JSONB containment",
+    "definition": "The Postgres @> operator: true when one JSON value contains another. Numbers compare as numbers, so {\"voltageV\": 18} matches 18 but not \"18\".",
+    "topic": "Structured search",
+    "adr": "0007-structured-search"
+  },
+  {
+    "id": "fts",
+    "term": "Full-text search",
+    "acronym": "FTS",
+    "definition": "Matching the words of a query against the words of documents, after normalising both: lower case, stemming, stop words. Postgres has it built in.",
+    "topic": "Keyword search",
+    "seeAlso": ["tsvector", "tsquery"],
+    "adr": "0008-keyword-search-bm25-style"
+  },
+  {
+    "id": "tsvector",
+    "term": "tsvector",
+    "definition": "Postgres's searchable form of a document: its lexemes and their positions, each weighted by the field it came from (A for the name down to D for reviews).",
+    "topic": "Keyword search",
+    "seeAlso": ["lexeme", "tsquery"]
+  },
+  {
+    "id": "tsquery",
+    "term": "tsquery",
+    "definition": "Postgres's parsed form of a search: lexemes joined by & (and), | (or) and <-> (followed by). 'power' & 'brick' & 'laptop' needs all three.",
+    "topic": "Keyword search",
+    "seeAlso": ["tsvector"]
+  },
+  {
+    "id": "lexeme",
+    "term": "Lexeme",
+    "definition": "A word reduced to its base form for matching: \"batteries\" becomes batteri. Queries and documents are matched lexeme by lexeme.",
+    "topic": "Keyword search",
+    "seeAlso": ["stemming"]
+  },
+  {
+    "id": "stemming",
+    "term": "Stemming",
+    "definition": "Cutting words to a common stem, so \"charger\" and \"chargers\" match. It is language-specific: an English stemmer does nothing useful for \"cargador\".",
+    "topic": "Keyword search",
+    "seeAlso": ["lexeme", "stop-word"]
+  },
+  {
+    "id": "stop-word",
+    "term": "Stop word",
+    "definition": "A very common word, such as \"for\" or \"my\", that full-text search drops before matching because it would match almost everything.",
+    "topic": "Keyword search"
+  },
+  {
+    "id": "bm25",
+    "term": "Best Match 25",
+    "acronym": "BM25",
+    "definition": "The standard keyword ranking formula: term frequency with saturation, inverse document frequency and document length normalisation. Postgres doesn't implement it, so this repo calls its ranking BM25-style.",
+    "topic": "Keyword search",
+    "seeAlso": ["ts-rank-cd", "idf"],
+    "adr": "0008-keyword-search-bm25-style"
+  },
+  {
+    "id": "ts-rank-cd",
+    "term": "ts_rank_cd",
+    "definition": "Postgres's cover-density ranking: it rewards query lexemes that appear often and close together, weighted by field. It has no IDF and no saturation, which is why it is BM25-style, not BM25.",
+    "topic": "Keyword search",
+    "seeAlso": ["bm25"]
+  },
+  {
+    "id": "idf",
+    "term": "Inverse document frequency",
+    "acronym": "IDF",
+    "definition": "A weight that makes rare words count for more than common ones. Without it, a word like \"charger\" that appears everywhere counts as much as a rare model number.",
+    "topic": "Keyword search",
+    "seeAlso": ["bm25"]
+  },
+  {
+    "id": "embedding",
+    "term": "Embedding",
+    "definition": "A list of numbers (768 here) that a model makes from text, placed so that texts with similar meanings point in similar directions. Vectors from different models can't be compared.",
+    "topic": "Vector search",
+    "seeAlso": ["cosine-distance", "dense-sparse"],
+    "adr": "0009-local-embeddings-onnx-runtime"
+  },
+  {
+    "id": "dense-sparse",
+    "term": "Dense and sparse vectors",
+    "definition": "A dense vector has a value in every dimension, like an embedding. A sparse vector is mostly zeros, one dimension per word, like keyword search. Hybrid search combines the two kinds.",
+    "topic": "Vector search",
+    "seeAlso": ["embedding", "learned-sparse"]
+  },
+  {
+    "id": "cosine-distance",
+    "term": "Cosine distance",
+    "definition": "1 minus the cosine of the angle between two vectors: 0 means the same direction, and larger means less alike. It is pgvector's <=> operator; cosine similarity is 1 − distance.",
+    "topic": "Vector search",
+    "seeAlso": ["embedding", "nearest-neighbour"],
+    "adr": "0010-vector-search-pgvector"
+  },
+  {
+    "id": "nearest-neighbour",
+    "term": "Nearest-neighbour search",
+    "definition": "Returning the vectors closest to a query vector. There is no threshold: it always returns the nearest ones, however far away they are.",
+    "topic": "Vector search",
+    "seeAlso": ["hnsw"]
+  },
+  {
+    "id": "hnsw",
+    "term": "Hierarchical Navigable Small World",
+    "acronym": "HNSW",
+    "definition": "An approximate nearest-neighbour index: a layered graph that finds close vectors quickly by skipping most of them. ef_search trades speed for recall.",
+    "topic": "Vector search",
+    "seeAlso": ["nearest-neighbour", "pgvector"],
+    "adr": "0010-vector-search-pgvector"
+  },
+  {
+    "id": "pgvector",
+    "term": "pgvector",
+    "definition": "A Postgres extension that stores vectors in a column and orders rows by distance, so similarity and SQL filters run in one statement.",
+    "topic": "Vector search",
+    "adr": "0010-vector-search-pgvector"
+  },
+  {
+    "id": "onnx",
+    "term": "Open Neural Network Exchange",
+    "acronym": "ONNX",
+    "definition": "A file format for trained models. ONNX Runtime runs the Nomic embedding model locally from .NET, with no Python and no network.",
+    "topic": "Vector search",
+    "adr": "0009-local-embeddings-onnx-runtime"
+  },
+  {
+    "id": "hybrid-search",
+    "term": "Hybrid search",
+    "definition": "Running keyword and vector search and combining their results, so exact-word matches and meaning matches both count.",
+    "topic": "Hybrid search",
+    "seeAlso": ["rrf", "dense-sparse"],
+    "adr": "0011-hybrid-search-rrf"
+  },
+  {
+    "id": "rrf",
+    "term": "Reciprocal Rank Fusion",
+    "acronym": "RRF",
+    "definition": "Combines ranked lists using only ranks: RRF(d) = Σ 1 / (k + rank), with k = 60. 1/(60+1) + 1/(60+2) = 0.03252, so being in both lists matters far more than being 1st or 2nd.",
+    "topic": "Hybrid search",
+    "seeAlso": ["hybrid-search"],
+    "adr": "0011-hybrid-search-rrf"
+  },
+  {
+    "id": "candidate-depth",
+    "term": "Candidate depth",
+    "definition": "How many results each retriever returns before fusion and rules: 50 here. Retrieve deep, page late, because a rule can only rescue a product that was retrieved.",
+    "topic": "Hybrid search"
+  },
+  {
+    "id": "ontology",
+    "term": "Ontology",
+    "definition": "A model of a domain: its concepts, what they are called and the rules between them. It describes kinds of thing, never individual products; that would be a knowledge graph.",
+    "topic": "Ontology",
+    "seeAlso": ["skos", "knowledge-graph"],
+    "adr": "0013-domain-ontology-and-compatibility"
+  },
+  {
+    "id": "skos",
+    "term": "Simple Knowledge Organization System",
+    "acronym": "SKOS",
+    "definition": "A W3C standard for taxonomies and thesauri: concepts with preferred and alternative labels, linked by broader and narrower.",
+    "topic": "Ontology",
+    "seeAlso": ["taxonomy", "alt-label", "broader-narrower"],
+    "adr": "0013-domain-ontology-and-compatibility"
+  },
+  {
+    "id": "taxonomy",
+    "term": "Taxonomy",
+    "definition": "A tree of categories from broad to narrow: Power › Chargers › Laptop chargers. Here it is a SKOS concept scheme, and products name their categories by notation.",
+    "topic": "Ontology",
+    "seeAlso": ["skos-concept", "broader-narrower"]
+  },
+  {
+    "id": "skos-concept",
+    "term": "Concept",
+    "definition": "One idea in a SKOS scheme, such as Chargers. It has a notation (chargers) for code, labels for people, and links to broader and narrower concepts.",
+    "topic": "Ontology",
+    "seeAlso": ["skos", "taxonomy"]
+  },
+  {
+    "id": "alt-label",
+    "term": "Alternative label",
+    "definition": "skos:altLabel, another name for a concept: \"power brick\" for Chargers. Labels can be in any language (\"Cargadores\"@es), and hidden labels hold common misspellings.",
+    "topic": "Ontology",
+    "seeAlso": ["skos-concept"]
+  },
+  {
+    "id": "broader-narrower",
+    "term": "Broader and narrower",
+    "definition": "skos:broader and skos:narrower link a concept to its parent and its children. Laptop chargers is narrower than Chargers, so a search for chargers includes it.",
+    "topic": "Ontology",
+    "seeAlso": ["taxonomy"]
+  },
+  {
+    "id": "value-vocabulary",
+    "term": "Value vocabulary",
+    "definition": "A small SKOS scheme of allowed spec values, such as the connectors usb-c and barrel-5.5mm, with synonyms like \"Type-C\". Products store the notation, so values compare exactly.",
+    "topic": "Ontology",
+    "seeAlso": ["skos-concept"]
+  },
+  {
+    "id": "domain-rule",
+    "term": "Domain rule",
+    "definition": "A class-level constraint between product types, such as \"a charger's plug must fit the laptop's charging port\". It is stated once per pair of types, never per product, and goes one step beyond SKOS.",
+    "topic": "Ontology",
+    "seeAlso": ["near-miss", "shacl"],
+    "adr": "0013-domain-ontology-and-compatibility"
+  },
+  {
+    "id": "target-device",
+    "term": "Target device",
+    "definition": "The product the shopper owns, from the device picker or a device name in the query. Stage 5 checks candidates against it.",
+    "topic": "Ontology"
+  },
+  {
+    "id": "near-miss",
+    "term": "Near miss",
+    "definition": "A product that is semantically similar but incompatible, like a 45W barrel charger for a laptop that needs 65W over USB-C. Similarity ranks it high; a rule flags it.",
+    "topic": "Ontology",
+    "seeAlso": ["domain-rule"]
+  },
+  {
+    "id": "turtle",
+    "term": "Turtle",
+    "acronym": "TTL",
+    "definition": "A readable text format for RDF. domain-ontology.ttl holds the taxonomy, the value vocabularies and the rules.",
+    "topic": "Ontology",
+    "seeAlso": ["sparql"]
+  },
+  {
+    "id": "sparql",
+    "term": "SPARQL",
+    "definition": "The query language for RDF, as SQL is for tables. The API reads labels and rules from the TTL with small .rq queries.",
+    "topic": "Ontology",
+    "seeAlso": ["turtle"]
+  },
+  {
+    "id": "llm",
+    "term": "Large language model",
+    "acronym": "LLM",
+    "definition": "A model that generates text. In Stages 6–7 it writes the answer and the explanation from the evidence Stage 5 found, and its output is checked, not trusted.",
+    "topic": "AI stages",
+    "adr": "0015-llm-hosting-and-client"
+  },
+  {
+    "id": "rag",
+    "term": "Retrieval-augmented generation",
+    "acronym": "RAG",
+    "definition": "Giving an LLM retrieved evidence to answer from, and asking it to cite that evidence. In Stage 6, better retrieval gives better answers.",
+    "topic": "AI stages",
+    "seeAlso": ["llm"],
+    "adr": "0016-rag-grounding-and-citations"
+  },
+  {
+    "id": "chunking",
+    "term": "Chunking",
+    "definition": "Splitting long documents such as manuals and PDFs into pieces before embedding them. How you split decides what can be found. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "adr": "0018-scope-and-going-further"
+  },
+  {
+    "id": "re-ranking",
+    "term": "Re-ranking",
+    "definition": "A second, slower model re-orders the top candidates for precision before they reach a user or an LLM. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["cross-encoder"],
+    "adr": "0018-scope-and-going-further"
+  },
+  {
+    "id": "cross-encoder",
+    "term": "Cross-encoder",
+    "definition": "A model that reads the query and a document together and scores the pair. More accurate than comparing separate embeddings, but too slow to run over a whole catalogue.",
+    "topic": "Going further",
+    "seeAlso": ["re-ranking"]
+  },
+  {
+    "id": "learned-sparse",
+    "term": "Learned sparse retrieval",
+    "definition": "A model produces a sparse, keyword-like vector that also scores related words it learned, as BGE-M3's sparse output does. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["dense-sparse"],
+    "adr": "0012-bge-m3-dense-and-sparse"
+  },
+  {
+    "id": "owl",
+    "term": "Web Ontology Language",
+    "acronym": "OWL",
+    "definition": "A W3C language for formal ontologies that a reasoner can draw conclusions from. The step beyond this repo's small rule vocabulary. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["shacl", "ontology"]
+  },
+  {
+    "id": "shacl",
+    "term": "Shapes Constraint Language",
+    "acronym": "SHACL",
+    "definition": "A W3C language for validating RDF data against shapes, such as \"every laptop has a chargingPort\". Where this repo's rules would grow next. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["owl", "domain-rule"]
+  },
+  {
+    "id": "knowledge-graph",
+    "term": "Knowledge graph",
+    "definition": "A graph of facts about individual things (this product, that maker) rather than kinds of thing. Useful for multi-hop questions; this repo keeps products in the catalogue instead. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["ontology"]
+  }
+]

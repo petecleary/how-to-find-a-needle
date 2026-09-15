@@ -371,6 +371,16 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - `StageExplanation` renders `content/stages/{stage}.md` with the fixed headings. Stage 5 presents SKOS first and the rules as the step beyond it ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
    - Inline `[term](term:id)` links with hover cards that also open on focus; `glossary.json`.
    - Vitest content-integrity tests (step files, golden-query IDs, `term:` links, one explanation per stage, valid `tabs` values).
+   - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **135 pass (29 new)**. `dotnet` untouched. Checked in headless Chrome at 1280×720 against the design screen (Stage 5) and on Stage 2. Built:
+     - **Content:** `content/stages/{structured,keyword,vector,hybrid,ontology}.md` with the seven fixed headings. Every claim was checked against the ADRs and the live API (e.g. GQ-01's barrel charger is #2 in Hybrid and fails two checks; GQ-02 has no keyword matches; 1/(60+1) + 1/(60+2) = 0.03252). Stage 5 leads with SKOS and presents the rules as the step beyond it.
+     - **`content/glossary.json`:** 44 entries in 8 topics, including every term ADR-0014 lists and the going-further terms (each marked "Discussed in the talk, not built").
+     - **`react-markdown` 10.1 + `remark-gfm` 4.0** (named in ADR-0014). `Markdown` renders content with two link schemes of our own: `[RRF](term:rrf)` → `GlossaryTerm` (Radix hover card, opens on focus too) and `[ADR-0011 · …](adr:0011-hybrid-search-rrf)` → `/decisions/…`. `urlTransform` keeps those schemes; everything else goes through react-markdown's default, and raw HTML isn't rendered.
+     - `StageExplanation` (three columns, as the design) and `HowItWorksTab`. `lib/content.ts` loads the files at build time with `import.meta.glob`, splits them at the fixed headings and finds `term:`, `adr:` and `GQ-nn` references.
+     - **Content-integrity tests:** an explanation for every stage the API serves (and no stray files); fixed headings in order, each with text; every `term:` link resolves; every `adr:` link names a file in `docs/adr/`; every GQ id is in the API's `golden-queries.json`; glossary ids unique and kebab-case, `seeAlso` and `adr` references resolve.
+   - Findings:
+     - **Moved to step 10:** the `talk.json` checks (step files, `tabs` values) and the `/glossary` and `/decisions/:id` pages. Until then, term and ADR links go to routes that redirect to `/demo`.
+     - **react-markdown blanks unknown link schemes** (a guard against `javascript:` URLs), so `term:` and `adr:` links rendered with no href until `urlTransform` allowed exactly those two.
+     - Stage 6–7 explanations are written with those stages in Phase 4; until then their How it works tab says the file doesn't exist yet.
 10. **Pages and talk mode** (0014 § Pages)
     - Routes `/`, `/talk/:step/:tab?`, `/demo`, `/glossary`, `/decisions`, `/decisions/:id`.
     - Home: title in Dosis, thesis, triad, *Start the talk* / *Explore the demo*, speaker card from `speaker.md` (placeholders for name, title, bio, email, LinkedIn, and a LinkedIn QR code image).
