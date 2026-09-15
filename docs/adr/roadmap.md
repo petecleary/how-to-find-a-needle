@@ -252,7 +252,7 @@ Build strictly in this order. Each step ends with its golden-query integration t
 
 ---
 
-## Phase 3 — Frontend (stages 1–5)
+## Phase 3 — Frontend (stages 1–5) ✅ (closed 2026-09-15)
 
 **ADRs:** [0014](0014-web-ui-architecture.md) (visual design and stage tabs amended 2026-09-14), [0002](0002-solution-structure-and-orchestration.md) (web-ui CI)
 **Design reference:** [docs/design](../design/README.md): the agreed screens, light and dark.
@@ -424,26 +424,26 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
       - `npm ci` prints a notice that `fsevents` (a macOS-only optional dependency) has install scripts; it is skipped on Linux and changes nothing.
       - The workflow keeps `actions/checkout@v4` to match the existing job.
 
-### Phase 3 status (2026-09-15)
-- Steps 1–12 are built, and their checks pass locally. Still open before **ADR-0014 → Accepted (for stages 1–5)**:
-  - The CI `web-ui` job running green on GitHub (next push).
-  - Pete's review of the talk content (first draft) and the speaker details (placeholders), and the deferred laptop-charger icon.
-  - A run-through with the ontology label edit from the acceptance criteria (edit the TTL, re-run the AppHost, see the filter change).
+### Phase 3 status ✅ closed by Pete (2026-09-15)
+- Steps 1–12 are built, and their checks pass locally (Vitest 219, typecheck, lint, build, Prettier; `dotnet build` at 0 warnings).
+- **Closed with the remaining checks and the copy review moved to the end of the build:** Pete runs the manual checks (➡️ below) and reviews the talk and copy once the whole demo is complete, in [Phase 5 step 8, Clean-up and sign-off](#phase-5--finish--publish). **ADR-0014 stays Proposed until then**, because an ADR is Accepted only when its criteria are verified.
 
 ### Acceptance criteria
-- `aspire run` opens the UI. Choosing GQ-01 and stepping 1 → 5 shows the results changing, and in Stage 5 the near miss appears in the Flagged column with its failed checks, **with no paging**.
-- Every trace step renders with a purpose-built view (no raw JSON for stages 1–5).
-- Both themes match the design screens in [docs/design](../design/README.md) closely: triad colours, status badges with text, Dosis only on the logo and title, fonts loading with the network disconnected.
-- Readable on a 1280×720 projector in presentation mode; keyboard-only operable.
-- Talk mode walks from Home through the intro and stages 1–5 using only the keyboard, stepping through each stage's tabs; H / R / A / U jump to a tab. Glossary terms show definitions on hover and focus; ADR pages render with working cross-links.
-- Filters are built entirely from `/api/taxonomy` and `/api/vocabularies`: an ontology label edit appears after re-running the AppHost.
-- CI runs the web-ui checks.
-- ADR-0014 → **Accepted** (for stages 1–5).
+- ✅ `aspire run` opens the UI. Choosing GQ-01 and stepping 1 → 5 shows the results changing, and in Stage 5 the near miss appears in the Flagged column with its failed checks, **with no paging**.
+- ✅ Every trace step renders with a purpose-built view (no raw JSON for stages 1–5): all 129 steps for GQ-01 to GQ-08 are covered by a test.
+- ✅ Both themes match the design screens in [docs/design](../design/README.md) closely: triad colours, status badges with text, Dosis only on the logo and title. ➡️ *Fonts loading with the network disconnected:* Pete checks (the fonts are self-hosted).
+- ✅ Readable on a 1280×720 projector in presentation mode; keyboard-only operable (step 11's run).
+- ✅ Talk mode walks the intro and stages 1–5 using only the keyboard, stepping through each stage's tabs; H / R / A / U jump to a tab; glossary terms show definitions on hover and focus; ADR pages render with working cross-links. ➡️ *Starting from Home by keyboard:* Pete checks.
+- ➡️ Filters are built entirely from `/api/taxonomy`, `/api/vocabularies` (and `/api/brands`): *an ontology label edit appears after re-running the AppHost:* Pete checks.
+- ➡️ CI runs the web-ui checks: the job is built and passes on a clean copy on Node 24; *green on GitHub* after the next push.
+- ➡️ ADR-0014 → **Accepted** (for stages 1–5): in Phase 5 step 8.
 
 ### Open questions
 - ✅ Visual style and branding: Pi & Mash; see ADR-0014 § Visual design and [docs/design](../design/README.md).
-- ❓ Speaker details for `speaker.md` (name, title, bio, email, LinkedIn, photo, LinkedIn QR code image). Placeholders until supplied.
+- ➡️ Speaker details for `speaker.md` (name, title, bio, email, LinkedIn, photo, LinkedIn QR code image): placeholders until supplied; moved to Phase 5 step 8.
+- ➡️ The laptop-charger icon (`laptop-chargers` → `laptop` in the TTL): deferred; moved to Phase 5 step 8.
 - ✅ `docs/adr/thoughts.md` no longer exists, so the Decisions glob is clean.
+- ✅ Brand filter: a dropdown from `GET /api/brands` (step 6, decided at the step 7 checkpoint).
 
 ---
 
@@ -496,17 +496,24 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 2. **README (final pass; kept current since Phase 1):** prerequisites (.NET 10, Docker, Node LTS, Aspire CLI, Hugging Face CLI, and either Ollama or an OpenAI/Anthropic API key), model download, `aspire run`, a tour of the 7 stages, how to reset the data volume, troubleshooting.
 3. **CI:** OpenAPI → TypeScript drift check; optional manual integration-test workflow.
 4. **Talk content & rehearsal:**
-   - Finalise the talk-mode steps, speaker details and summary.
-   - Add the **"Going further" step** ([ADR-0018](0018-scope-and-going-further.md)): one table of the discussed-not-built topics by pipeline position, plus glossary entries (chunking, re-ranking, cross-encoder, learned sparse, OWL, SHACL, knowledge graph). No agent protocols.
+   - The talk-mode steps, the **"Going further" step** ([ADR-0018](0018-scope-and-going-further.md)) and its glossary entries were drafted in Phase 3 (step 10); Stages 6–7 steps are added in Phase 4. The copy itself is reviewed in step 8. No agent protocols.
    - Rehearse the full talk end to end in the UI (there are no slides). Rebuild `nomic.jsonl` after dataset growth.
 5. **Public ADRs:** write learner-facing ADRs from each ADR's *Teaching notes*; choose their public location; decide what happens to these working ADRs; point the UI's `/decisions` pages at the public versions.
 6. **Final review:** code comments read as teaching material; every stage file opens with its technique / strength / failure-mode comment; all ADRs **Accepted**, **Rejected** or explicitly superseded.
 7. **OpenAI providers (when credits allow)** (0009, 0015): test OpenAI embeddings (`Embeddings:Provider = openai`, `Rebuild: true` → commit `openai.jsonl`) and OpenAI chat; adjust golden-query expectations if needed; document the one-key setup in the README.
+8. **Clean-up and sign-off (Pete, once the whole demo is complete)** (0014):
+   - **Copy and talk review:** every piece of UI text Pete hasn't written yet. The talk steps (`content/talk.json`, `content/talk/*.md`: intro, the needle, each stage caption, Going further, summary), the stage explanations (`content/stages/*.md`), the glossary (`content/glossary.json`), the Home thesis (`content/home.md`), and short labels in components (filter hints, empty states, trace section titles).
+   - **Speaker details** in `content/speaker.md`, with the photo and LinkedIn QR code in `content/images/`.
+   - **Deferred:** the laptop-charger icon (`laptop-chargers` → `laptop` in the TTL; `plug` suggested).
+   - **Checks carried over from Phase 3:** fonts load with the network disconnected; an ontology label edit appears in the filters after re-running the AppHost; the talk starts from Home by keyboard alone; the CI `web-ui` job is green on GitHub.
+   - Then **ADR-0014 → Accepted**.
 
 ### Acceptance criteria
 - A fresh clone on a clean machine runs end to end by following the README alone.
 - The whole golden-query suite passes at ~500 products.
 - Public ADRs are published; the full talk, including the going-further step, is rehearsed end to end in the UI's talk mode.
+- Pete has reviewed the copy and the talk, filled in the speaker details, and run the checks carried over from Phase 3 (step 8).
+- ADR-0014 → **Accepted**.
 - ADR-0018 → **Accepted**.
 
 ### Open questions
@@ -528,6 +535,6 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 | 0007–0011 | 2 |
 | 0012 | — (Rejected by ADR-0018) |
 | 0013 | 1 (vocabulary), 2 (stage) |
-| 0014 | 3 (+ AI panels in 4, going-further step in 5) |
+| 0014 | 3 (+ AI panels in 4, clean-up, copy review and acceptance in 5) |
 | 0015–0017 | 4 |
 | 0018 | 0–2 (rework), 4 (pedagogy baseline), 5 (going-further content) |
