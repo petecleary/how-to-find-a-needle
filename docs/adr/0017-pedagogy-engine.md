@@ -1,7 +1,7 @@
 # ADR-0017: Stage 7 — Pedagogy engine (streamed)
 
 - **Status:** Proposed
-- **Date:** 2026-09-13 (amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): renumbered from Stage 8; adds the baseline toggle and audience-aware labels. Amended 2026-09-14 by the ADR-0014 visual design: the audience picker sits in the stage options on the tab row)
+- **Date:** 2026-09-13 (amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): renumbered from Stage 8; adds the baseline toggle and audience-aware labels. Amended 2026-09-14 by the ADR-0014 visual design: the audience picker sits in the stage options on the tab row. Amended 2026-09-15 while building Phase 4 step 3: one shared user message, audience guidance in its own file, audience-specific words offered identically to both prompts, Near miss limited to Incompatible products, tolerant heading parsing)
 - **Related:** ADR-0003, ADR-0013, ADR-0014, ADR-0015, ADR-0016, ADR-0018; golden queries GQ-01, GQ-05, GQ-06; roadmap Phase 4
 
 ## Context
@@ -59,6 +59,9 @@ This is Stage 7's before/after switch, like Stage 5's `expandSynonyms` and `appl
 | Validation | Citations only | Citations and structure checks |
 
 - The grounding rules (evidence only, cite every product, no new products) are in **both** prompts. The comparison isolates teaching design and doesn't re-run the RAG lesson from Stage 6.
+- **One user message for both.** `assets/prompts/pedagogy-user.md` holds the question, the validated answer, the evidence, the concepts and the rules, and is rendered identically whichever system prompt is used. Only the system prompt changes, so the trace can show that the facts were the same.
+- **The words offered depend on the audience, not on the toggle.** The user message lists each concept with the words for that audience (novice: the everyday `altLabel`s, then the preferred label to give once; enthusiast: the preferred label; expert: the preferred label, plus the spec terms from the rules that were checked, such as connector and wattage). The baseline at a given audience is offered exactly the same words.
+- **Audience guidance** (how to write for a novice, enthusiast or expert) is in `assets/prompts/pedagogy-audiences.md`, one section per audience. The pedagogy system prompt includes the active section; the baseline names the audience only, as a developer's first prompt would.
 - **The baseline must not be a straw man.** It's a sensible, typical prompt, and the trace shows it in full, so the audience can judge the comparison for themselves.
 - The talk sequence for GQ-01:
   1. `novice` with the toggle off;
@@ -96,12 +99,13 @@ Check the "W" rating printed on your current charger.
 ```
 
 - Chunks stream as `delta` events with `section: "explanation"`, whichever prompt is used. The UI renders headings and bullets as they arrive.
+- **The heading parser is tolerant about form, strict about content.** It accepts a markdown heading of any level (`## Decision`, `### Decision`) or a line that is only the bold heading name (`**Decision**`), case-insensitively, because small models vary the markup. Missing and out-of-order headings are still warnings.
 - **Validation on completion** (reported in the explanation's `final` event):
   - **Always:** citations are checked against the evidence set (the shared validator from ADR-0016).
   - **Pedagogy on only:**
     - All five headings are present, in order; missing or reordered headings produce a warning.
     - **Decision** cites exactly one product, and it must be **Compatible**. The exception: if the answer reported insufficient evidence, Decision must say no suitable product was found.
-    - **Near miss** cites an **Incompatible** or out-of-concept product, or says "None" when the evidence has none.
+    - **Near miss** cites an **Incompatible** product, or says "None" when the evidence has none. (Out-of-concept products are left out of the evidence set, [ADR-0016](0016-rag-grounding-and-citations.md), so they can't be cited.)
     - **Concepts:** each bolded term should match a matched concept's or fired rule's label. Anything else gets a heuristic "concept not from the ontology" warning.
   - **Baseline:** the structure checks are listed in the trace as *not applied (baseline prompt)*.
 - `final` also carries the **parsed structure** for tests and the UI: `{ decision: { productId }, concepts: [term], nearMiss: { productId }, ruleOfThumb, nextStep }`. It is `null` for the baseline.

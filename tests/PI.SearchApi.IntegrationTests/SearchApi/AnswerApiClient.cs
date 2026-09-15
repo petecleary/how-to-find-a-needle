@@ -98,4 +98,14 @@ public sealed record AnswerFinalDto(
     IReadOnlyList<string> Citations,
     IReadOnlyList<string> InvalidCitations,
     bool InsufficientEvidence,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    ExplanationStructureDto? Structure);
+
+public sealed record ExplanationStructureDto(
+    ExplanationProductDto Decision,
+    IReadOnlyList<string> Concepts,
+    ExplanationProductDto NearMiss,
+    string? RuleOfThumb,
+    string? NextStep);
+
+public sealed record ExplanationProductDto(string? ProductId);

@@ -23,4 +23,10 @@ public sealed record AnswerFinal
 
     /// <summary>Plain-English problems found after generation. Heuristic checks say so in their text.</summary>
     public required IReadOnlyList<string> Warnings { get; init; }
+
+    /// <summary>
+    /// Stage 7's explanation with pedagogy on: the five headings, parsed (ADR-0017). Null for the answer section and for
+    /// the baseline explanation, which has no fixed structure to parse.
+    /// </summary>
+    public ExplanationStructure? Structure { get; init; }
 }

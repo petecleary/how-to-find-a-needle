@@ -12,6 +12,7 @@ using PI.SearchApi.Pipeline.Fusion;
 using PI.SearchApi.Pipeline.Hybrid;
 using PI.SearchApi.Pipeline.Keyword;
 using PI.SearchApi.Pipeline.Ontology;
+using PI.SearchApi.Pipeline.Pedagogy;
 using PI.SearchApi.Pipeline.Rag;
 using PI.SearchApi.Pipeline.Structured;
 using PI.SearchApi.Pipeline.Vector;
@@ -104,6 +105,11 @@ builder.Services.AddSingleton(new PromptLibrary(Path.Combine(AppContext.BaseDire
 builder.Services.AddSingleton<EvidenceSetBuilder>();
 builder.Services.AddTransient<IRagSearch, RagSearch>();
 builder.Services.AddTransient<IAnswerGenerator, AnswerGenerator>();
+
+// --- Stage 7: Pedagogy — the answer, then an audience-aware explanation or the baseline (ADR-0017) ---
+// Reuses Stage 6's retrieval and answer; adds the prompt builder (reads prompt files only: a singleton) and the engine.
+builder.Services.AddSingleton<PedagogyPromptBuilder>();
+builder.Services.AddTransient<IPedagogyEngine, PedagogyEngine>();
 
 var app = builder.Build();
 

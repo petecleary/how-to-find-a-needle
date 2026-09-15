@@ -43,5 +43,5 @@ public static class RagTestData
                 ConceptMatch.InConcept, 5, EvidenceRole.Incompatible, "#5"),
         ],
         [new EvidenceConcept("laptop-chargers", "Laptop chargers", ["power adapter", "power brick"], "A charger for a laptop.")],
-        [new EvidenceRule("chargers → laptops", ["The charger's plug must fit the laptop's charging port."])]);
+        [new EvidenceRule("chargers → laptops", ["The charger's plug must fit the laptop's charging port."], ["connector", "chargingPort", "wattageW", "minChargerWattageW"])]);
 }

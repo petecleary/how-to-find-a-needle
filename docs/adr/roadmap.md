@@ -496,6 +496,25 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - Two prompts: `pedagogy-system.md` (principles, fixed markdown headings, audience sections with label choice) and `pedagogy-baseline.md` (a fair, plain prompt with the same grounding rules), selected by `options.applyPedagogy`.
    - Heading parser; validator (Decision Compatible, Near miss Incompatible, concept-label heuristic), skipped for the baseline apart from citations; parsed structure in `final` (`null` for the baseline); per-section timings and the prompt used in the trace; tests.
    - ✋ **Checkpoint with Pete:** review `pedagogy-baseline.md` (fair, not a straw man) and `pedagogy-system.md` with GQ-01 novice off and on side by side; freeze the prompts before the bake-off.
+   - ✅ **Built 2026-09-15** (awaiting the checkpoint). `dotnet build` 0 warnings; unit tests **246 pass (31 new)**; integration tests **45 pass** (2 new, live against Ollama). ADR-0017 amended first. Built:
+     - `Pipeline/Pedagogy/`: `PedagogyEngine` (the Stage 6 answer section, then the explanation), `PedagogyPromptBuilder`, `ExplanationHeadingParser`, `ExplanationValidator`, and records `PedagogyPrompt`, `ExplanationSection`, `ExplanationValidation`.
+     - Prompts: `pedagogy-system.md`, `pedagogy-baseline.md`, `pedagogy-audiences.md` (one section per audience) and `pedagogy-user.md`. The user message is shared: the toggle changes only the system prompt, which a unit test asserts.
+     - Contracts: `AnswerFinal.structure` (`ExplanationStructure`, `ExplanationProduct`); `EvidenceRule.SpecTerms` for the expert's words.
+     - Endpoints: `POST /api/search/pedagogy` (the same retrieval and evidence as Stage 6) and `POST /api/search/pedagogy/answer`.
+   - **Live side by side** (GQ-01, `qwen3.6:35b`; full JSON kept for the review):
+     | | First token | Answer | Explanation | Total | Explanation warnings |
+     |---|---|---|---|---|---|
+     | novice, pedagogy off | 250 ms | 2.8 s | 3.7 s | 6.6 s | none; `structure: null` |
+     | novice, pedagogy on | 59 ms | 2.6 s | 3.4 s | 6.0 s | none after the parser fix below |
+     | expert, pedagogy on | 56 ms | 2.6 s | 3.1 s | 5.7 s | Decision cites 2 products |
+     - **Baseline:** fair and useful. It lists the three compatible chargers and warns about the three near misses, but has no single decision, no named concepts and no rule of thumb.
+     - **Pedagogy, novice:** Decision PROD-0011; Concepts **Connector** and **Wattage**, each explained in plain words; Near miss PROD-0016 ("looks correct because it has the right USB-C plug, but it only provides 45W"), the best counter-example in the evidence; a rule of thumb; a next step.
+     - **Pedagogy, expert:** spec-first (`wattageW ≥ minChargerWattageW`), with PROD-0015 as the near miss. Validation caught the Decision naming two products.
+   - Findings:
+     - **Concepts took every bold word.** The novice run emphasised **USB-C** and **65W** mid-sentence, and both were flagged as "not from the ontology". A concept is now the bold term that starts a bullet, as the prompt asks. The real output is a unit test.
+     - **The expert run wrote LaTeX** (`$\ge$`), which the UI won't render (no KaTeX, ADR-0014). For the prompt review: add "plain text, no LaTeX" to `pedagogy-system.md`?
+     - **Decision sometimes names two products** when two chargers fit equally. The validator warns, as designed. For the prompt review: whether to strengthen "exactly one" (for example "if several fit, choose one and say why").
+     - The near-miss choice varies between runs (PROD-0016 or 0015): both are valid. The bake-off will show how often each structure rule holds over 10 runs.
 4. **Model bake-off** (0015)
    - Opt-in `BakeOff/ModelBakeOffTests` (`PI_BAKEOFF_MODELS`): the 7 golden queries with a query, 10 runs each, Stage 6 and Stage 7 (pedagogy on and off) in JSON mode. Record structure, citation warnings, sentinel, time to first token and totals in ADR-0015; choose the Ollama default.
 5. **UI plumbing** (0014)

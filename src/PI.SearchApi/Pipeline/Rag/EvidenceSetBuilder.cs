@@ -65,7 +65,10 @@ public sealed class EvidenceSetBuilder(IOntology ontology)
         var rules = checks
             .Where(check => includedIds.Contains(check.CandidateId))
             .GroupBy(check => check.Rule)
-            .Select(group => new EvidenceRule(group.Key, [.. group.Select(check => check.Definition).Distinct()]))
+            .Select(group => new EvidenceRule(
+                group.Key,
+                [.. group.Select(check => check.Definition).Distinct()],
+                [.. group.SelectMany(check => new[] { check.AccessorySpec, check.DeviceSpec }).Distinct()]))
             .ToList();
 
         return new EvidenceSet(items, ConceptsFor(matchedConcepts), rules);
