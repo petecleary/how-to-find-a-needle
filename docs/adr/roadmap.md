@@ -268,9 +268,16 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - Self-hosted fonts in `src/assets/fonts/` (Dosis, Atkinson Hyperlegible, JetBrains Mono `.woff2` + each `OFL.txt`), `@font-face` rules, and font utilities (`font-brand` for logo and title only).
    - `ThemeProvider` (system default, header override stored in `localStorage`) and the logo component (filled on light, outline on dark).
    - `stageGroup(stage)` → `search | ontology | pedagogy` and its colour, with a unit test, so every component colours stages the same way.
+   - ✅ **Done 2026-09-15.** typecheck, lint, build, Prettier and 10 Vitest tests pass. A temporary theme-check page (`App.tsx`) was compared with the design screens in both themes at 1280×720; step 10 replaces it. Findings:
+     - **TypeScript is pinned to `~6.0`.** TypeScript 7 (the native compiler) is out, but `typescript-eslint` supports `<6.1` only. Revisit when it adds 7.
+     - **Node:** `.nvmrc` pins 24 (the current LTS); `engines` asks for ≥ 24, so newer local versions work.
+     - **shadcn CLI quirk:** `shadcn add` wrote `import { cn } from "cn"` and installed an unrelated `cn` package instead of using `@/lib/utils`. Fixed by hand; check the imports after any future `shadcn add`.
+     - Fonts are the Latin subsets, only in the weights the design uses (Dosis 700/800, Atkinson 400/700 with italics, JetBrains Mono 400/700), 188 KB in total, taken from the Fontsource packages without adding them as dependencies.
+     - `Tooltip` needs a `TooltipProvider` at the root; add it with the first tooltip (step 5).
 2. **Aspire hosting and the SSE spike** (0014 § Stack)
    - Re-add `Aspire.Hosting.JavaScript`; `AddViteApp("web-ui", "../web-ui")` with `WithReference(searchApi)`, `WaitFor`, `WithExternalHttpEndpoints`.
    - Vite `/api` proxy from `services__searchapi__https__0`.
+   - ✅ **Hosting and proxy done 2026-09-15** (brought forward so step 1 could be seen under `aspire run`). `Aspire.Hosting.JavaScript` 13.4.6 (same version as the SDK). Aspire starts Vite after the API is healthy and injects `PORT`, `services__searchapi__https__0` and `SEARCHAPI_HTTPS`. `GET /api/demo/queries` through the Vite origin returns the golden queries. The proxy sets `secure: false` because Node doesn't trust the ASP.NET Core development certificate. The SSE spike is still to do.
    - Spike a throwaway SSE endpoint through the proxy and confirm chunks arrive unbuffered (Phase 4 depends on it). Record the result here, then delete the spike.
 3. **API types and client** (0014 § API types)
    - `npm run gen:api` (`openapi-typescript`) → committed `src/api/schema.d.ts`; `src/api/client.ts` typed `fetch` wrapper that surfaces ProblemDetails (503 guidance) instead of throwing opaque errors.

@@ -2,8 +2,6 @@
 
 Repo-wide rules (teaching principles, commenting standard, vocabulary) are in the [root CLAUDE.md](../../CLAUDE.md). The decision is [ADR-0014](../../docs/adr/0014-web-ui-architecture.md).
 
-> The app is scaffolded in roadmap Phase 3. Until then this folder only holds this file; scaffold Vite into the existing folder rather than deleting it.
-
 **The UI is the talk.** It replaces slides: home, talk mode, demo, glossary and ADR pages. It is an instrument for the experiment: same input, switchable technique, visible internals.
 
 ## Stack and constraints
@@ -24,6 +22,8 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 | `src/hooks/` | `usePipelineSearch`, `useAnswerStream` |
 | `src/components/` | App components and trace renderers |
 | `src/components/ui/` | shadcn/ui primitives |
+| `src/lib/` | Framework-free helpers: `stageGroup.ts` (triad group and colour classes), `theme.ts`, `utils.ts` (`cn()`) |
+| `src/index.css` | Theme tokens (light on `:root`, dark on `.dark`), `@font-face` rules, Tailwind theme mapping |
 | `src/pages/` | Route-level pages |
 | `src/assets/fonts/` | Self-hosted `.woff2` files and each family's `OFL.txt` |
 | `assets/images/` | Pi & Mash logos: `logo_{green,purple,orange}.png` (filled, light theme) and `logo_*_bo(a)rder.png` (outline, dark theme) |

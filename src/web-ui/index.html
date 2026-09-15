@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en-GB">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" type="image/png" href="/assets/images/logo_green.png" />
+        <title>How to Find a Needle</title>
+        <script>
+            // Apply the saved or system theme before React loads, so a dark page never flashes light.
+            // The same rule lives in src/lib/theme.ts (resolveTheme); keep the two in step.
+            (function () {
+                var preference = 'system';
+                try {
+                    preference = localStorage.getItem('needle-theme') || 'system';
+                } catch (e) {
+                    // Storage can be blocked (private windows); fall back to the system setting.
+                }
+                var isDark =
+                    preference === 'dark' ||
+                    (preference !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.toggle('dark', isDark);
+            })();
+        </script>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
+</html>
