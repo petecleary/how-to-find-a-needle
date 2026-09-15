@@ -326,6 +326,18 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - `FilterPanel`: brand, price range, category checkbox tree from `/api/taxonomy` (a parent includes its narrower concepts), spec vocabularies from `/api/vocabularies` with synonyms as hints. No hard-coded values.
    - Demo: collapsible sidebar. Talk: `Sheet` drawer from the Filters button.
    - Vitest: selecting values builds the right `filters` object.
+   - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **77 pass (22 new)**. `dotnet` untouched. Checked in headless Chrome at 1280×900 against the live API. Built:
+     - `FilterPanel` (brand, price, category tree, one filter per vocabulary, other specs, Clear), `CategoryTree`, `SpecVocabularyFilter`, `CommittedInput` (applies on Enter or blur, so typing doesn't search on every keystroke), `FilterDrawer` (`Sheet`), `useMediaQuery`, and the shadcn `radio-group` primitive (from `radix-ui`, already a dependency).
+     - Pure rules in `src/lib/filters.ts`: `toggleCategory`, `specSelection`, `setVocabularyValue`, `changeSpecKey`, `otherSpecs`, `setBrand`, `parsePriceInput`, `clearFilters`. `matchesGoldenQuery` in `searchState.ts`.
+     - `/demo`: the sidebar from `lg` (64rem) up, toggled by the Filters button; below `lg` the same panel opens as a drawer. The talk page reuses `FilterDrawer` in step 10.
+     - **Checked against the live API:** `categories: ["chargers"]` + `connector: "usb-c"` returns the 6 USB-C chargers; `chargingPort: "usb-c"` returns the 4 USB-C laptops; brand `voltline` (lower case) + `maxPrice: 40` returns 7.
+   - Findings:
+     - **A vocabulary can back several spec keys.** Connectors are `connector` on chargers and `chargingPort` on laptops (from the rules, ADR-0013), and `specs` is JSON containment on one key. Each vocabulary filter matches one key at a time, with a small key picker when there is more than one. It teaches the point: the concept is shared, the field name isn't.
+     - **One value per vocabulary.** Containment can't express "USB-C or barrel" on one key, so values are radio buttons, not the design's checkboxes.
+     - **Ticking a parent category ticks its narrower concepts** (shown checked and disabled, "included by Chargers" for screen readers) and drops any narrower selection, because the API expands it anyway.
+     - **Other specs:** a spec with no vocabulary (GQ-04's `voltageV: 18`) is listed as a removable chip, showing `18` vs `"18"`, rather than hidden.
+     - **Changing any input away from a golden query's preset** (query, device or filters) clears `gq`. Before this step only a query edit did.
+     - ❓ **Brand is a text box, not the design's dropdown.** No endpoint lists brands (the taxonomy and vocabularies hold no catalogue data), and the ADRs don't mention one. The API matches brands exactly, ignoring case. A `GET /api/brands` (or brands on `/api/demo/devices`) would need an ADR-0003 change; decide at the step 7 checkpoint.
 7. **Results tab** (0014, 0003, 0013)
    - `ResultRow` with `SignalBadges` (keyword rank, vector rank, RRF), `CompatibilityBadge`, `ConceptBadge`, category icon from the taxonomy.
    - Stages 1–4: one list. Stage 5: in concept · out of concept (collapsed) · Flagged column of `FlaggedCard` (every check with has / needs values; "#n before rules" from `signals.fusedRank`).

@@ -4,6 +4,7 @@ import {
     applyGoldenQuery,
     countActiveFilters,
     defaultSearchState,
+    matchesGoldenQuery,
     parseSearchState,
     serializeSearchState,
     toSearchRequest,
@@ -140,6 +141,22 @@ describe('countActiveFilters', () => {
         expect(countActiveFilters(defaultSearchState.filters)).toBe(0);
         expect(countActiveFilters(everyFieldChanged.filters)).toBe(6);
         expect(countActiveFilters(applyGoldenQuery(defaultSearchState, gq04).filters)).toBe(3);
+    });
+});
+
+describe('matchesGoldenQuery', () => {
+    it('matches until an input moves away from the preset, whatever the stage or tab', () => {
+        const loaded = { ...applyGoldenQuery(defaultSearchState, gq04), stage: 'keyword' as const };
+
+        expect(matchesGoldenQuery(loaded, gq04)).toBe(true);
+        expect(matchesGoldenQuery({ ...loaded, query: 'drill battery' }, gq04)).toBe(false);
+        expect(
+            matchesGoldenQuery(
+                { ...loaded, filters: { ...loaded.filters, categories: ['power-tools'] } },
+                gq04,
+            ),
+        ).toBe(false);
+        expect(matchesGoldenQuery({ ...loaded, targetProductId: 'PROD-0001' }, gq04)).toBe(false);
     });
 });
 

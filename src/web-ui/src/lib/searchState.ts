@@ -177,6 +177,18 @@ export function applyGoldenQuery(state: SearchState, goldenQuery: GoldenQuery): 
     };
 }
 
+/**
+ * True while the inputs (query, target device and filters) still equal a golden query's preset. Once
+ * something is changed it's an ordinary search, and the picker stops naming the preset. The URL form is
+ * compared, so spec keys in a different order still count as equal.
+ */
+export function matchesGoldenQuery(state: SearchState, goldenQuery: GoldenQuery): boolean {
+    const asPreset = { ...state, goldenQueryId: goldenQuery.id };
+    const preset = applyGoldenQuery(asPreset, goldenQuery);
+
+    return serializeSearchState(asPreset).toString() === serializeSearchState(preset).toString();
+}
+
 /** How many filters are set, for the Filters button: the brand, each category, the price range (once) and each spec. */
 export function countActiveFilters(filters: SearchFilterState): number {
     const brand = filters.brand === null ? 0 : 1;

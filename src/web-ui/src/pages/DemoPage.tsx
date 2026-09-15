@@ -1,12 +1,16 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
     getDemoDevices,
     getGoldenQueries,
+    getTaxonomy,
+    getVocabularies,
     isSearchStage,
     type GoldenQuery,
     type SearchStage,
 } from '@/api/client';
 import { AppHeader } from '@/components/AppHeader';
+import { FilterDrawer } from '@/components/FilterDrawer';
+import { FilterPanel } from '@/components/FilterPanel';
 import { HowItWorksTab } from '@/components/HowItWorksTab';
 import { PipelineStepper } from '@/components/PipelineStepper';
 import { ResultsTab } from '@/components/ResultsTab';
@@ -16,16 +20,21 @@ import { StageOptions } from '@/components/StageOptions';
 import { StageTabs } from '@/components/StageTabs';
 import { UnderTheHoodTab } from '@/components/UnderTheHoodTab';
 import { useApiData } from '@/hooks/useApiData';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePipelineSearch } from '@/hooks/usePipelineSearch';
 import { useSearchState } from '@/hooks/useSearchState';
 import {
     applyGoldenQuery,
     countActiveFilters,
+    matchesGoldenQuery,
     toSearchRequest,
     type SearchState,
     type StageTab,
 } from '@/lib/searchState';
 import { isTabAvailable } from '@/lib/stageTabs';
+
+// Tailwind's `lg` breakpoint: from here the filters fit beside the results; below it they open as a drawer.
+const sidebarMediaQuery = '(min-width: 64rem)';
 
 /**
  * `/demo`: the free-exploration stage screen (ADR-0014 § Pages). Every input lives in the URL, and the
@@ -35,6 +44,14 @@ export function DemoPage() {
     const [state, setState] = useSearchState();
     const goldenQueries = useApiData(getGoldenQueries);
     const devices = useApiData(getDemoDevices);
+    const taxonomy = useApiData(getTaxonomy);
+    const vocabularies = useApiData(getVocabularies);
+
+    // Whether the filters are showing is a layout preference, not a search input, so it isn't in the URL.
+    const hasRoomForSidebar = useMediaQuery(sidebarMediaQuery);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const isFilterPanelOpen = hasRoomForSidebar ? isSidebarOpen : isDrawerOpen;
 
     // TODO(Phase 4): Stages 6–7 get endpoints in Phase 4; until then a URL naming them shows Stage 5.
     const stage: SearchStage = isSearchStage(state.stage) ? state.stage : 'ontology';
@@ -48,10 +65,14 @@ export function DemoPage() {
     );
     const handleChooseTab = useCallback((next: StageTab) => update({ tab: next }), [update]);
 
-    function handleSubmitQuery(query: string) {
-        // Editing a golden query's text makes it an ordinary query, so the picker stops naming the preset.
-        const preset = goldenQueries.data?.find((goldenQuery) => goldenQuery.id === state.goldenQueryId);
-        update({ query, goldenQueryId: preset?.request.query === query ? state.goldenQueryId : null });
+    // Changing the query, device or filters away from a golden query's preset makes it an ordinary
+    // search, so the picker stops naming the preset.
+    function updateInputs(change: Partial<Pick<SearchState, 'query' | 'targetProductId' | 'filters'>>) {
+        const next = { ...state, ...change };
+        const preset = goldenQueries.data?.find((goldenQuery) => goldenQuery.id === next.goldenQueryId);
+        const isStillPreset = preset !== undefined && matchesGoldenQuery(next, preset);
+
+        setState({ ...next, goldenQueryId: isStillPreset ? next.goldenQueryId : null });
     }
 
     function handleChooseGoldenQuery(goldenQuery: GoldenQuery | null) {
@@ -60,60 +81,93 @@ export function DemoPage() {
         );
     }
 
+    function handleToggleFilters() {
+        if (hasRoomForSidebar) {
+            setIsSidebarOpen(!isSidebarOpen);
+        } else {
+            setIsDrawerOpen(!isDrawerOpen);
+        }
+    }
+
+    const stepCount = search.response?.debugTrace.steps.length ?? 0;
     const counts: Partial<Record<StageTab, string>> =
         search.response === null
             ? {}
             : {
                   results: String(search.response.totalResults),
-                  'under-the-hood': `${search.response.debugTrace.steps.length} steps`,
+                  'under-the-hood': `${stepCount} ${stepCount === 1 ? 'step' : 'steps'}`,
               };
+
+    const filterPanel = (
+        <FilterPanel
+            filters={state.filters}
+            taxonomy={taxonomy}
+            vocabularies={vocabularies}
+            onChange={(filters) => updateInputs({ filters })}
+        />
+    );
 
     return (
         <div className="flex min-h-screen flex-col">
             <AppHeader />
-            <main className="flex flex-1 flex-col gap-2.5 px-6 pt-3 pb-4">
-                <SearchBar
-                    query={state.query}
-                    goldenQueryId={state.goldenQueryId}
-                    targetProductId={state.targetProductId}
-                    activeFilterCount={countActiveFilters(state.filters)}
-                    goldenQueries={goldenQueries.data ?? []}
-                    devices={devices.data ?? []}
-                    onSubmitQuery={handleSubmitQuery}
-                    onChooseGoldenQuery={handleChooseGoldenQuery}
-                    onChooseDevice={(productId) => update({ targetProductId: productId })}
-                />
-                <PipelineStepper stage={stage} onChooseStage={(next) => update({ stage: next })} />
-                <StageTabs
-                    stage={stage}
-                    tab={tab}
-                    onChooseTab={handleChooseTab}
-                    counts={counts}
-                    options={
-                        <StageOptions
-                            stage={stage}
-                            expandSynonyms={state.expandSynonyms}
-                            applyConstraints={state.applyConstraints}
-                            onChange={update}
-                        />
-                    }
-                    panels={{
-                        'how-it-works': <HowItWorksTab stage={stage} />,
-                        results: (
-                            <SearchOutcome search={search}>
-                                {(response) => <ResultsTab response={response} />}
-                            </SearchOutcome>
-                        ),
-                        // TODO(Phase 4): AnswerPanel, ExplanationPanel and EvidenceSet (the tab is disabled until Stage 6).
-                        answer: null,
-                        'under-the-hood': (
-                            <SearchOutcome search={search}>
-                                {(response) => <UnderTheHoodTab response={response} />}
-                            </SearchOutcome>
-                        ),
-                    }}
-                />
-            </main>
+            <div className="flex flex-1">
+                {hasRoomForSidebar && isSidebarOpen ? (
+                    <aside
+                        aria-label="Filters"
+                        className="sticky top-0 max-h-screen w-72 flex-none self-start overflow-y-auto border-r-2 bg-card px-5 py-4"
+                    >
+                        {filterPanel}
+                    </aside>
+                ) : null}
+                <main className="flex min-w-0 flex-1 flex-col gap-2.5 px-6 pt-3 pb-4">
+                    <SearchBar
+                        query={state.query}
+                        goldenQueryId={state.goldenQueryId}
+                        targetProductId={state.targetProductId}
+                        activeFilterCount={countActiveFilters(state.filters)}
+                        isFilterPanelOpen={isFilterPanelOpen}
+                        goldenQueries={goldenQueries.data ?? []}
+                        devices={devices.data ?? []}
+                        onSubmitQuery={(query) => updateInputs({ query })}
+                        onChooseGoldenQuery={handleChooseGoldenQuery}
+                        onChooseDevice={(productId) => updateInputs({ targetProductId: productId })}
+                        onToggleFilters={handleToggleFilters}
+                    />
+                    <PipelineStepper stage={stage} onChooseStage={(next) => update({ stage: next })} />
+                    <StageTabs
+                        stage={stage}
+                        tab={tab}
+                        onChooseTab={handleChooseTab}
+                        counts={counts}
+                        options={
+                            <StageOptions
+                                stage={stage}
+                                expandSynonyms={state.expandSynonyms}
+                                applyConstraints={state.applyConstraints}
+                                onChange={update}
+                            />
+                        }
+                        panels={{
+                            'how-it-works': <HowItWorksTab stage={stage} />,
+                            results: (
+                                <SearchOutcome search={search}>
+                                    {(response) => <ResultsTab response={response} />}
+                                </SearchOutcome>
+                            ),
+                            // TODO(Phase 4): AnswerPanel, ExplanationPanel and EvidenceSet (the tab is disabled until Stage 6).
+                            answer: null,
+                            'under-the-hood': (
+                                <SearchOutcome search={search}>
+                                    {(response) => <UnderTheHoodTab response={response} />}
+                                </SearchOutcome>
+                            ),
+                        }}
+                    />
+                </main>
+            </div>
+            <FilterDrawer isOpen={!hasRoomForSidebar && isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                {filterPanel}
+            </FilterDrawer>
         </div>
     );
 }

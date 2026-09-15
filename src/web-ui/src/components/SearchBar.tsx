@@ -16,11 +16,14 @@ export interface SearchBarProps {
     goldenQueryId: string | null;
     targetProductId: string | null;
     activeFilterCount: number;
+    /** Whether the filter sidebar or drawer is showing, for the Filters button's `aria-expanded`. */
+    isFilterPanelOpen: boolean;
     goldenQueries: GoldenQuery[];
     devices: DemoDevice[];
     onSubmitQuery: (query: string) => void;
     onChooseGoldenQuery: (goldenQuery: GoldenQuery | null) => void;
     onChooseDevice: (productId: string | null) => void;
+    onToggleFilters: () => void;
 }
 
 /**
@@ -32,11 +35,13 @@ export function SearchBar({
     goldenQueryId,
     targetProductId,
     activeFilterCount,
+    isFilterPanelOpen,
     goldenQueries,
     devices,
     onSubmitQuery,
     onChooseGoldenQuery,
     onChooseDevice,
+    onToggleFilters,
 }: SearchBarProps) {
     // Typing edits a draft; the search runs on Enter, not on every keystroke. When the query changes
     // from outside (a golden query was chosen, or Back was pressed), the draft follows it.
@@ -126,12 +131,15 @@ export function SearchBar({
                 </SelectContent>
             </Select>
 
-            {/* TODO(Phase 3): step 6 opens the filter panel from this button. */}
             <Button
                 type="button"
                 variant="outline"
-                disabled
-                className="h-auto rounded-full border-2 bg-card px-3 py-1.5 text-[15px] font-bold shadow-none"
+                aria-expanded={isFilterPanelOpen}
+                onClick={onToggleFilters}
+                className={cn(
+                    'h-auto rounded-full border-2 bg-card px-3 py-1.5 text-[15px] font-bold shadow-none',
+                    isFilterPanelOpen && 'border-ontology',
+                )}
             >
                 <Funnel aria-hidden="true" className="text-muted-foreground" />
                 Filters
