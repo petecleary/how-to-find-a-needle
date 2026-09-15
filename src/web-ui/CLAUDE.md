@@ -95,4 +95,4 @@ Trace renderers open with one line: `// RrfTable — shows each item's per-list 
 
 ## Checks
 
-`npm run typecheck`, `npm run lint` (typescript-eslint, react-hooks) and `npm run build` must pass, plus Prettier formatting. Run `npm run gen:api` whenever the API contract changes, and commit the result.
+`npm run typecheck`, `npm run lint` (typescript-eslint, react-hooks) and `npm run build` must pass, plus Prettier formatting (`npm run format:check`) and `npm test`. CI's `web-ui` job runs exactly these after `npm ci`, on the Node version in `.nvmrc`, so run them locally before pushing. Run `npm run gen:api` whenever the API contract changes, and commit the result.

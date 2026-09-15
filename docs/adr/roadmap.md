@@ -418,6 +418,17 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
       - Card and input borders (`--border`) are about 1.2:1 against the page. WCAG 1.4.11 doesn't require them where text and position already identify the control, so they are left as the design has them.
 12. **CI** (0002)
     - Add `npm ci`, `typecheck`, `lint`, `build` and `test` for `web-ui` to the GitHub Actions workflow.
+    - ✅ **Done 2026-09-15** (not yet run on GitHub: it runs on the next push). `.github/workflows/ci.yml` has a second job, `web-ui`, beside `build-and-test`: checkout (the whole repository, because tests read `docs/adr` and the API's `golden-queries.json`), `setup-node` from `src/web-ui/.nvmrc` with the npm cache keyed on `package-lock.json`, then `npm ci` → `format:check` → `typecheck` → `lint` → `test` → `build`. No API, Docker or models needed: `schema.d.ts` is committed and the tests use captured responses.
+    - **Verified locally the way CI runs:** a copy of the working tree with no `node_modules`, `dist`, `bin` or `obj`, on **Node 24.21** (the `.nvmrc` version, fetched with `npx -p node@24` so nothing was installed in the repo) and again on Node 26.7: `npm ci` from the lockfile, formatting, typecheck, lint, **219 tests** and the build all pass. The workflow parses as YAML with both jobs and every step. The files CI reads from outside `src/web-ui` are tracked, and none of the new content or fixtures is git-ignored.
+    - Findings:
+      - `npm ci` prints a notice that `fsevents` (a macOS-only optional dependency) has install scripts; it is skipped on Linux and changes nothing.
+      - The workflow keeps `actions/checkout@v4` to match the existing job.
+
+### Phase 3 status (2026-09-15)
+- Steps 1–12 are built, and their checks pass locally. Still open before **ADR-0014 → Accepted (for stages 1–5)**:
+  - The CI `web-ui` job running green on GitHub (next push).
+  - Pete's review of the talk content (first draft) and the speaker details (placeholders), and the deferred laptop-charger icon.
+  - A run-through with the ontology label edit from the acceptance criteria (edit the TTL, re-run the AppHost, see the filter change).
 
 ### Acceptance criteria
 - `aspire run` opens the UI. Choosing GQ-01 and stepping 1 → 5 shows the results changing, and in Stage 5 the near miss appears in the Flagged column with its failed checks, **with no paging**.
