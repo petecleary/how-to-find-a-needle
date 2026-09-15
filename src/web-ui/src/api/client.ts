@@ -108,6 +108,11 @@ export function getVocabularies(signal?: AbortSignal): Promise<OkJson<'/api/voca
     return sendAsync('/api/vocabularies', { signal });
 }
 
+/** `GET /api/brands`: every brand in the catalogue, for the brand filter. */
+export function getBrands(signal?: AbortSignal): Promise<OkJson<'/api/brands', 'get'>> {
+    return sendAsync('/api/brands', { signal });
+}
+
 // No retries: a failure should be visible, not quietly hidden (root CLAUDE.md, "No hidden magic").
 // An aborted request rejects with the browser's AbortError, which callers ignore when they cancelled it.
 async function sendAsync<Body>(path: string, init: RequestInit): Promise<Body> {

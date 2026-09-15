@@ -5,8 +5,10 @@ import { CategoryTree } from '@/components/CategoryTree';
 import { CommittedInput } from '@/components/CommittedInput';
 import { SpecVocabularyFilter } from '@/components/SpecVocabularyFilter';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { ApiData } from '@/hooks/useApiData';
 import {
+    brandOptions,
     clearFilters,
     otherSpecs,
     parsePriceInput,
@@ -16,20 +18,24 @@ import {
 } from '@/lib/filters';
 import { countActiveFilters, type SearchFilterState } from '@/lib/searchState';
 
-// FilterPanel — structured pre-filters, built from the ontology. The category tree comes from
-// GET /api/taxonomy and each spec filter from GET /api/vocabularies, so a category, value or synonym added
-// to domain-ontology.ttl appears here after re-running the AppHost, with no UI change (ADR-0013, ADR-0014).
-// Filters narrow the catalogue before any ranking, in every stage, and they are Stage 1's only input
-// (ADR-0007).
+// FilterPanel — structured pre-filters, built from data. The category tree comes from GET /api/taxonomy and
+// each spec filter from GET /api/vocabularies, so a category, value or synonym added to domain-ontology.ttl
+// appears here after re-running the AppHost, with no UI change (ADR-0013, ADR-0014). Brands are catalogue
+// data, listed by GET /api/brands (ADR-0003). Filters narrow the catalogue before any ranking, in every
+// stage, and they are Stage 1's only input (ADR-0007).
+
+// Radix Select can't use an empty string as a value; brand names never start with a colon.
+const anyBrand = ':any';
 
 export interface FilterPanelProps {
     filters: SearchFilterState;
+    brands: ApiData<string[]>;
     taxonomy: ApiData<TaxonomyNode[]>;
     vocabularies: ApiData<ValueVocabulary[]>;
     onChange: (filters: SearchFilterState) => void;
 }
 
-export function FilterPanel({ filters, taxonomy, vocabularies, onChange }: FilterPanelProps) {
+export function FilterPanel({ filters, brands, taxonomy, vocabularies, onChange }: FilterPanelProps) {
     const others = vocabularies.data === null ? [] : otherSpecs(filters, vocabularies.data);
 
     return (
@@ -58,14 +64,35 @@ export function FilterPanel({ filters, taxonomy, vocabularies, onChange }: Filte
                 <label htmlFor="filter-brand" className="font-bold">
                     Brand
                 </label>
-                <CommittedInput
-                    id="filter-brand"
-                    value={filters.brand ?? ''}
-                    onCommit={(text) => onChange(setBrand(filters, text))}
-                    placeholder="Any brand"
-                    className="rounded-full border-2 shadow-none"
-                />
-                <p className="text-xs text-muted-foreground">The exact name, in any case.</p>
+                <Loaded resource={brands} name="brands" path="/api/brands">
+                    {(catalogueBrands) => {
+                        const { options, value } = brandOptions(catalogueBrands, filters.brand);
+
+                        return (
+                            <Select
+                                value={value ?? anyBrand}
+                                onValueChange={(next) =>
+                                    onChange(setBrand(filters, next === anyBrand ? '' : next))
+                                }
+                            >
+                                <SelectTrigger
+                                    id="filter-brand"
+                                    className="w-full rounded-full border-2 bg-card shadow-none dark:bg-card"
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent position="popper" align="start">
+                                    <SelectItem value={anyBrand}>Any brand</SelectItem>
+                                    {options.map((brand) => (
+                                        <SelectItem key={brand} value={brand}>
+                                            {brand}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        );
+                    }}
+                </Loaded>
             </div>
 
             <fieldset className="flex flex-col gap-1.5">
@@ -159,7 +186,7 @@ interface LoadedProps<T> {
     children: (data: T) => ReactNode;
 }
 
-// The filters can't be built without the ontology, so a failed load says which endpoint failed.
+// The filters can't be built without their data, so a failed load says which endpoint failed.
 function Loaded<T>({ resource, name, path, children }: LoadedProps<T>) {
     if (resource.status === 'error') {
         return (

@@ -92,7 +92,7 @@ Try the talk's opening example on each stage:
 { "query": "power adapter for my laptop", "context": { "targetProductId": "PROD-0001" } }
 ```
 
-`GET /api/demo/queries` lists every golden query, `GET /api/demo/devices` lists the products that can be a target device, `GET /api/taxonomy` returns the category tree from the ontology, and `GET /api/vocabularies` returns the allowed spec values (connectors, storage interfaces, memory types, battery platforms) with their synonyms.
+`GET /api/demo/queries` lists every golden query, `GET /api/demo/devices` lists the products that can be a target device, `GET /api/taxonomy` returns the category tree from the ontology, `GET /api/vocabularies` returns the allowed spec values (connectors, storage interfaces, memory types, battery platforms) with their synonyms, and `GET /api/brands` lists the catalogue's brands.
 
 **Run the tests**
 

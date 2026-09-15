@@ -110,7 +110,7 @@ tests/
 
 ## 4. API Conventions & Pipeline Stages
 
-All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 6–7 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices`, `GET /api/taxonomy` (the category tree) and `GET /api/vocabularies` (the allowed spec values). The last two are read from the ontology, so the UI's filters are data. → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
+All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 6–7 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices`, `GET /api/taxonomy` (the category tree), `GET /api/vocabularies` (the allowed spec values) and `GET /api/brands` (the catalogue's brands). Taxonomy and vocabularies are read from the ontology and brands from the catalogue, so the UI's filters are data. → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
 
 **Request:** `POST /api/search/{stage}`
 

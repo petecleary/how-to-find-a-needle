@@ -24,6 +24,14 @@ public sealed class ProductLookup(NpgsqlDataSource dataSource, IOntology ontolog
         ORDER BY name, id;
         """;
 
+    // Brands are catalogue data, not ontology: the TTL describes kinds of thing and never names a product
+    // or a maker (ADR-0013). So the brand filter's options come from the products table itself.
+    private const string BrandsSql = """
+        SELECT DISTINCT brand
+        FROM products
+        ORDER BY brand;
+        """;
+
     public async Task<ProductSummary?> GetByIdAsync(string id, CancellationToken ct)
     {
         await using var command = dataSource.CreateCommand(ByIdSql);
@@ -53,5 +61,21 @@ public sealed class ProductLookup(NpgsqlDataSource dataSource, IOntology ontolog
         }
 
         return devices;
+    }
+
+    /// <summary>Every brand in the catalogue, once each, in alphabetical order.</summary>
+    public async Task<IReadOnlyList<string>> GetBrandsAsync(CancellationToken ct)
+    {
+        await using var command = dataSource.CreateCommand(BrandsSql);
+
+        var brands = new List<string>();
+        await using var reader = await command.ExecuteReaderAsync(ct);
+
+        while (await reader.ReadAsync(ct))
+        {
+            brands.Add(reader.GetString(0));
+        }
+
+        return brands;
     }
 }

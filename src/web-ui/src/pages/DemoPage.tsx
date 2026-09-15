@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
+    getBrands,
     getDemoDevices,
     getGoldenQueries,
     getTaxonomy,
@@ -44,12 +45,14 @@ export function DemoPage() {
     const [state, setState] = useSearchState();
     const goldenQueries = useApiData(getGoldenQueries);
     const devices = useApiData(getDemoDevices);
+    const brands = useApiData(getBrands);
     const taxonomy = useApiData(getTaxonomy);
     const vocabularies = useApiData(getVocabularies);
 
     // Whether the filters are showing is a layout preference, not a search input, so it isn't in the URL.
     const hasRoomForSidebar = useMediaQuery(sidebarMediaQuery);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    // Closed at first, so the results get the full width on a 1280×720 projector; the Filters button opens it.
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const isFilterPanelOpen = hasRoomForSidebar ? isSidebarOpen : isDrawerOpen;
 
@@ -101,6 +104,7 @@ export function DemoPage() {
     const filterPanel = (
         <FilterPanel
             filters={state.filters}
+            brands={brands}
             taxonomy={taxonomy}
             vocabularies={vocabularies}
             onChange={(filters) => updateInputs({ filters })}

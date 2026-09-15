@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { TaxonomyNode, ValueVocabulary } from '@/api/client';
 import type { ApiData } from '@/hooks/useApiData';
 import { clearFilters } from '@/lib/filters';
@@ -15,12 +15,27 @@ const vocabularies: ApiData<ValueVocabulary[]> = {
     error: null,
 };
 
+const brands: ApiData<string[]> = { status: 'success', data: ['Brakk', 'Voltline'], error: null };
+
+// Radix Select calls browser APIs jsdom doesn't have when it opens its list.
+beforeAll(() => {
+    Element.prototype.hasPointerCapture ??= () => false;
+    Element.prototype.releasePointerCapture ??= () => {};
+    Element.prototype.scrollIntoView ??= () => {};
+});
+
 afterEach(cleanup);
 
 function renderPanel(filters: SearchFilterState = clearFilters()) {
     const onChange = vi.fn<(filters: SearchFilterState) => void>();
     render(
-        <FilterPanel filters={filters} taxonomy={taxonomy} vocabularies={vocabularies} onChange={onChange} />,
+        <FilterPanel
+            filters={filters}
+            brands={brands}
+            taxonomy={taxonomy}
+            vocabularies={vocabularies}
+            onChange={onChange}
+        />,
     );
     return onChange;
 }
@@ -71,15 +86,22 @@ describe('FilterPanel', () => {
         expect(onChange).toHaveBeenLastCalledWith({ ...clearFilters(), specs: { connector: 'usb-c' } });
     });
 
-    it('applies the brand on Enter', () => {
+    it('sends the brand chosen from the catalogue list', () => {
         const onChange = renderPanel();
-        const brand = screen.getByLabelText('Brand');
 
-        fireEvent.change(brand, { target: { value: 'Voltline' } });
-        expect(onChange).not.toHaveBeenCalled();
+        fireEvent.keyDown(screen.getByRole('combobox', { name: 'Brand' }), { key: 'Enter' });
+        fireEvent.click(screen.getByRole('option', { name: 'Voltline' }));
 
-        fireEvent.keyDown(brand, { key: 'Enter' });
         expect(onChange).toHaveBeenLastCalledWith({ ...clearFilters(), brand: 'Voltline' });
+    });
+
+    it('clears the brand with "Any brand"', () => {
+        const onChange = renderPanel({ ...clearFilters(), brand: 'Brakk' });
+
+        fireEvent.keyDown(screen.getByRole('combobox', { name: 'Brand' }), { key: 'Enter' });
+        fireEvent.click(screen.getByRole('option', { name: 'Any brand' }));
+
+        expect(onChange).toHaveBeenLastCalledWith(clearFilters());
     });
 
     it('lists a spec filter no vocabulary covers, so it is never hidden', () => {
@@ -95,6 +117,7 @@ describe('FilterPanel', () => {
         render(
             <FilterPanel
                 filters={clearFilters()}
+                brands={brands}
                 taxonomy={{ status: 'error', data: null, error: new Error('502 Bad Gateway') }}
                 vocabularies={vocabularies}
                 onChange={vi.fn()}

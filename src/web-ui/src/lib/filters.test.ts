@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { taxonomyFixture, vocabulariesFixture } from '@/test/ontologyFixtures';
 import {
     changeSpecKey,
+    brandOptions,
     clearFilters,
     hasSelectedNarrower,
     otherSpecs,
@@ -91,6 +92,14 @@ describe('spec vocabularies', () => {
 });
 
 describe('brand and price', () => {
+    it('selects a catalogue brand whatever its case, and keeps an unknown brand visible', () => {
+        const catalogue = ['Brakk', 'Voltline'];
+
+        expect(brandOptions(catalogue, null)).toEqual({ options: catalogue, value: null });
+        expect(brandOptions(catalogue, 'brakk')).toEqual({ options: catalogue, value: 'Brakk' });
+        expect(brandOptions(catalogue, 'Acme')).toEqual({ options: [...catalogue, 'Acme'], value: 'Acme' });
+    });
+
     it('trims the brand, and treats blank as any brand', () => {
         expect(setBrand(clearFilters(), '  Brakk ').brand).toBe('Brakk');
         expect(setBrand(clearFilters(), '   ').brand).toBeNull();

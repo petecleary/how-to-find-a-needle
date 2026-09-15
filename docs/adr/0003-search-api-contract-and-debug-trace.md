@@ -1,6 +1,6 @@
 # ADR-0003: Search API contract & debug trace
 
-- **Status:** Accepted (Phase 2, 2026-09-14). Amended by [ADR-0018](0018-scope-and-going-further.md), which removed the `bge-m3` route and BGE signals and added `options.applyPedagogy`; re-accepted after the Phase 2 rework was verified (2026-09-14). Amended 2026-09-14 to add `GET /api/vocabularies` (built and verified). Amended 2026-09-15: the OpenAPI document now carries endpoint summaries and describes the `400` and `503` bodies (roadmap Phase 3 step 3).
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended by [ADR-0018](0018-scope-and-going-further.md), which removed the `bge-m3` route and BGE signals and added `options.applyPedagogy`; re-accepted after the Phase 2 rework was verified (2026-09-14). Amended 2026-09-14 to add `GET /api/vocabularies` (built and verified). Amended 2026-09-15: the OpenAPI document now carries endpoint summaries and describes the `400` and `503` bodies (roadmap Phase 3 step 3). Amended 2026-09-15 to add `GET /api/brands`, so the UI's brand filter is a list from the catalogue rather than a text box (agreed with Pete at the Phase 3 step 7 checkpoint).
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0004, ADR-0014, ADR-0017, ADR-0018; roadmap Phase 2
 
@@ -53,6 +53,7 @@ Supporting read-only endpoints for the UI:
 - `GET /api/demo/devices` returns products in device categories (per the taxonomy) that can be a *target device*.
 - `GET /api/taxonomy` returns the SKOS concept tree read from `domain-ontology.ttl`: notations, language-tagged labels, synonyms, definitions, icons and narrower concepts. The UI builds its category filter from it ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
 - `GET /api/vocabularies` returns the value vocabularies (connectors, storage interfaces, memory types, battery platforms): each value's notation, labels and synonyms, and the spec keys that use the vocabulary. The UI builds its spec filters from it ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+- `GET /api/brands` returns every brand in the catalogue, once each, in alphabetical order, for the UI's brand filter. Brands are catalogue data, so it reads Postgres: the ontology never names a product or a maker ([ADR-0013](0013-domain-ontology-and-compatibility.md)). `filters.brand` stays one exact, case-insensitive brand; a multi-brand filter would change the request for every stage, and the talk doesn't need one.
 
 The legacy `GET /api/products` endpoint is removed.
 

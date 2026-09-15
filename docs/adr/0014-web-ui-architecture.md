@@ -90,7 +90,7 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 ```text
 Demo / talk stage step
 ├─ AppHeader            logo · "How to Find a Needle" · talk position (talk) or page nav (demo) · PresentationToggle · ThemeToggle
-├─ FilterPanel          brand · price · category tree (GET /api/taxonomy) · spec vocabularies with synonyms as hints (GET /api/vocabularies)
+├─ FilterPanel          brand picker (GET /api/brands) · price · category tree (GET /api/taxonomy) · spec vocabularies with synonyms as hints (GET /api/vocabularies)
 │                       demo: collapsible sidebar · talk: drawer opened from the Filters button
 ├─ SearchBar            golden-query picker (GET /api/demo/queries) · query input · target-device picker (GET /api/demo/devices)
 │                       · Filters button with the active-filter count

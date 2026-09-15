@@ -60,6 +60,18 @@ public sealed class DemoEndpointTests(AppHostFixture fixture)
     }
 
     [Fact]
+    public async Task Brands_ReturnsEachCatalogueBrandOnceInOrder()
+    {
+        using var client = fixture.CreateSearchApiClient();
+
+        var brands = (await client.GetFromJsonAsync<List<string>>("/api/brands", TestContext.Current.CancellationToken))!;
+
+        Assert.Contains("Brakk", brands); // GQ-04 filters on it
+        Assert.Contains("Voltline", brands);
+        Assert.Equal(brands.Distinct().Order(StringComparer.Ordinal), brands);
+    }
+
+    [Fact]
     public async Task Search_InvalidRequest_ReturnsProblemDetails400()
     {
         using var client = fixture.CreateSearchApiClient();

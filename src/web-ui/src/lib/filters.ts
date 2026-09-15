@@ -112,6 +112,25 @@ export function setBrand(filters: SearchFilterState, text: string): SearchFilter
     return { ...filters, brand: brand === '' ? null : brand };
 }
 
+/**
+ * The brand picker's options and selected value. The API matches brands ignoring case, so "brakk" in a URL
+ * selects "Brakk". A brand the catalogue doesn't have (a hand-edited URL) is kept as an option, so the
+ * filter that is really applied is always the one shown, even when it matches nothing.
+ */
+export function brandOptions(
+    catalogueBrands: readonly string[],
+    selected: string | null,
+): { options: string[]; value: string | null } {
+    if (selected === null) {
+        return { options: [...catalogueBrands], value: null };
+    }
+
+    const match = catalogueBrands.find((brand) => brand.toLowerCase() === selected.toLowerCase());
+    return match === undefined
+        ? { options: [...catalogueBrands, selected], value: selected }
+        : { options: [...catalogueBrands], value: match };
+}
+
 /** Reads a price box: blank, negative or not a number means no limit. */
 export function parsePriceInput(text: string): number | null {
     const trimmed = text.trim();
