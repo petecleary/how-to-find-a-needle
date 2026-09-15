@@ -16,8 +16,8 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 | Path | Holds |
 |---|---|
 | `content/` | `speaker.md`, `talk.json` + `talk/*.md`, `stages/{stage}.md`, `glossary.json` |
-| `src/api/schema.d.ts` | **Generated** by `npm run gen:api`. Never hand-edit; commit it |
-| `src/api/client.ts` | Small typed `fetch` wrapper |
+| `src/api/schema.d.ts` | **Generated** by `npm run gen:api` while `aspire run` is running (it reads `http://localhost:5377/openapi/v1.json`). Never hand-edit; commit it |
+| `src/api/client.ts` | Small typed `fetch` wrapper: one function per endpoint; errors become `ApiError` with the ProblemDetails |
 | `src/api/answerEvents.ts` | Hand-typed SSE event shapes (OpenAPI can't describe them) |
 | `src/hooks/` | `usePipelineSearch`, `useAnswerStream` |
 | `src/components/` | App components and trace renderers |

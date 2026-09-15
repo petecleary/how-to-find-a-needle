@@ -170,7 +170,7 @@ Not built at any priority: BGE-M3 and the other going-further topics ([ADR-0018]
 - `/openapi/v1.json`: `CandidateSignals` has no BGE ranks; `SearchOptions.applyPedagogy` is a boolean.
 - GQ-01 on `/api/search/ontology` is unchanged: the compatible chargers rank first and the 45W barrel charger is still flagged Incompatible.
 - The leftover grep over `src`, `tests` and `README.md` is clean.
-- **Found while verifying:** `/openapi/v1.json` has no operation summaries at all, so FastEndpoints' `Summary(...)` text (for example "Stage 5 — Ontology") doesn't reach Scalar or the generated UI types. This was already true before the rework. Look at it in Phase 3, when the UI types are generated.
+- **Found while verifying:** `/openapi/v1.json` has no operation summaries at all, so FastEndpoints' `Summary(...)` text (for example "Stage 5 — Ontology") doesn't reach Scalar or the generated UI types. This was already true before the rework. Look at it in Phase 3, when the UI types are generated. *(Fixed in Phase 3 step 3, 2026-09-15.)*
 
 ### Added after the rework: `GET /api/vocabularies` ✅ (2026-09-14)
 
@@ -277,11 +277,25 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 2. **Aspire hosting and the SSE spike** (0014 § Stack)
    - Re-add `Aspire.Hosting.JavaScript`; `AddViteApp("web-ui", "../web-ui")` with `WithReference(searchApi)`, `WaitFor`, `WithExternalHttpEndpoints`.
    - Vite `/api` proxy from `services__searchapi__https__0`.
-   - ✅ **Hosting and proxy done 2026-09-15** (brought forward so step 1 could be seen under `aspire run`). `Aspire.Hosting.JavaScript` 13.4.6 (same version as the SDK). Aspire starts Vite after the API is healthy and injects `PORT`, `services__searchapi__https__0` and `SEARCHAPI_HTTPS`. `GET /api/demo/queries` through the Vite origin returns the golden queries. The proxy sets `secure: false` because Node doesn't trust the ASP.NET Core development certificate. The SSE spike is still to do.
    - Spike a throwaway SSE endpoint through the proxy and confirm chunks arrive unbuffered (Phase 4 depends on it). Record the result here, then delete the spike.
+   - ✅ **Hosting and proxy done 2026-09-15** (brought forward so step 1 could be seen under `aspire run`). `Aspire.Hosting.JavaScript` 13.4.6 (same version as the SDK). Aspire starts Vite after the API is healthy and injects `PORT`, `services__searchapi__https__0` and `SEARCHAPI_HTTPS`. `GET /api/demo/queries` through the Vite origin returns the golden queries. The proxy sets `secure: false` because Node doesn't trust the ASP.NET Core development certificate.
+   - ✅ **SSE spike done 2026-09-15: the proxy does not buffer.** A throwaway `POST /api/spike/sse` streamed six `delta` events 500 ms apart, each flushed. Timed with `curl -N`:
+     - Direct to the API: each event arrived within 1 ms of being sent.
+     - Through the Vite origin: each event arrived 1–2 ms after being sent, still 500 ms apart. None were held back until the end.
+     - Proxied headers: `content-type: text/event-stream`, `Transfer-Encoding: chunked`, no `content-encoding`. No proxy option was needed.
+     - Phase 4 can stream `/answer` through `/api` as planned. The spike endpoint is deleted.
+     - **Not tested:** whether a client disconnect through the proxy cancels the API's `CancellationToken`. Phase 4's "switching stage mid-stream cancels generation" depends on it; check it when `/answer` exists.
 3. **API types and client** (0014 § API types)
    - `npm run gen:api` (`openapi-typescript`) → committed `src/api/schema.d.ts`; `src/api/client.ts` typed `fetch` wrapper that surfaces ProblemDetails (503 guidance) instead of throwing opaque errors.
    - Fix the Phase 2 finding first: FastEndpoints `Summary(...)` text doesn't reach `/openapi/v1.json`. Then regenerate.
+   - ✅ **Done 2026-09-15.** `dotnet build` 0 warnings; unit tests 166 pass; integration tests **39 of 39** (10 new). Web UI: typecheck, lint, build, Prettier; Vitest 17 pass (7 new). Findings:
+     - **Why summaries were missing:** FastEndpoints writes `Summary(...)` for its own Swagger package (NSwag); this API uses `Microsoft.AspNetCore.OpenApi`, which never reads it. `FastEndpointsSummaryTransformer` copies it into each operation. No new package.
+     - **The 400 wasn't documented at all.** `ProducesProblemFE<ProblemDetails>` was silently dropped: FastEndpoints' ProblemDetails is an `IResult`, which the generator skips. A `ValidationProblem` contract record now describes the real body (ProblemDetails fields plus `errors: [{ name, reason }]`), and an integration test checks a real 400 against it. `503` is documented as `ProblemDetails` on Stages 3–5 (ADR-0003 amended).
+     - **`openapi-typescript` 7.13 declares `typescript ^5`**, and the UI pins 6.0 (step 1). `package.json` `overrides` makes it use the project's TypeScript; generation works. Revisit when it supports 6.
+     - **`--empty-objects-unknown`:** without it, open dictionaries (`specs`, trace `parameters` and `details`) were generated as `Record<string, never>`, which nothing can read. They are now `Record<string, unknown>`, narrowed by the renderers.
+     - **`gen:api` reads `http://localhost:5377`** (the API's fixed http address from its launch settings), because Node doesn't trust the ASP.NET Core development certificate. Run it while `aspire run` is running.
+     - **`client.ts`:** one function per endpoint, return types read from `paths`, and `SearchStage` derived from the `/api/search/*` paths, so Stages 6–7 become callable only once their endpoints exist. Errors are `ApiError` (`status`, `problem`, `validationErrors`; `message` is the 503's fix-it `detail`). No retries.
+     - Operation IDs are long generated names (`PISearchApiEndpoints…`). The client uses paths, not operation IDs, so they are left as they are.
 4. **State: `usePipelineSearch` and URL state** (0014 § State)
    - Same request across stages; `AbortController` per request; `pageSize: 50`.
    - URL state: `stage`, `tab`, `q`, `gq`, device, filters, toggles, audience. Talk position in `/talk/:step/:tab?`.

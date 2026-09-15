@@ -33,7 +33,7 @@ builder.Services.ConfigureHttpJsonOptions(o =>
     o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     o.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
 });
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => options.AddOperationTransformer<FastEndpointsSummaryTransformer>());
 
 var dataDirectory = Path.Combine(AppContext.BaseDirectory, "assets", "data");
 

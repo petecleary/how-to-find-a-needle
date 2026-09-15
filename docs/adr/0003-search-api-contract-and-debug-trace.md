@@ -1,6 +1,6 @@
 # ADR-0003: Search API contract & debug trace
 
-- **Status:** Accepted (Phase 2, 2026-09-14). Amended by [ADR-0018](0018-scope-and-going-further.md), which removed the `bge-m3` route and BGE signals and added `options.applyPedagogy`; re-accepted after the Phase 2 rework was verified (2026-09-14). Amended 2026-09-14 to add `GET /api/vocabularies` (built and verified).
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended by [ADR-0018](0018-scope-and-going-further.md), which removed the `bge-m3` route and BGE signals and added `options.applyPedagogy`; re-accepted after the Phase 2 rework was verified (2026-09-14). Amended 2026-09-14 to add `GET /api/vocabularies` (built and verified). Amended 2026-09-15: the OpenAPI document now carries endpoint summaries and describes the `400` and `503` bodies (roadmap Phase 3 step 3).
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0004, ADR-0014, ADR-0017, ADR-0018; roadmap Phase 2
 
@@ -172,6 +172,10 @@ The trace is an **ordered list of steps**, so composed stages show their whole p
 
 - Validation and unexpected errors return RFC 9457 ProblemDetails (`AddProblemDetails()` already exists).
 - Missing ONNX models or an unreachable Ollama return `503` with a ProblemDetails `detail` explaining how to fix it.
+- **The OpenAPI document describes both error bodies**, so the UI's generated types cover them ([ADR-0014](0014-web-ui-architecture.md)):
+  - `400` on every search endpoint is a `ValidationProblem`: the ProblemDetails fields plus `errors`, one `{ name, reason }` per failed rule. That is the JSON FastEndpoints writes. FastEndpoints' own ProblemDetails class is an `IResult`, which ASP.NET Core's OpenAPI generator leaves out, so a contract record describes it. An integration test checks a real 400 against the documented fields.
+  - `503` is standard `ProblemDetails`, documented on the stages that embed the query (3–5).
+  - Endpoint `Summary(...)` text reaches the document through `FastEndpointsSummaryTransformer`: FastEndpoints writes summaries for its own Swagger package, which this API doesn't use.
 - Every stage starts an OpenTelemetry `Activity` (`ActivitySource` named after the app), so the Aspire dashboard shows the same pipeline the trace shows.
 - `executionTimeMs` covers the endpoint's total time. Per-step `durationMs` comes from `Stopwatch`.
 

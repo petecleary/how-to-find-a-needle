@@ -15,6 +15,8 @@ public sealed class StructuredSearchEndpoint(IStructuredSearch search) : Endpoin
         AllowAnonymous();
         Validator<StructuredSearchRequestValidator>();
         Summary(s => s.Summary = "Stage 1 — Structured search: exact SQL filters, no ranking");
+        // Document the validation error, so the UI's generated types describe it (ADR-0003).
+        Description(b => b.Produces<ValidationProblem>(StatusCodes.Status400BadRequest, "application/problem+json"));
     }
 
     public override async Task HandleAsync(SearchRequest req, CancellationToken ct)

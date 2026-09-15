@@ -15,6 +15,8 @@ public sealed class KeywordSearchEndpoint(IKeywordSearch search) : Endpoint<Sear
         AllowAnonymous();
         Validator<KeywordSearchRequestValidator>();
         Summary(s => s.Summary = "Stage 2 — Keyword search: Postgres full-text search, BM25-style ranking");
+        // Document the validation error, so the UI's generated types describe it (ADR-0003).
+        Description(b => b.Produces<ValidationProblem>(StatusCodes.Status400BadRequest, "application/problem+json"));
     }
 
     public override async Task HandleAsync(SearchRequest req, CancellationToken ct)
