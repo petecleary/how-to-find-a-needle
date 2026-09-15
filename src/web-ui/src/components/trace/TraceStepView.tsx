@@ -3,13 +3,17 @@ import { ClassificationTable } from '@/components/trace/ClassificationTable';
 import { ConceptMatches } from '@/components/trace/ConceptMatches';
 import { DistanceTable } from '@/components/trace/DistanceTable';
 import { EmbeddingView } from '@/components/trace/EmbeddingView';
+import { EvidenceView } from '@/components/trace/EvidenceView';
 import { ExpansionView } from '@/components/trace/ExpansionView';
+import { GenerationView } from '@/components/trace/GenerationView';
 import { JsonFallback } from '@/components/trace/JsonFallback';
+import { PromptView } from '@/components/trace/PromptView';
 import { RrfTable } from '@/components/trace/RrfTable';
 import { RuleChecks } from '@/components/trace/RuleChecks';
 import { SqlBlock } from '@/components/trace/SqlBlock';
 import { TraceSection } from '@/components/trace/TraceSection';
 import { TsQueryView } from '@/components/trace/TsQueryView';
+import { ValidationView } from '@/components/trace/ValidationView';
 import { formatMilliseconds } from '@/lib/format';
 import { isPipelineStage, stageColourClasses, stageLabel } from '@/lib/stageGroup';
 import {
@@ -18,11 +22,15 @@ import {
     readConstrainDetails,
     readDistanceDetails,
     readEmbeddingDetails,
+    readEvidenceDetails,
     readExpansionDetails,
+    readGenerationDetails,
     readKeywordDetails,
+    readPromptDetails,
     readRrfDetails,
     readStructuredDetails,
     readUnderstandDetails,
+    readValidationDetails,
 } from '@/lib/traceDetails';
 import { traceStepKind } from '@/lib/traceStepKind';
 import { cn } from '@/lib/utils';
@@ -115,6 +123,14 @@ function StepDetails({ step, response }: Omit<TraceStepViewProps, 'index'>) {
             return <ClassificationTable details={readClassificationDetails(details)} productNames={names} />;
         case 'rule-checks':
             return <RuleChecks details={readConstrainDetails(details)} productNames={names} />;
+        case 'evidence':
+            return <EvidenceView details={readEvidenceDetails(details)} />;
+        case 'prompt':
+            return <PromptView details={readPromptDetails(details)} />;
+        case 'generation':
+            return <GenerationView details={readGenerationDetails(details)} />;
+        case 'validation':
+            return <ValidationView details={readValidationDetails(details)} />;
         case 'json':
             return <JsonFallback details={step.details} />;
     }

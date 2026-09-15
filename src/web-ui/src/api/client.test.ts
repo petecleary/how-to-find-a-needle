@@ -2,9 +2,11 @@ import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import {
     ApiError,
     getGoldenQueries,
+    isAnswerStage,
     isSearchStage,
     search,
     searchStages,
+    streamAnswer,
     type SearchResponse,
     type SearchStage,
 } from './client';
@@ -42,15 +44,18 @@ afterEach(() => {
 
 describe('search', () => {
     it('only accepts stages the API document has an endpoint for', () => {
+        // The answer streams (/api/search/rag/answer) are paths below a stage, not stages.
         expectTypeOf<SearchStage>().toEqualTypeOf<
-            'structured' | 'keyword' | 'vector' | 'hybrid' | 'ontology'
+            'structured' | 'keyword' | 'vector' | 'hybrid' | 'ontology' | 'rag' | 'pedagogy'
         >();
     });
 
     it('keeps the runtime stage list identical to the generated stage type', () => {
         expectTypeOf<(typeof searchStages)[number]>().toEqualTypeOf<SearchStage>();
-        expect(isSearchStage('hybrid')).toBe(true);
-        expect(isSearchStage('rag')).toBe(false);
+        expect(isSearchStage('rag')).toBe(true);
+        expect(isSearchStage('rag/answer')).toBe(false);
+        expect(isAnswerStage('pedagogy')).toBe(true);
+        expect(isAnswerStage('ontology')).toBe(false);
     });
 
     it('POSTs the same JSON request to the stage endpoint and returns the response', async () => {
@@ -131,6 +136,40 @@ describe('search', () => {
         expect(error.status).toBe(502);
         expect(error.problem).toBeNull();
         expect(error.message).toBe('502 Bad Gateway');
+    });
+});
+
+describe('streamAnswer', () => {
+    it('POSTs the search request to the answer endpoint, asking for an event stream', async () => {
+        const fetchMock = stubFetch(
+            new Response('event: meta\ndata: {}\n\n', { headers: { 'Content-Type': 'text/event-stream' } }),
+        );
+        const request = { query: 'power adapter for my laptop' };
+
+        const response = await streamAnswer('rag', request);
+
+        expect(response.ok).toBe(true);
+        const [path, init] = fetchMock.mock.calls[0] ?? [];
+        expect(path).toBe('/api/search/rag/answer');
+        expect(init?.method).toBe('POST');
+        expect(new Headers(init?.headers).get('Accept')).toBe('text/event-stream');
+        expect(init?.body).toBe(JSON.stringify(request));
+    });
+
+    it('turns a 503 before streaming starts into an ApiError with the LLM guidance', async () => {
+        const guidance = 'Is Ollama running at http://localhost:11434? Start it with `ollama serve`.';
+        stubFetch(
+            jsonResponse(
+                { title: 'LLM unavailable', status: 503, detail: guidance },
+                503,
+                'application/problem+json',
+            ),
+        );
+
+        const error = await catchApiError(streamAnswer('pedagogy', { query: 'charger' }));
+
+        expect(error.status).toBe(503);
+        expect(error.message).toBe(guidance);
     });
 });
 

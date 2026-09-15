@@ -1,4 +1,4 @@
-import type { SearchResponse } from '@/api/client';
+import type { CompatibilityResult, CompatibilityStatus, SearchResponse } from '@/api/client';
 
 // Reading a trace step's `details`. The contract types `details` as an open dictionary (ADR-0003): each
 // stage writes its own keys. These readers check every field at runtime, so a trace that changes shape
@@ -381,6 +381,294 @@ export function parseRrfFormula(formula: string): RrfRow | null {
         : null;
 }
 
+// --- Stages 6–7: evidence, prompts, generation and validation ------------------------------------------
+
+/** Why a product is in the evidence set (ADR-0016). */
+export type EvidenceRole = 'TargetDevice' | 'Compatible' | 'Incompatible' | 'Unknown' | 'NotChecked';
+
+const evidenceRoles: readonly EvidenceRole[] = [
+    'TargetDevice',
+    'Compatible',
+    'Incompatible',
+    'Unknown',
+    'NotChecked',
+];
+const compatibilityStatuses: readonly CompatibilityStatus[] = [
+    'NotEvaluated',
+    'Compatible',
+    'Incompatible',
+    'Unknown',
+];
+
+export interface EvidenceItem {
+    id: string;
+    name: string;
+    role: EvidenceRole;
+    /** The product's place in Stage 5's order; `null` for the target device. */
+    rank: number | null;
+    compatibility: CompatibilityResult;
+    conceptMatch: string | null;
+    whyIncluded: string;
+    description: string | null;
+}
+
+/** A matched concept, in the ontology's own words: preferred label, alternative labels and definition. */
+export interface EvidenceConcept {
+    notation: string;
+    prefLabel: string;
+    altLabels: string[];
+    definition: string | null;
+}
+
+export interface EvidenceRule {
+    name: string;
+    definitions: string[];
+    specTerms: string[];
+}
+
+export interface EvidenceDetails {
+    items: EvidenceItem[];
+    concepts: EvidenceConcept[];
+    rules: EvidenceRule[];
+    /** How many products of each kind the model may be given, e.g. `{ compatible: 5, incompatible: 3 }`. */
+    limits: Record<string, number>;
+}
+
+export function readEvidenceDetails(details: Details): EvidenceDetails {
+    return {
+        items: asRecords(details.evidence).flatMap((item): EvidenceItem[] => {
+            const id = asString(item.id);
+            const role = evidenceRoles.find((candidate) => candidate === item.role);
+            const status = compatibilityStatuses.find((candidate) => candidate === item.compatibility);
+
+            return id === null || role === undefined || status === undefined
+                ? []
+                : [
+                      {
+                          id,
+                          name: asString(item.name) ?? id,
+                          role,
+                          rank: asNumber(item.rank),
+                          compatibility: { status, reasons: asStrings(item.reasons) },
+                          conceptMatch: asString(item.conceptMatch),
+                          whyIncluded: asString(item.whyIncluded) ?? '',
+                          description: asString(item.description),
+                      },
+                  ];
+        }),
+        concepts: asRecords(details.concepts).flatMap((concept): EvidenceConcept[] => {
+            const notation = asString(concept.notation);
+            return notation === null
+                ? []
+                : [
+                      {
+                          notation,
+                          prefLabel: asString(concept.prefLabel) ?? notation,
+                          altLabels: asStrings(concept.altLabels),
+                          definition: asString(concept.definition),
+                      },
+                  ];
+        }),
+        rules: asRecords(details.rules).flatMap((rule): EvidenceRule[] => {
+            const name = asString(rule.name);
+            return name === null
+                ? []
+                : [{ name, definitions: asStrings(rule.definitions), specTerms: asStrings(rule.specTerms) }];
+        }),
+        limits: asNumberRecord(details.limits),
+    };
+}
+
+/** The evidence set from a Stage 6–7 results response (its evidence trace step), or `null` for other stages. */
+export function readEvidence(response: SearchResponse): EvidenceDetails | null {
+    const step = response.debugTrace.steps.find(
+        ({ details }) =>
+            details != null && Object.hasOwn(details, 'evidence') && Object.hasOwn(details, 'limits'),
+    );
+
+    return step?.details == null ? null : readEvidenceDetails(step.details);
+}
+
+/** Which model answered and how it was asked (ADR-0015). The API never puts the key in the trace. */
+export interface LlmInfo {
+    provider: string;
+    model: string;
+    endpointHost: string | null;
+    settings: Record<string, string | number | boolean | null>;
+}
+
+export interface PromptDetails {
+    /** `answer` or `explanation`. */
+    section: string | null;
+    /** Stage 7 only: whether the pedagogy prompt (true) or the baseline (false) was used. */
+    applyPedagogy: boolean | null;
+    audience: string | null;
+    promptFiles: string[];
+    systemPrompt: string;
+    userPrompt: string;
+    /** The active audience's section of pedagogy-audiences.md, as it appears in the system prompt. */
+    audienceGuidance: string | null;
+    /** Each concept's words for the audience, by notation. */
+    wordsOffered: Record<string, string[]>;
+    llm: LlmInfo | null;
+}
+
+export function readPromptDetails(details: Details): PromptDetails {
+    return {
+        section: asString(details.section),
+        applyPedagogy: asBoolean(details.applyPedagogy),
+        audience: asString(details.audience),
+        promptFiles: asStrings(details.promptFiles),
+        systemPrompt: asString(details.systemPrompt) ?? '',
+        userPrompt: asString(details.userPrompt) ?? '',
+        audienceGuidance: asString(details.audienceGuidance),
+        wordsOffered: isRecord(details.wordsOffered)
+            ? Object.fromEntries(
+                  Object.entries(details.wordsOffered).map(([notation, words]) => [
+                      notation,
+                      asStrings(words),
+                  ]),
+              )
+            : {},
+        llm: readLlm(details.llm),
+    };
+}
+
+export interface SectionTiming {
+    timeToFirstTokenMs: number | null;
+    totalMs: number | null;
+    /** The explanation only: when it started, measured from the start of the request. */
+    startedAtMs: number | null;
+}
+
+export interface GenerationDetails {
+    section: string | null;
+    llm: LlmInfo | null;
+    rawOutput: string;
+    timeToFirstTokenMs: number | null;
+    totalMs: number | null;
+    finishReason: string | null;
+    inputTokens: number | null;
+    outputTokens: number | null;
+    /** Stage 7's per-section timings (ADR-0017); `null` on Stage 6. */
+    answerTiming: SectionTiming | null;
+    explanationTiming: SectionTiming | null;
+}
+
+export function readGenerationDetails(details: Details): GenerationDetails {
+    const timings = isRecord(details.sectionTimings) ? details.sectionTimings : null;
+
+    return {
+        section: asString(details.section),
+        llm: readLlm(details.llm),
+        rawOutput: asString(details.rawOutput) ?? '',
+        timeToFirstTokenMs: asNumber(details.timeToFirstTokenMs),
+        totalMs: asNumber(details.totalMs),
+        finishReason: asString(details.finishReason),
+        inputTokens: asNumber(details.inputTokens),
+        outputTokens: asNumber(details.outputTokens),
+        answerTiming: readTiming(timings?.answer),
+        explanationTiming: readTiming(timings?.explanation),
+    };
+}
+
+/** One check run on finished LLM text. A heuristic guesses from wording rather than proving something. */
+export interface ValidationCheck {
+    name: string;
+    passed: boolean;
+    detail: string;
+    isHeuristic: boolean;
+}
+
+/** Stage 7's parsed headings: the products Decision and Near miss cite, and the concepts' bold terms. */
+export interface ExplanationStructureSummary {
+    decision: string | null;
+    concepts: string[];
+    nearMiss: string | null;
+    ruleOfThumb: string | null;
+    nextStep: string | null;
+}
+
+export interface ValidationDetails {
+    section: string | null;
+    applyPedagogy: boolean | null;
+    citations: string[];
+    invalidCitations: string[];
+    insufficientEvidence: boolean | null;
+    checks: ValidationCheck[];
+    warnings: string[];
+    structure: ExplanationStructureSummary | null;
+}
+
+export function readValidationDetails(details: Details): ValidationDetails {
+    const structure = isRecord(details.structure) ? details.structure : null;
+
+    return {
+        section: asString(details.section),
+        applyPedagogy: asBoolean(details.applyPedagogy),
+        citations: asStrings(details.citations),
+        invalidCitations: asStrings(details.invalidCitations),
+        insufficientEvidence: asBoolean(details.insufficientEvidence),
+        checks: asRecords(details.checks).flatMap((check): ValidationCheck[] => {
+            const name = asString(check.name);
+            return name === null || typeof check.passed !== 'boolean'
+                ? []
+                : [
+                      {
+                          name,
+                          passed: check.passed,
+                          detail: asString(check.detail) ?? '',
+                          isHeuristic: check.isHeuristic === true,
+                      },
+                  ];
+        }),
+        warnings: asStrings(details.warnings),
+        structure:
+            structure === null
+                ? null
+                : {
+                      decision: isRecord(structure.decision) ? asString(structure.decision.productId) : null,
+                      concepts: asStrings(structure.concepts),
+                      nearMiss: isRecord(structure.nearMiss) ? asString(structure.nearMiss.productId) : null,
+                      ruleOfThumb: asString(structure.ruleOfThumb),
+                      nextStep: asString(structure.nextStep),
+                  },
+    };
+}
+
+function readLlm(value: unknown): LlmInfo | null {
+    if (!isRecord(value)) {
+        return null;
+    }
+
+    const provider = asString(value.provider);
+    const model = asString(value.model);
+    if (provider === null || model === null) {
+        return null;
+    }
+
+    const settings = isRecord(value.settings)
+        ? (Object.fromEntries(
+              Object.entries(value.settings).filter(
+                  ([, setting]) =>
+                      setting === null || ['string', 'number', 'boolean'].includes(typeof setting),
+              ),
+          ) as Record<string, string | number | boolean | null>)
+        : {};
+
+    return { provider, model, endpointHost: asString(value.endpointHost), settings };
+}
+
+function readTiming(value: unknown): SectionTiming | null {
+    return isRecord(value)
+        ? {
+              timeToFirstTokenMs: asNumber(value.timeToFirstTokenMs),
+              totalMs: asNumber(value.totalMs),
+              startedAtMs: asNumber(value.startedAtMs),
+          }
+        : null;
+}
+
 // --- Shared -------------------------------------------------------------------------------------------
 
 /** Product names by ID from the response, so trace tables can name products the trace only lists by ID. */
@@ -407,6 +695,10 @@ function asString(value: unknown): string | null {
 
 function asNumber(value: unknown): number | null {
     return typeof value === 'number' ? value : null;
+}
+
+function asBoolean(value: unknown): boolean | null {
+    return typeof value === 'boolean' ? value : null;
 }
 
 function asStrings(value: unknown): string[] {

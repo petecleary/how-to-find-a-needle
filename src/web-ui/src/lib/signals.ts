@@ -34,8 +34,11 @@ export function signalBadges(stage: PipelineStage, product: ProductResult): Sign
                     description: 'Cosine similarity, 1 − cosine distance: higher means closer in meaning',
                 },
             ];
+        // Stages 6–7 return Stage 5's results unchanged, so they carry the same signals.
         case 'hybrid':
         case 'ontology':
+        case 'rag':
+        case 'pedagogy':
             return [
                 rankBadge('KW', signals.keywordRank, 'keyword'),
                 rankBadge('VEC', signals.vectorRank, 'vector'),
@@ -46,7 +49,7 @@ export function signalBadges(stage: PipelineStage, product: ProductResult): Sign
                 },
             ];
         default:
-            // Stage 1 has no score: it filters, then orders by price and ID. Stages 6–7 cite Stage 5's results.
+            // Stage 1 has no score: it filters, then orders by price and ID.
             return [];
     }
 }
@@ -62,6 +65,8 @@ export function scoreMeaning(stage: PipelineStage): string | null {
             return 'score = cosine similarity';
         case 'hybrid':
         case 'ontology':
+        case 'rag':
+        case 'pedagogy':
             return 'score = RRF sum';
         default:
             return null;

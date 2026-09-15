@@ -34,6 +34,41 @@ describe('traceStepKind', () => {
         expect(mismatches).toEqual([]);
     });
 
+    // The keys Stages 6–7 write (RagSearch.cs, AnswerGenerator.cs, PedagogyEngine.cs).
+    it.each([
+        [{ evidence: [], limits: {}, concepts: [], rules: [] }, 'evidence', 'Evidence'],
+        [
+            { section: 'answer', promptFiles: [], systemPrompt: '', userPrompt: '', llm: null },
+            'prompt',
+            'Prompt',
+        ],
+        [{ section: 'answer', llm: null, rawOutput: '', timeToFirstTokenMs: 56 }, 'generation', 'Generate'],
+        [
+            { section: 'answer', citations: [], invalidCitations: [], checks: [], warnings: [] },
+            'validation',
+            'Validate',
+        ],
+        [
+            {
+                section: 'explanation',
+                applyPedagogy: true,
+                audience: 'novice',
+                systemPrompt: '',
+                userPrompt: '',
+            },
+            'prompt',
+            'Explain: prompt',
+        ],
+        [
+            { section: 'explanation', applyPedagogy: false, citations: [], checks: [], structure: null },
+            'validation',
+            'Explain: validate',
+        ],
+    ] as const)('recognises a Stage 6–7 step with keys %j as %s', (details, kind, label) => {
+        expect(traceStepKind({ details, sql: null })).toBe(kind);
+        expect(traceStepShortLabel({ details, sql: null, title: '' })).toBe(label);
+    });
+
     it('falls back to JSON for a step it does not recognise', () => {
         expect(traceStepKind({ details: { somethingNew: 1 }, sql: null })).toBe('json');
     });

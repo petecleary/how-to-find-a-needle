@@ -1,52 +1,61 @@
-import { isValidElement, type ReactNode } from 'react';
+import { isValidElement, useMemo, type ReactNode } from 'react';
 import ReactMarkdown, { defaultUrlTransform, type Components } from 'react-markdown';
 import { Link } from 'react-router';
 import remarkGfm from 'remark-gfm';
 import { GlossaryTerm } from '@/components/GlossaryTerm';
+import { productLinkScheme } from '@/lib/citations';
 import { slugify } from '@/lib/slug';
 import { cn } from '@/lib/utils';
 
-// Markdown — renders text from content/ and docs/adr (ADR-0014 § Content). Three link schemes are this repo's own:
-//   term:  a glossary hover card               adr:  a link to a decision page
-//   repo:  a repository file the UI doesn't serve, shown as text with its path on hover
+// Markdown — renders text from content/, docs/adr and the LLM (ADR-0014 § Content). Four link schemes are this repo's own:
+//   term:     a glossary hover card               adr:  a link to a decision page
+//   repo:     a repository file the UI doesn't serve, shown as text with its path on hover
+//   product:  a citation in LLM text, rendered by the page (a chip that shows the product in the evidence set)
 // A custom `a` renderer does it, with no remark plugin. Raw HTML in content is not rendered.
 
-const ownSchemes = ['term:', 'adr:', 'repo:'];
+const ownSchemes = ['term:', 'adr:', 'repo:', productLinkScheme];
+
+function renderLink(href: string | undefined, children: ReactNode): ReactNode {
+    if (href?.startsWith('term:')) {
+        return <GlossaryTerm id={href.slice('term:'.length)}>{children}</GlossaryTerm>;
+    }
+
+    if (href?.startsWith('adr:')) {
+        return (
+            <Link
+                to={`/decisions/${href.slice('adr:'.length)}`}
+                className="font-bold underline underline-offset-4"
+            >
+                {children}
+            </Link>
+        );
+    }
+
+    if (href?.startsWith('repo:')) {
+        return (
+            <span
+                title={`${href.slice('repo:'.length)}: in the repository, not shown in the UI`}
+                className="underline decoration-dashed underline-offset-4"
+            >
+                {children}
+            </span>
+        );
+    }
+
+    // A citation with no chip renderer (LLM text shown somewhere without an evidence set) stays plain text.
+    if (href?.startsWith(productLinkScheme)) {
+        return <span className="font-mono">{children}</span>;
+    }
+
+    return (
+        <a href={href} className="underline underline-offset-4">
+            {children}
+        </a>
+    );
+}
 
 const components: Components = {
-    a({ href, children }) {
-        if (href?.startsWith('term:')) {
-            return <GlossaryTerm id={href.slice('term:'.length)}>{children}</GlossaryTerm>;
-        }
-
-        if (href?.startsWith('adr:')) {
-            return (
-                <Link
-                    to={`/decisions/${href.slice('adr:'.length)}`}
-                    className="font-bold underline underline-offset-4"
-                >
-                    {children}
-                </Link>
-            );
-        }
-
-        if (href?.startsWith('repo:')) {
-            return (
-                <span
-                    title={`${href.slice('repo:'.length)}: in the repository, not shown in the UI`}
-                    className="underline decoration-dashed underline-offset-4"
-                >
-                    {children}
-                </span>
-            );
-        }
-
-        return (
-            <a href={href} className="underline underline-offset-4">
-                {children}
-            </a>
-        );
-    },
+    a: ({ href, children }) => renderLink(href, children),
     // Headings get GitHub-style ids, so links to a section of an ADR land on it.
     h1: ({ children }) => (
         <h1 id={slugify(textOf(children))} className="scroll-mt-4 text-3xl font-bold">
@@ -132,12 +141,28 @@ function textOf(node: ReactNode): string {
 export interface MarkdownProps {
     children: string;
     className?: string;
+    /** Renders a `product:` citation link, e.g. as a chip; see `linkCitations` in lib/citations.ts. */
+    renderProductLink?: (productId: string) => ReactNode;
 }
 
-export function Markdown({ children, className }: MarkdownProps) {
+export function Markdown({ children, className, renderProductLink }: MarkdownProps) {
+    const allComponents = useMemo<Components>(
+        () =>
+            renderProductLink === undefined
+                ? components
+                : {
+                      ...components,
+                      a: ({ href, children: linkChildren }) =>
+                          href?.startsWith(productLinkScheme)
+                              ? renderProductLink(href.slice(productLinkScheme.length))
+                              : renderLink(href, linkChildren),
+                  },
+        [renderProductLink],
+    );
+
     return (
         <div className={cn('flex flex-col gap-2', className)}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]} urlTransform={urlTransform} components={components}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} urlTransform={urlTransform} components={allComponents}>
                 {children}
             </ReactMarkdown>
         </div>

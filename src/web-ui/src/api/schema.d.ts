@@ -38,6 +38,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/search/rag/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stage 6 — RAG answer: a grounded, cited markdown summary, streamed as Server-Sent Events (or JSON with Accept: application/json) */
+        post: operations["PISearchApiEndpointsSearchRagRagAnswerEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/rag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stage 6 — RAG: Stage 5's results plus the evidence set the answer will use (the answer streams from /answer) */
+        post: operations["PISearchApiEndpointsSearchRagRagSearchEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/pedagogy/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stage 7 — Pedagogy answer: the grounded answer, then an audience-aware explanation (or the baseline), streamed as Server-Sent Events (or JSON with Accept: application/json) */
+        post: operations["PISearchApiEndpointsSearchPedagogyPedagogyAnswerEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/pedagogy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stage 7 — Pedagogy: Stage 5's results plus the evidence set (the answer and explanation stream from /answer) */
+        post: operations["PISearchApiEndpointsSearchPedagogyPedagogySearchEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/search/ontology": {
         parameters: {
             query?: never;
@@ -178,6 +246,27 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AnswerFinal: {
+            section: string;
+            markdown: string;
+            citations: string[];
+            invalidCitations: string[];
+            insufficientEvidence: boolean;
+            warnings: string[];
+            structure?: null | components["schemas"]["ExplanationStructure"];
+        };
+        AnswerResponse: {
+            stage: string;
+            provider: string;
+            model: string;
+            evidence: string[];
+            sections: components["schemas"]["AnswerFinal"][];
+            /** Format: double */
+            timeToFirstTokenMs: null | number;
+            /** Format: double */
+            totalMs: number;
+            trace: components["schemas"]["TraceStep"][];
+        };
         CandidateSignals: {
             structuredMatch?: null | boolean;
             /** Format: int32 */
@@ -208,6 +297,16 @@ export interface components {
             name: string;
             brand: string;
             categories: string[];
+        };
+        ExplanationProduct: {
+            productId: null | string;
+        };
+        ExplanationStructure: {
+            decision: components["schemas"]["ExplanationProduct"];
+            concepts: string[];
+            nearMiss: components["schemas"]["ExplanationProduct"];
+            ruleOfThumb: null | string;
+            nextStep: null | string;
         };
         GoldenQuery: {
             id: string;
@@ -450,6 +549,174 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+        };
+    };
+    PISearchApiEndpointsSearchRagRagAnswerEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    PISearchApiEndpointsSearchRagRagSearchEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    PISearchApiEndpointsSearchPedagogyPedagogyAnswerEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    PISearchApiEndpointsSearchPedagogyPedagogySearchEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
         };

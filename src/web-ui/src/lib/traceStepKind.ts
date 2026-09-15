@@ -15,11 +15,20 @@ export type TraceStepKind =
     | 'expansion'
     | 'classification'
     | 'rule-checks'
+    | 'evidence'
+    | 'prompt'
+    | 'generation'
+    | 'validation'
     | 'json';
 
 // Checked in order; the first rule whose keys are all present wins. Keyword and Understand both write
-// `matches`, so each is recognised by a key only it writes (`tsquery`, `tokens`).
+// `matches`, so each is recognised by a key only it writes (`tsquery`, `tokens`). Stage 7's validation step
+// writes `checks` like none of Stage 5's steps do, alongside `citations`.
 const rules: readonly { kind: TraceStepKind; keys: readonly string[] }[] = [
+    { kind: 'evidence', keys: ['evidence', 'limits'] },
+    { kind: 'prompt', keys: ['systemPrompt', 'userPrompt'] },
+    { kind: 'generation', keys: ['rawOutput'] },
+    { kind: 'validation', keys: ['citations', 'checks'] },
     { kind: 'rule-checks', keys: ['applyConstraints'] },
     { kind: 'classification', keys: ['classifications'] },
     { kind: 'expansion', keys: ['expandSynonyms', 'embeddingText'] },
@@ -52,10 +61,22 @@ const shortLabels: Record<Exclude<TraceStepKind, 'json'>, string> = {
     expansion: 'Expand',
     classification: 'Classify',
     'rule-checks': 'Constrain',
+    evidence: 'Evidence',
+    prompt: 'Prompt',
+    generation: 'Generate',
+    validation: 'Validate',
 };
 
-/** A step's name for its chip in the trace flow, e.g. "RRF"; the full title is shown when it's selected. */
+/**
+ * A step's name for its chip in the trace flow, e.g. "RRF"; the full title is shown when it's selected. Stage 7 runs
+ * prompt, generate and validate twice, so the explanation's chips say so.
+ */
 export function traceStepShortLabel(step: Pick<TraceStep, 'details' | 'sql' | 'title'>): string {
     const kind = traceStepKind(step);
-    return kind === 'json' ? step.title : shortLabels[kind];
+    if (kind === 'json') {
+        return step.title;
+    }
+
+    const isExplanation = step.details?.section === 'explanation';
+    return isExplanation ? `Explain: ${shortLabels[kind].toLowerCase()}` : shortLabels[kind];
 }

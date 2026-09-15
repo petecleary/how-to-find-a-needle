@@ -30,8 +30,10 @@ export function ResultsTab({ response, taxonomy, targetProductId, applyConstrain
     }
 
     const stage = isPipelineStage(response.stage) ? response.stage : null;
+    // Stages 6–7 retrieve nothing new: they return Stage 5's results and explain them (ADR-0016), so they show them the same way.
+    const showsStageFiveResults = stage === 'ontology' || stage === 'rag' || stage === 'pedagogy';
 
-    if (stage === 'ontology' && applyConstraints) {
+    if (showsStageFiveResults && applyConstraints) {
         return (
             <ConceptGroupedResults
                 response={response}
@@ -59,7 +61,7 @@ export function ResultsTab({ response, taxonomy, targetProductId, applyConstrain
                         rank={firstRank + index}
                         icon={categoryIcon(taxonomy, product.categories)}
                         signals={stage === null ? [] : signalBadges(stage, product)}
-                        showConcept={stage === 'ontology'}
+                        showConcept={showsStageFiveResults}
                     />
                 ))}
             </ol>

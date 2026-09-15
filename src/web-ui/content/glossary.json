@@ -335,5 +335,70 @@
     "definition": "A graph of facts about individual things (this product, that maker) rather than kinds of thing. Useful for multi-hop questions; this repo keeps products in the catalogue instead. Discussed in the talk, not built.",
     "topic": "Going further",
     "seeAlso": ["ontology"]
+  },
+  {
+    "id": "evidence-set",
+    "term": "Evidence set",
+    "definition": "The bounded list an LLM may use in Stages 6–7: up to 5 compatible products, 3 incompatible ones with their reasons, 2 unknown and 5 unchecked, plus the matched concepts and the rules. The trace shows it in full.",
+    "topic": "AI stages",
+    "seeAlso": ["rag", "citation"],
+    "adr": "0016-rag-grounding-and-citations"
+  },
+  {
+    "id": "citation",
+    "term": "Citation",
+    "definition": "A product ID in square brackets, like [PROD-0012], after every claim about a product. When the answer is complete, the API checks each one against the evidence set; one that isn't there is shown as invalid.",
+    "topic": "AI stages",
+    "seeAlso": ["evidence-set"],
+    "adr": "0016-rag-grounding-and-citations"
+  },
+  {
+    "id": "prompt",
+    "term": "Prompt",
+    "definition": "The messages sent to an LLM: here a system message with the rules, and a user message with the question and the evidence. Stages 6–7 keep theirs in files and show them in full in the trace.",
+    "topic": "AI stages",
+    "seeAlso": ["llm"],
+    "adr": "0016-rag-grounding-and-citations"
+  },
+  {
+    "id": "server-sent-events",
+    "term": "Server-Sent Events",
+    "acronym": "SSE",
+    "definition": "A one-way stream of text events over an ordinary HTTP response. The answer arrives as meta, delta, final and done events, so the text appears while it is being written.",
+    "topic": "AI stages",
+    "seeAlso": ["time-to-first-token"],
+    "adr": "0016-rag-grounding-and-citations"
+  },
+  {
+    "id": "time-to-first-token",
+    "term": "Time to first token",
+    "definition": "How long after the request the first piece of generated text arrives. It decides whether an answer feels fast, more than the total time does.",
+    "topic": "AI stages",
+    "seeAlso": ["server-sent-events"],
+    "adr": "0015-llm-hosting-and-client"
+  },
+  {
+    "id": "pedagogy",
+    "term": "Pedagogy",
+    "definition": "The design of an explanation. Stage 7's prompt leads with the decision, explains the constraint, contrasts with the near miss, and ends with a rule of thumb and a next step.",
+    "topic": "AI stages",
+    "seeAlso": ["baseline-explanation", "audience"],
+    "adr": "0017-pedagogy-engine"
+  },
+  {
+    "id": "baseline-explanation",
+    "term": "Baseline explanation",
+    "definition": "Stage 7 with Apply pedagogy off: the same answer, evidence, audience and words, through a plain prompt with no teaching structure. It shows what the pedagogy prompt adds.",
+    "topic": "AI stages",
+    "seeAlso": ["pedagogy"],
+    "adr": "0017-pedagogy-engine"
+  },
+  {
+    "id": "audience",
+    "term": "Audience",
+    "definition": "Who Stage 7 explains for: novice, enthusiast or expert. It changes the words (everyday alternative labels for a novice, spec terms for an expert), not the facts.",
+    "topic": "AI stages",
+    "seeAlso": ["alt-label", "pedagogy"],
+    "adr": "0017-pedagogy-engine"
   }
 ]

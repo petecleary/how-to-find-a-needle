@@ -126,10 +126,14 @@ describe('content/talk.json', () => {
         ).toEqual([]);
     });
 
-    it('walks Stages 1–5 in order, each with a golden query the API serves', () => {
+    it('walks Stages 1–7 in order, each with a golden query the API serves', () => {
         const stageSteps = talkSteps.filter((step) => step.kind === 'stage');
+        // Stage 7 takes three steps in a row (baseline → pedagogy → another audience, ADR-0017), so repeats collapse.
+        const stagesInOrder = stageSteps
+            .map((step) => step.stage)
+            .filter((stage, index, stages) => index === 0 || stage !== stages[index - 1]);
 
-        expect(stageSteps.map((step) => step.stage)).toEqual([...searchStages]);
+        expect(stagesInOrder).toEqual([...searchStages]);
         expect(stageSteps.filter((step) => !goldenQueryIdsInData.has(step.goldenQuery ?? ''))).toEqual([]);
     });
 

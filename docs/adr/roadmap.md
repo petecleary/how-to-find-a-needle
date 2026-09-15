@@ -459,6 +459,8 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 
 **Order change:** the bake-off scores the real prompts and validators, so it moves after the Stage 7 API and the prompt review. `qwen3.6:35b` is the provisional default until then.
 
+**Second order change (Pete, 2026-09-15, at the step 3 checkpoint):** the Stages 6–7 UI comes before the prompt review and the bake-off, so Pete can review the prompts in the running app. Build order is now 1 → 2 → 3 → **5 → 6 → 7** (the stage explanations `rag.md` and `pedagogy.md` are brought forward from step 8, because the content tests require one per stage the API serves) → ✋ prompt review → **4** → 8 → 9. The step numbers below are kept, so references still work.
+
 **Build order.** Every step ends with `dotnet build` at 0 warnings, unit tests, integration tests (LLM tests skip cleanly without an LLM), and the UI checks once UI files change.
 
 1. **LLM provider and streaming spike** (0015)
@@ -524,6 +526,15 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - **Audience picker** and Stage 7's **"Apply pedagogy" toggle** in `StageOptions` on the tab row (both part of URL state).
 7. **Under the hood for Stages 6–7** (0014, 0003)
    - `PromptView`, `EvidenceView`, `GenerationView` renderers; the answer's `done` trace appended to the search trace; the coverage test extended to Stages 6–7.
+   - ✅ **Steps 5–7 built together 2026-09-15** (brought forward for the prompt review). Typecheck, lint, Prettier and build pass; Vitest **266 pass (47 new)**. Checked in headless Chrome at 1280×900 against the live API: GQ-01 on Stage 7, novice, pedagogy on. Built:
+     - **Plumbing:** `gen:api` (the stage type now excludes the `/answer` sub-paths, so `SearchStage` is the seven stages); `api/answerEvents.ts` (hand-typed events, checked at runtime); `lib/parseSseEvents.ts`; `streamAnswer` in `client.ts`; `hooks/useAnswerStream.ts` (runs in parallel with `usePipelineSearch`, aborts on change, a stream that closes without `done` is an error).
+     - **Answer tab:** `AnswerTab`, `AnswerPanel`, `ExplanationPanel`, `EvidenceSet`, `CitationChip`, `CitationSummary`, `AnswerWarnings`, `StreamingBadge`; `lib/citations.ts` (links `[PROD-…]` to a `product:` scheme `Markdown` renders as a chip, and hides the sentinel line). Chips are coloured by the product's verdict in the evidence set, marked invalid when `final` says so, and select the product in the evidence set.
+     - **Options and tabs:** the audience picker and Apply pedagogy switch on Stage 7; "50 ready" on Results and "live" on Answer while streaming; Stages 6–7 selectable in the stepper; Stages 6–7 show Stage 5's grouped results and signals.
+     - **Under the hood:** `EvidenceView`, `PromptView` (full system and user messages; the audience section highlighted; words offered per concept), `GenerationView` (raw output, timings, per-section timings), `ValidationView` (each check, heuristics labelled, parsed structure), `LlmSettings`. The answer's trace steps follow the results' steps; chips read Evidence → Prompt → Generate → Validate → Explain: prompt / generate / validate.
+     - **Content (from step 8):** `content/stages/rag.md` and `pedagogy.md`; 8 glossary entries (evidence set, citation, prompt, SSE, time to first token, pedagogy, baseline explanation, audience); talk steps `stage-rag`, `stage-pedagogy-baseline`, `stage-pedagogy`, `stage-pedagogy-audience` with draft captions. The talk-order test allows Stage 7's repeated steps.
+   - Findings:
+     - **Cold model after idle:** the browser run's first token took 6.2 s (answer and explanation 12.1 s), against 56 ms when warm. Ollama unloads a model after 5 minutes idle by default, and the warm-up service only runs at API startup. For step 9: either set Ollama's `keep_alive` longer on the presenter laptop, or warm up again before the talk.
+     - Long first-token times read as "6231.00 ms"; a seconds format above 1 s would read better on the projector.
 8. **Content, talk mode and glossary**
    - Stage explanations for `rag` and `pedagogy`; talk steps `stage-rag`, `stage-pedagogy-baseline`, `stage-pedagogy`, `stage-pedagogy-audience`; glossary entries; content-integrity tests for Stages 1–7.
 9. **Acceptance run and ADR status**

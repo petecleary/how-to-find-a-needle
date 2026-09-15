@@ -42,9 +42,12 @@ describe('StageExplanation', () => {
         expect(await screen.findByText(definition)).not.toBeNull();
     });
 
-    it('says so when a stage has no explanation yet', () => {
+    it('shows Stage 6’s explanation, linked to its decision record', () => {
         renderStage('rag');
 
-        expect(screen.getByText(/has no explanation yet/)).not.toBeNull();
+        expect(screen.getByRole('heading', { level: 2, name: 'RAG' })).not.toBeNull();
+        expect(screen.getByRole('link', { name: /ADR-0016/ }).getAttribute('href')).toBe(
+            '/decisions/0016-rag-grounding-and-citations',
+        );
     });
 });

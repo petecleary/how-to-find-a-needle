@@ -13,32 +13,30 @@ describe('PipelineStepper', () => {
         expect(screen.getByRole('tab', { selected: true }).textContent).toContain('Hybrid');
     });
 
-    it('moves to the next stage with the right arrow key', () => {
+    it('moves to the next stage with the right arrow key, from Stage 5 into the Pedagogy group', () => {
         const onChooseStage = vi.fn();
-        render(<PipelineStepper stage="hybrid" onChooseStage={onChooseStage} />);
+        render(<PipelineStepper stage="ontology" onChooseStage={onChooseStage} />);
 
         fireEvent.keyDown(screen.getByRole('tab', { selected: true }), { key: 'ArrowRight' });
 
-        expect(onChooseStage).toHaveBeenCalledWith('ontology');
+        expect(onChooseStage).toHaveBeenCalledWith('rag');
     });
 
-    it('skips stages without an endpoint, wrapping round to Stage 1', () => {
+    it('wraps round from Stage 7 to Stage 1', () => {
         const onChooseStage = vi.fn();
-        render(<PipelineStepper stage="ontology" onChooseStage={onChooseStage} />);
+        render(<PipelineStepper stage="pedagogy" onChooseStage={onChooseStage} />);
 
         fireEvent.keyDown(screen.getByRole('tab', { selected: true }), { key: 'ArrowRight' });
 
         expect(onChooseStage).toHaveBeenCalledWith('structured');
     });
 
-    it('does not choose a stage without an endpoint when clicked', () => {
+    it('chooses a stage when clicked', () => {
         const onChooseStage = vi.fn();
         render(<PipelineStepper stage="ontology" onChooseStage={onChooseStage} />);
-        const rag = screen.getByRole('tab', { name: /RAG/ });
 
-        fireEvent.click(rag);
+        fireEvent.click(screen.getByRole('tab', { name: /Pedagogy/ }));
 
-        expect(rag.getAttribute('aria-disabled')).toBe('true');
-        expect(onChooseStage).not.toHaveBeenCalled();
+        expect(onChooseStage).toHaveBeenCalledWith('pedagogy');
     });
 });

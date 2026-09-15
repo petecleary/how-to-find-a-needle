@@ -4,10 +4,11 @@ import {
     getDemoDevices,
     getTaxonomy,
     getVocabularies,
-    isSearchStage,
+    isAnswerStage,
     type GoldenQuery,
     type SearchStage,
 } from '@/api/client';
+import { AnswerTab } from '@/components/AnswerTab';
 import { FilterDrawer } from '@/components/FilterDrawer';
 import { FilterPanel } from '@/components/FilterPanel';
 import { HowItWorksTab } from '@/components/HowItWorksTab';
@@ -18,6 +19,7 @@ import { SearchOutcome } from '@/components/SearchOutcome';
 import { StageOptions } from '@/components/StageOptions';
 import { StageTabs } from '@/components/StageTabs';
 import { UnderTheHoodTab } from '@/components/UnderTheHoodTab';
+import { useAnswerStream } from '@/hooks/useAnswerStream';
 import { useApiData, type ApiData } from '@/hooks/useApiData';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePipelineSearch } from '@/hooks/usePipelineSearch';
@@ -70,11 +72,13 @@ export function StageScreen({
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const isFilterPanelOpen = hasRoomForSidebar ? isSidebarOpen : isDrawerOpen;
 
-    // TODO(Phase 4): Stages 6–7 get endpoints in Phase 4; until then a URL naming them shows Stage 5.
-    const stage: SearchStage = isSearchStage(state.stage) ? state.stage : 'ontology';
+    // Every pipeline stage now has an endpoint, so the stage in the state is always one the API serves.
+    const stage: SearchStage = state.stage;
     const tab: StageTab = isTabAvailable(state.tab, stage) ? state.tab : 'results';
     const request = useMemo(() => toSearchRequest(state), [state]);
+    // The results and the answer are two requests with the same body, sent together: results never wait for the LLM.
     const search = usePipelineSearch(stage, request);
+    const answerStream = useAnswerStream(stage, request);
 
     const update = useCallback(
         (change: Partial<SearchState>) => onStateChange({ ...state, ...change }),
@@ -106,14 +110,19 @@ export function StageScreen({
         }
     }
 
-    const stepCount = search.response?.debugTrace.steps.length ?? 0;
-    const counts: Partial<Record<StageTab, string>> =
-        search.response === null
-            ? {}
-            : {
-                  results: String(search.response.totalResults),
-                  'under-the-hood': `${stepCount} ${stepCount === 1 ? 'step' : 'steps'}`,
-              };
+    const answerTrace = answerStream.done?.trace ?? [];
+    const stepCount = (search.response?.debugTrace.steps.length ?? 0) + answerTrace.length;
+    const counts: Partial<Record<StageTab, string>> = {};
+    if (search.response !== null) {
+        // "50 ready" on Stages 6–7: the results arrived while the answer may still be streaming (ADR-0016).
+        counts.results = `${search.response.totalResults}${isAnswerStage(stage) ? ' ready' : ''}`;
+        counts['under-the-hood'] = `${stepCount} ${stepCount === 1 ? 'step' : 'steps'}`;
+    }
+    if (answerStream.status === 'streaming') {
+        counts.answer = 'live';
+    } else if (answerStream.status === 'error') {
+        counts.answer = 'failed';
+    }
 
     const filterPanel = (
         <FilterPanel
@@ -166,6 +175,8 @@ export function StageScreen({
                                 stage={stage}
                                 expandSynonyms={state.expandSynonyms}
                                 applyConstraints={state.applyConstraints}
+                                audience={state.audience}
+                                applyPedagogy={state.applyPedagogy}
                                 onChange={update}
                             />
                         }
@@ -183,11 +194,24 @@ export function StageScreen({
                                     )}
                                 </SearchOutcome>
                             ),
-                            // TODO(Phase 4): AnswerPanel, ExplanationPanel and EvidenceSet (the tab is disabled until Stage 6).
-                            answer: null,
+                            answer: isAnswerStage(stage) ? (
+                                <AnswerTab
+                                    stage={stage}
+                                    stream={answerStream}
+                                    search={search}
+                                    audience={state.audience}
+                                    applyPedagogy={state.applyPedagogy}
+                                />
+                            ) : null,
                             'under-the-hood': (
                                 <SearchOutcome search={search}>
-                                    {(response) => <UnderTheHoodTab response={response} />}
+                                    {(response) => (
+                                        <UnderTheHoodTab
+                                            response={response}
+                                            answerTrace={answerTrace}
+                                            isGenerating={answerStream.status === 'streaming'}
+                                        />
+                                    )}
                                 </SearchOutcome>
                             ),
                         }}

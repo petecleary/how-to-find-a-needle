@@ -17,14 +17,22 @@ export type TaxonomyNode = components['schemas']['TaxonomyNode'];
 export type ValueVocabulary = components['schemas']['ValueVocabulary'];
 export type ProblemDetails = components['schemas']['ProblemDetails'];
 export type ValidationProblemError = components['schemas']['ValidationProblemError'];
+export type AnswerFinal = components['schemas']['AnswerFinal'];
+export type AnswerResponse = components['schemas']['AnswerResponse'];
+export type ExplanationStructure = components['schemas']['ExplanationStructure'];
 
 type SearchPath = Extract<keyof paths, `/api/search/${string}`>;
 
 /**
- * The stages the API serves, read from the OpenAPI paths: `structured` … `ontology` today.
- * A stage appears here only once its endpoint exists, so the UI can't call one that doesn't.
+ * The stages the API serves, read from the OpenAPI paths `/api/search/{stage}`. A stage appears here only once
+ * its endpoint exists, so the UI can't call one that doesn't. The answer streams (`/api/search/rag/answer`) are
+ * paths below a stage, not stages, so they are left out.
  */
-export type SearchStage = SearchPath extends `/api/search/${infer Stage}` ? Stage : never;
+export type SearchStage = SearchPath extends `/api/search/${infer Stage}`
+    ? Stage extends `${string}/${string}`
+        ? never
+        : Stage
+    : never;
 
 /**
  * The same stages as a list the UI can check at runtime (types disappear when the code runs).
@@ -36,10 +44,21 @@ export const searchStages = [
     'vector',
     'hybrid',
     'ontology',
+    'rag',
+    'pedagogy',
 ] as const satisfies readonly SearchStage[];
 
 export function isSearchStage(stage: string): stage is SearchStage {
     return searchStages.some((candidate) => candidate === stage);
+}
+
+/** The stages that also stream LLM text from `/api/search/{stage}/answer` (ADR-0016, ADR-0017). */
+export const answerStages = ['rag', 'pedagogy'] as const satisfies readonly SearchStage[];
+
+export type AnswerStage = (typeof answerStages)[number];
+
+export function isAnswerStage(stage: string): stage is AnswerStage {
+    return answerStages.some((candidate) => candidate === stage);
 }
 
 /** The JSON body of a path's 200 response, as the OpenAPI document describes it. */
@@ -86,6 +105,30 @@ export function search(
         body: JSON.stringify(request),
         signal,
     });
+}
+
+/**
+ * `POST /api/search/{stage}/answer` as Server-Sent Events: the same request body as the search, sent at the same
+ * time (ADR-0016). Returns the open response so the caller can read its body as it streams (`useAnswerStream`). A
+ * failure before streaming starts, such as a 503 when the LLM isn't configured, is an `ApiError` like any other.
+ */
+export async function streamAnswer(
+    stage: AnswerStage,
+    request: SearchRequest,
+    signal?: AbortSignal,
+): Promise<Response> {
+    const response = await fetch(`/api/search/${stage}/answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+        body: JSON.stringify(request),
+        signal,
+    });
+
+    if (!response.ok) {
+        throw await toApiError(response);
+    }
+
+    return response;
 }
 
 /** `GET /api/demo/queries`: the golden queries, each a talk moment with a preset request. */
