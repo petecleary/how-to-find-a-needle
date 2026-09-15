@@ -1,50 +1,53 @@
+import { Tabs as TabsPrimitive } from 'radix-ui';
+import { useState } from 'react';
 import type { SearchResponse } from '@/api/client';
+import { TraceFlow } from '@/components/trace/TraceFlow';
+import { TraceStepView } from '@/components/trace/TraceStepView';
 import { formatMilliseconds } from '@/lib/format';
-import { isPipelineStage, stageColourClasses, stageLabel } from '@/lib/stageGroup';
-import { cn } from '@/lib/utils';
 
-// TODO(Phase 3): step 8 replaces this list with TraceFlow and a purpose-built renderer for each trace step.
+// UnderTheHoodTab — the trace (ADR-0003): every step that produced the results, as a flow of chips, and the
+// selected step drawn by a view built for what it holds. "The trace is a feature": the SQL, the tsquery, the
+// distances, the RRF maths and the rule checks are the talk's evidence, not debugging output.
 
 export interface UnderTheHoodTabProps {
     response: SearchResponse;
 }
 
-/** The trace: every step that produced the results, coloured by the stage that ran it. */
 export function UnderTheHoodTab({ response }: UnderTheHoodTabProps) {
-    return (
-        <ol className="flex flex-col gap-2">
-            {response.debugTrace.steps.map((step, index) => {
-                const knownStage = isPipelineStage(step.stage) ? step.stage : null;
-                const colours = knownStage === null ? null : stageColourClasses(knownStage);
+    const { steps } = response.debugTrace;
+    const [chosenIndex, setChosenIndex] = useState<number | null>(null);
 
-                return (
-                    <li key={`${index}-${step.title}`} className="rounded-card border-2 bg-card px-4 py-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <span
-                                className={cn(
-                                    'rounded-full px-2.5 text-sm font-bold',
-                                    colours === null
-                                        ? 'bg-muted text-muted-foreground'
-                                        : [colours.tint, colours.ink],
-                                )}
-                            >
-                                {knownStage === null ? step.stage : stageLabel(knownStage)}
-                            </span>
-                            <b>{step.title}</b>
-                            <span className="ml-auto font-mono text-sm text-muted-foreground">
-                                {formatMilliseconds(step.durationMs)}
-                            </span>
-                        </div>
-                        {step.notes !== undefined && step.notes.length > 0 ? (
-                            <ul className="mt-1 list-disc pl-5 text-sm text-muted-foreground">
-                                {step.notes.map((note) => (
-                                    <li key={note}>{note}</li>
-                                ))}
-                            </ul>
-                        ) : null}
-                    </li>
-                );
-            })}
-        </ol>
+    // It opens on the last step: that is where the stage's own technique runs, after any shared retrieval.
+    const selectedIndex = chosenIndex !== null && chosenIndex < steps.length ? chosenIndex : steps.length - 1;
+    const step = steps[selectedIndex];
+
+    if (step === undefined) {
+        return (
+            <p className="rounded-card border-2 bg-card px-5 py-4 text-muted-foreground">
+                This stage wrote no trace steps.
+            </p>
+        );
+    }
+
+    return (
+        <TabsPrimitive.Root
+            value={String(selectedIndex)}
+            onValueChange={(value) => setChosenIndex(Number(value))}
+            className="flex flex-col gap-3"
+        >
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <TraceFlow steps={steps} selectedIndex={selectedIndex} />
+                <span className="ml-auto text-sm text-muted-foreground">
+                    {steps.length} {steps.length === 1 ? 'step' : 'steps'} ·{' '}
+                    {formatMilliseconds(response.executionTimeMs)} in total
+                </span>
+            </div>
+            <TabsPrimitive.Content
+                value={String(selectedIndex)}
+                className="rounded-card border-2 bg-card px-5 py-4"
+            >
+                <TraceStepView step={step} index={selectedIndex} response={response} />
+            </TabsPrimitive.Content>
+        </TabsPrimitive.Root>
     );
 }

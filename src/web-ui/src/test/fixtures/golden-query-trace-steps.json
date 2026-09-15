@@ -1,0 +1,1389 @@
+[
+  {
+    "response": "GQ-01-hybrid",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-01-keyword",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-01-ontology-both-off",
+    "steps": [
+      {
+        "stage": "ontology",
+        "title": "Understand: target device, and query phrases matched to SKOS labels",
+        "hasSql": false,
+        "detailKeys": [
+          "contextConcepts",
+          "deviceMention",
+          "matches",
+          "queryWithoutDevice",
+          "remainingText",
+          "targetDevice",
+          "targetDeviceMethod",
+          "tokens",
+          "wantedConcepts"
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Expand: synonyms and narrower concepts",
+        "hasSql": false,
+        "detailKeys": [
+          "embeddingText",
+          "expandSynonyms",
+          "keywordOrGroups",
+          "keywordRemainingText",
+          "phrases"
+        ]
+      },
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Classify: in or out of concept",
+        "hasSql": false,
+        "detailKeys": ["classifications", "contextConcepts", "wantedConcepts"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Constrain: domain rules vs the target device",
+        "hasSql": false,
+        "detailKeys": ["applyConstraints"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-01-ontology-synonyms-off",
+    "steps": [
+      {
+        "stage": "ontology",
+        "title": "Understand: target device, and query phrases matched to SKOS labels",
+        "hasSql": false,
+        "detailKeys": [
+          "contextConcepts",
+          "deviceMention",
+          "matches",
+          "queryWithoutDevice",
+          "remainingText",
+          "targetDevice",
+          "targetDeviceMethod",
+          "tokens",
+          "wantedConcepts"
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Expand: synonyms and narrower concepts",
+        "hasSql": false,
+        "detailKeys": [
+          "embeddingText",
+          "expandSynonyms",
+          "keywordOrGroups",
+          "keywordRemainingText",
+          "phrases"
+        ]
+      },
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Classify: in or out of concept",
+        "hasSql": false,
+        "detailKeys": ["classifications", "contextConcepts", "wantedConcepts"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Constrain: domain rules vs the target device",
+        "hasSql": false,
+        "detailKeys": [
+          "applyConstraints",
+          "checks",
+          "finalOrder",
+          "flagged",
+          "rulesApplied",
+          "rulesSparql",
+          "targetDevice",
+          "targetDeviceMethod"
+        ]
+      }
+    ]
+  },
+  {
+    "response": "GQ-01-ontology",
+    "steps": [
+      {
+        "stage": "ontology",
+        "title": "Understand: target device, and query phrases matched to SKOS labels",
+        "hasSql": false,
+        "detailKeys": [
+          "contextConcepts",
+          "deviceMention",
+          "matches",
+          "queryWithoutDevice",
+          "remainingText",
+          "targetDevice",
+          "targetDeviceMethod",
+          "tokens",
+          "wantedConcepts"
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Expand: synonyms and narrower concepts",
+        "hasSql": false,
+        "detailKeys": [
+          "embeddingText",
+          "expandSynonyms",
+          "keywordOrGroups",
+          "keywordRemainingText",
+          "phrases"
+        ]
+      },
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search with ontology expansion (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Classify: in or out of concept",
+        "hasSql": false,
+        "detailKeys": ["classifications", "contextConcepts", "wantedConcepts"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Constrain: domain rules vs the target device",
+        "hasSql": false,
+        "detailKeys": [
+          "applyConstraints",
+          "checks",
+          "finalOrder",
+          "flagged",
+          "rulesApplied",
+          "rulesSparql",
+          "targetDevice",
+          "targetDeviceMethod"
+        ]
+      }
+    ]
+  },
+  {
+    "response": "GQ-01-structured",
+    "steps": [
+      {
+        "stage": "structured",
+        "title": "Parameterised SQL filters",
+        "hasSql": true,
+        "detailKeys": ["countSql", "rowCount", "totalCount"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-01-vector",
+    "steps": [
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-02-hybrid",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-02-keyword",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-02-ontology",
+    "steps": [
+      {
+        "stage": "ontology",
+        "title": "Understand: target device, and query phrases matched to SKOS labels",
+        "hasSql": false,
+        "detailKeys": [
+          "contextConcepts",
+          "deviceMention",
+          "matches",
+          "queryWithoutDevice",
+          "remainingText",
+          "targetDevice",
+          "targetDeviceMethod",
+          "tokens",
+          "wantedConcepts"
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Expand: synonyms and narrower concepts",
+        "hasSql": false,
+        "detailKeys": [
+          "embeddingText",
+          "expandSynonyms",
+          "keywordOrGroups",
+          "keywordRemainingText",
+          "phrases"
+        ]
+      },
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search with ontology expansion (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Classify: in or out of concept",
+        "hasSql": false,
+        "detailKeys": ["classifications", "contextConcepts", "wantedConcepts"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Constrain: domain rules vs the target device",
+        "hasSql": false,
+        "detailKeys": [
+          "applyConstraints",
+          "checks",
+          "finalOrder",
+          "flagged",
+          "rulesApplied",
+          "rulesSparql",
+          "targetDevice",
+          "targetDeviceMethod"
+        ]
+      }
+    ]
+  },
+  {
+    "response": "GQ-02-structured",
+    "steps": [
+      {
+        "stage": "structured",
+        "title": "Parameterised SQL filters",
+        "hasSql": true,
+        "detailKeys": ["countSql", "rowCount", "totalCount"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-02-vector",
+    "steps": [
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-03-hybrid",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-03-keyword",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-03-ontology",
+    "steps": [
+      {
+        "stage": "ontology",
+        "title": "Understand: target device, and query phrases matched to SKOS labels",
+        "hasSql": false,
+        "detailKeys": [
+          "contextConcepts",
+          "deviceMention",
+          "matches",
+          "queryWithoutDevice",
+          "remainingText",
+          "targetDevice",
+          "targetDeviceMethod",
+          "tokens",
+          "wantedConcepts"
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Expand: synonyms and narrower concepts",
+        "hasSql": false,
+        "detailKeys": [
+          "embeddingText",
+          "expandSynonyms",
+          "keywordOrGroups",
+          "keywordRemainingText",
+          "phrases"
+        ]
+      },
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search with ontology expansion (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Classify: in or out of concept",
+        "hasSql": false,
+        "detailKeys": ["classifications", "contextConcepts", "wantedConcepts"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Constrain: domain rules vs the target device",
+        "hasSql": false,
+        "detailKeys": [
+          "applyConstraints",
+          "checks",
+          "finalOrder",
+          "flagged",
+          "rulesApplied",
+          "rulesSparql",
+          "targetDevice",
+          "targetDeviceMethod"
+        ]
+      }
+    ]
+  },
+  {
+    "response": "GQ-03-structured",
+    "steps": [
+      {
+        "stage": "structured",
+        "title": "Parameterised SQL filters",
+        "hasSql": true,
+        "detailKeys": ["countSql", "rowCount", "totalCount"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-03-vector",
+    "steps": [
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-04-structured",
+    "steps": [
+      {
+        "stage": "structured",
+        "title": "Parameterised SQL filters",
+        "hasSql": true,
+        "detailKeys": ["countSql", "rowCount", "totalCount"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-05-hybrid",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-05-keyword",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-05-ontology",
+    "steps": [
+      {
+        "stage": "ontology",
+        "title": "Understand: target device, and query phrases matched to SKOS labels",
+        "hasSql": false,
+        "detailKeys": [
+          "contextConcepts",
+          "deviceMention",
+          "matches",
+          "queryWithoutDevice",
+          "remainingText",
+          "targetDevice",
+          "targetDeviceMethod",
+          "tokens",
+          "wantedConcepts"
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Expand: synonyms and narrower concepts",
+        "hasSql": false,
+        "detailKeys": [
+          "embeddingText",
+          "expandSynonyms",
+          "keywordOrGroups",
+          "keywordRemainingText",
+          "phrases"
+        ]
+      },
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search with ontology expansion (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Classify: in or out of concept",
+        "hasSql": false,
+        "detailKeys": ["classifications", "contextConcepts", "wantedConcepts"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Constrain: domain rules vs the target device",
+        "hasSql": false,
+        "detailKeys": [
+          "applyConstraints",
+          "checks",
+          "finalOrder",
+          "flagged",
+          "rulesApplied",
+          "rulesSparql",
+          "targetDevice",
+          "targetDeviceMethod"
+        ]
+      }
+    ]
+  },
+  {
+    "response": "GQ-05-structured",
+    "steps": [
+      {
+        "stage": "structured",
+        "title": "Parameterised SQL filters",
+        "hasSql": true,
+        "detailKeys": ["countSql", "rowCount", "totalCount"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-05-vector",
+    "steps": [
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-06-hybrid",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-06-keyword",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-06-ontology",
+    "steps": [
+      {
+        "stage": "ontology",
+        "title": "Understand: target device, and query phrases matched to SKOS labels",
+        "hasSql": false,
+        "detailKeys": [
+          "contextConcepts",
+          "deviceMention",
+          "matches",
+          "queryWithoutDevice",
+          "remainingText",
+          "targetDevice",
+          "targetDeviceMethod",
+          "tokens",
+          "wantedConcepts"
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Expand: synonyms and narrower concepts",
+        "hasSql": false,
+        "detailKeys": [
+          "embeddingText",
+          "expandSynonyms",
+          "keywordOrGroups",
+          "keywordRemainingText",
+          "phrases"
+        ]
+      },
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search with ontology expansion (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Classify: in or out of concept",
+        "hasSql": false,
+        "detailKeys": ["classifications", "contextConcepts", "wantedConcepts"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Constrain: domain rules vs the target device",
+        "hasSql": false,
+        "detailKeys": [
+          "applyConstraints",
+          "checks",
+          "finalOrder",
+          "flagged",
+          "rulesApplied",
+          "rulesSparql",
+          "targetDevice",
+          "targetDeviceMethod"
+        ]
+      }
+    ]
+  },
+  {
+    "response": "GQ-06-structured",
+    "steps": [
+      {
+        "stage": "structured",
+        "title": "Parameterised SQL filters",
+        "hasSql": true,
+        "detailKeys": ["countSql", "rowCount", "totalCount"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-06-vector",
+    "steps": [
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-07-hybrid",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-07-keyword",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-07-ontology",
+    "steps": [
+      {
+        "stage": "ontology",
+        "title": "Understand: target device, and query phrases matched to SKOS labels",
+        "hasSql": false,
+        "detailKeys": [
+          "contextConcepts",
+          "deviceMention",
+          "matches",
+          "queryWithoutDevice",
+          "remainingText",
+          "targetDevice",
+          "targetDeviceMethod",
+          "tokens",
+          "wantedConcepts"
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Expand: synonyms and narrower concepts",
+        "hasSql": false,
+        "detailKeys": [
+          "embeddingText",
+          "expandSynonyms",
+          "keywordOrGroups",
+          "keywordRemainingText",
+          "phrases"
+        ]
+      },
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search with ontology expansion (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Classify: in or out of concept",
+        "hasSql": false,
+        "detailKeys": ["classifications", "contextConcepts", "wantedConcepts"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Constrain: domain rules vs the target device",
+        "hasSql": false,
+        "detailKeys": [
+          "applyConstraints",
+          "checks",
+          "finalOrder",
+          "flagged",
+          "rulesApplied",
+          "rulesSparql",
+          "targetDevice",
+          "targetDeviceMethod"
+        ]
+      }
+    ]
+  },
+  {
+    "response": "GQ-07-structured",
+    "steps": [
+      {
+        "stage": "structured",
+        "title": "Parameterised SQL filters",
+        "hasSql": true,
+        "detailKeys": ["countSql", "rowCount", "totalCount"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-07-vector",
+    "steps": [
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-08-hybrid",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-08-keyword",
+    "steps": [
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-08-ontology",
+    "steps": [
+      {
+        "stage": "ontology",
+        "title": "Understand: target device, and query phrases matched to SKOS labels",
+        "hasSql": false,
+        "detailKeys": [
+          "contextConcepts",
+          "deviceMention",
+          "matches",
+          "queryWithoutDevice",
+          "remainingText",
+          "targetDevice",
+          "targetDeviceMethod",
+          "tokens",
+          "wantedConcepts"
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Expand: synonyms and narrower concepts",
+        "hasSql": false,
+        "detailKeys": [
+          "embeddingText",
+          "expandSynonyms",
+          "keywordOrGroups",
+          "keywordRemainingText",
+          "phrases"
+        ]
+      },
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search with ontology expansion (BM25-style)",
+        "hasSql": true,
+        "detailKeys": ["expanded", "matches", "optionsUsed", "ranking", "tsquery", "tsqueryExpression"]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "hasSql": false,
+        "detailKeys": ["formula", "formulas", "k", "listSizes", "optionsUsed", "overlap", "weights"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Classify: in or out of concept",
+        "hasSql": false,
+        "detailKeys": ["classifications", "contextConcepts", "wantedConcepts"]
+      },
+      {
+        "stage": "ontology",
+        "title": "Constrain: domain rules vs the target device",
+        "hasSql": false,
+        "detailKeys": [
+          "applyConstraints",
+          "checks",
+          "finalOrder",
+          "flagged",
+          "rulesApplied",
+          "rulesSparql",
+          "targetDevice",
+          "targetDeviceMethod"
+        ]
+      }
+    ]
+  },
+  {
+    "response": "GQ-08-structured",
+    "steps": [
+      {
+        "stage": "structured",
+        "title": "Parameterised SQL filters",
+        "hasSql": true,
+        "detailKeys": ["countSql", "rowCount", "totalCount"]
+      }
+    ]
+  },
+  {
+    "response": "GQ-08-vector",
+    "steps": [
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "hasSql": false,
+        "detailKeys": [
+          "dimensions",
+          "embeddedText",
+          "firstDimensions",
+          "model",
+          "prefix",
+          "provider",
+          "tokenCount",
+          "truncated"
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "hasSql": true,
+        "detailKeys": ["activeModel", "distances", "efSearch", "metric", "optionsUsed"]
+      }
+    ]
+  }
+]

@@ -239,6 +239,13 @@
     body {
         @apply bg-background font-sans text-foreground antialiased;
     }
+    /* JetBrains Mono's ligatures draw SQL's <= as ≤ and -> as an arrow. The trace must show the exact text
+       that ran (ADR-0003), so monospaced text shows every character as typed. */
+    .font-mono,
+    code,
+    pre {
+        font-variant-ligatures: none;
+    }
     /* A visible focus ring in both themes: the talk must be keyboard-operable */
     :focus-visible {
         outline: 2px solid var(--ring);

@@ -357,6 +357,16 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 8. **Under the hood tab** (0014, 0003)
    - `TraceFlow` (one chip per trace step, coloured by the step's stage) and the selected step's renderer: `SqlBlock` (SQL + parameters), `TsQueryView`, `EmbeddingView`, `DistanceTable`, `RrfTable`, `ConceptMatches`, `ExpansionView`, `ClassificationTable`, `RuleChecks`, JSON fallback.
    - Vitest: renderer selection by `details` keys; every Stage 1–5 trace step for GQ-01 to GQ-08 gets a purpose-built renderer (no fallback).
+   - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **104 pass (9 new)**. `dotnet` untouched. Checked in headless Chrome against the live API: GQ-01 on Stage 5 (Constrain) and Hybrid (RRF), GQ-02 on Keyword (no matches), GQ-04 on Structured (SQL). Built:
+     - `UnderTheHoodTab`: `TraceFlow` (a Radix tablist of step chips, coloured by each step's own stage, ←/→ between them) and `TraceStepView` (title, stage, duration, the step's view, its SQL and parameters, its notes). It opens on the last step, where the stage's own technique runs.
+     - Renderers in `src/components/trace/`: `SqlBlock` (Stage 1 also shows row counts and the count query), `TsQueryView`, `EmbeddingView`, `DistanceTable`, `RrfTable` (with "The rules say" on Stage 5), `ConceptMatches`, `ExpansionView`, `ClassificationTable`, `RuleChecks` (checks grouped by product, and the rules.rq SPARQL), `JsonFallback`. Long lists show 10 rows (6 products for checks) with "Show N more" (`useShowMore`).
+     - `lib/traceStepKind.ts` picks the view from the `details` keys, never the title. `lib/traceDetails.ts` has one typed reader per kind, checking every field at runtime; RRF rows are split from the API's own formula strings, not recomputed.
+     - **Coverage test:** `src/test/fixtures/golden-query-trace-steps.json` lists all 129 trace steps (stage, title, SQL or not, `details` keys) from GQ-01 to GQ-08 on Stages 1–5, plus GQ-01 on Stage 5 with each switch off, captured from the running API. Every step maps to its expected view; none falls back to JSON. `gq-04-structured.json` was added for the SQL view test.
+   - Findings:
+     - **GQ-04 returns 400 on Stages 2–5** (no query), so its only trace is Stage 1's. Expected: it is the structured-filter moment.
+     - **Edge shapes handled:** Expand with synonyms off sends `phrases: null`; Constrain with rules off writes only `applyConstraints`; with no target device, `checks` is empty and the method says why; Keyword can match nothing (GQ-02, GQ-07).
+     - **Ligatures lied in the SQL.** JetBrains Mono drew `<=` as `≤` and `->` as an arrow, so the SQL shown wasn't character for character what ran. Ligatures are now off for all monospaced text (`index.css`).
+     - The selected step isn't in the URL (local state), so a bookmark opens on the last step. Talk mode (step 10) can add it if a talk step needs to open on, say, RRF.
 9. **How it works tab, glossary and content** (0014 § Content)
    - `StageExplanation` renders `content/stages/{stage}.md` with the fixed headings. Stage 5 presents SKOS first and the rules as the step beyond it ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
    - Inline `[term](term:id)` links with hover cards that also open on focus; `glossary.json`.
