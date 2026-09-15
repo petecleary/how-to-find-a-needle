@@ -451,27 +451,64 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 
 **ADRs:** [0015](0015-llm-hosting-and-client.md), [0016](0016-rag-grounding-and-citations.md), [0017](0017-pedagogy-engine.md)
 
-1. **LLM provider** (0015)
-   - `Llm` settings (`Provider` = `ollama` | `openai` | `anthropic`, `Model`, `Endpoint`); API keys in user secrets; no containers.
-   - `LlmClientFactory` builds one `IChatClient` (`Microsoft.Extensions.AI.OpenAI` for Ollama and OpenAI; the official `Anthropic` SDK for Claude) with OpenTelemetry middleware. Sampling parameters are provider-specific (no `temperature` for Claude).
-   - 503 guidance; optional warm-up.
-2. **Model bake-off** (0015)
-   - Run the golden queries 10× each against the candidate models; record JSON validity, citation correctness and latency in ADR-0015; choose the default.
-3. **Stage 6 — RAG** (0016)
-   - `POST /api/search/rag` (JSON results + evidence trace step) and `POST /api/search/rag/answer` (SSE stream, plus JSON mode for tests).
+**Decided with Pete at the start of Phase 4 (2026-09-15; ADR-0015 amended):**
+- `Llm` settings live on the API (`appsettings.json` + user secrets for the key), not forwarded by the AppHost.
+- Anthropic is built and tested live now, with `claude-sonnet-5` as its default.
+- The bake-off is an opt-in integration test over the two installed Ollama models (`qwen3.6:35b`, `gemma4:31b`); no small model is pulled.
+- Stage 7 has three talk steps: baseline → pedagogy → audience switch.
+
+**Order change:** the bake-off scores the real prompts and validators, so it moves after the Stage 7 API and the prompt review. `qwen3.6:35b` is the provisional default until then.
+
+**Build order.** Every step ends with `dotnet build` at 0 warnings, unit tests, integration tests (LLM tests skip cleanly without an LLM), and the UI checks once UI files change.
+
+1. **LLM provider and streaming spike** (0015)
+   - `Microsoft.Extensions.AI.OpenAI` (Ollama, OpenAI) and `Anthropic` (Claude) packages; `Llm/` folder: `LlmOptions`, `LlmClientFactory` (the only provider-specific code, with OpenTelemetry middleware), provider-specific `ChatOptions` (no `temperature` for Claude), `LlmUnavailableException` → 503 guidance, trace info without the key, optional Ollama warm-up.
+   - Throwaway spike: streaming from Ollama and Anthropic through `IChatClient`; check "thinking" output is off or hidden for Qwen/Gemma; confirm the Anthropic refusal stop reason. Record the results here, then delete the spike.
+   - ✅ **Provider layer built 2026-09-15.** `dotnet build` 0 warnings; unit tests **181 pass (15 new)**. Built:
+     - Packages: `Microsoft.Extensions.AI` and `Microsoft.Extensions.AI.OpenAI` 10.10.0 (`Microsoft.Extensions.AI.Abstractions` bumped 10.7.0 → 10.10.0, which the OpenAI adapter requires) and `Anthropic` 12.48.0.
+     - `Llm/`: `LlmOptions`, `LlmProviders`, `LlmClientFactory` (OpenTelemetry under the API's own source name with sensitive data on, logging in Development, no retries, 60 s timeout), `LlmChatOptions`, `LlmTraceInfo` (an allow-list: the key can't reach the trace), `LlmUnavailableException` (→ 503 "LLM unavailable" with provider-specific guidance), `LlmWarmUpService`.
+     - The `IChatClient` is a lazy singleton: a missing key or unknown provider is a 503 on the AI stages, never a failed startup. `PI.SearchApi` has a `UserSecretsId` for `Llm:ApiKey`; prompts under `assets/prompts/` are copied to the output.
+   - ✅ **Ollama spike 2026-09-15** (`GET /api/spike/llm`, `qwen3.6:35b`):
+     - **Thinking had to be turned off.** Through `/v1`, Qwen 3.6 and Gemma 4 both reason before answering: a 60-token request returned only reasoning and no answer. `ChatOptions.Reasoning.Effort = None` → `reasoning_effort: "none"` fixes both (Ollama's `think: false` is ignored on `/v1`). Recorded in ADR-0015.
+     - **Timings:** first call 5.0 s to the first token (Ollama loading the model); then 38–55 ms to the first token and ~0.35 s for two sentences, direct and through the Vite proxy alike (39 ms). No reasoning updates; finish reason `stop`.
+   - ⏸ **Anthropic spike: waiting for a key.** No Anthropic credential on this machine. The provider is built and unit-tested, and the SDK reports a refusal as `ChatFinishReason.ContentFilter`. Server-side refusal fallbacks aren't exposed through `IChatClient`: recorded as a limitation in ADR-0015. The spike endpoint is deleted (it also broke the "every OpenAPI operation has a summary" test); the Anthropic check runs through the real `/api/search/rag/answer` once `Llm:ApiKey` is set: `dotnet user-secrets set "Llm:ApiKey" "<key>" --project src/PI.SearchApi`, with `Llm__Provider=anthropic` and `Llm__Model=claude-sonnet-5`.
+2. **Stage 6 — RAG API** (0016)
+   - `POST /api/search/rag` (JSON results + evidence trace step) and `POST /api/search/rag/answer` (SSE, plus JSON mode for tests).
    - Evidence-set builder, including each matched concept's definition, `prefLabel` and `altLabel`s; prompt files in `assets/prompts/`; `GetStreamingResponseAsync` → `meta`/`delta`/`final`/`done`/`error` events.
    - Validation after generation: citations, `INSUFFICIENT_EVIDENCE` sentinel, incompatible-recommendation heuristic.
    - Cancellation; unbuffered response; trace with prompts, raw output and timings (time to first token, total); unit + structural integration tests.
-4. **Stage 7 — Pedagogy** (0017)
+   - ✅ **Done 2026-09-15.** `dotnet build` 0 warnings; unit tests **215 pass (34 new)**; integration tests pass with Ollama running (3 new). ADR-0016 amended first. Built:
+     - `Pipeline/Rag/`: `EvidenceSetBuilder` (pure), `EvidenceFormatter`, `RagSearch` (Stage 5 + the evidence step, with the descriptions query `WHERE id = ANY(@ids)` in its trace), `AnswerGenerator` (prompt → stream → validate; its answer section is reusable by Stage 7), `CitationValidator`, `AnswerValidator`, and small records (`EvidenceSet`, `EvidenceItem`, `EvidenceRole`, `EvidenceLimits`, `EvidenceConcept`, `EvidenceRule`, `AnswerValidation`, `ValidationCheck`, `AnswerEvent`, `AnswerSectionOutcome`).
+     - `Llm/LlmStreaming`: one streaming loop for both AI stages. It measures time to first token and turns network errors, HTTP errors and timeouts into `LlmUnavailableException` (→ 503); a cancellation the caller asked for is not a failure.
+     - `Pipeline/PromptTemplate` (`{{name}}`, missing values throw) and `PromptLibrary`; `assets/prompts/rag-system.md` and `rag-user.md`.
+     - Contracts: `AnswerMeta`, `AnswerDelta`, `AnswerFinal` (with `invalidCitations`), `AnswerDone`, `AnswerResponse`, `AnswerSections`.
+     - Endpoints: `POST /api/search/rag`, `POST /api/search/rag/answer`; `AnswerStreamWriter` (SSE or JSON; a failure before the first event is an ordinary 503, after it an `error` event) and `ServerSentEventWriter` (buffering off, flush per event).
+     - Stage 5 now also offers `SearchWithContextAsync` → `OntologySearchResult` (device, understood query, rule checks), so the evidence is built from typed values rather than read back out of the trace. `SearchAsync` is unchanged.
+   - **Checked live** (GQ-01, `qwen3.6:35b`):
+     - `/rag`: 50 results; evidence = the laptop, PROD-0012/0013/0011 Compatible and PROD-0014/0015/0016 Incompatible (ranks 44–46, after demotion); concepts Chargers (altLabels power adapter, power brick, AC adapter, PSU) and Laptops; rule chargers → laptops.
+     - `/rag/answer` (JSON): cites only evidence IDs, recommends the three compatible chargers and warns about all three near misses; no invalid citations.
+     - SSE: `meta`, 227 `delta`s, `final`, `done`; **first delta at 56 ms, complete in 2.3 s**.
+   - Findings:
+     - **The warning heuristic was too literal.** The model wrote "Avoid these incompatible options:" and then bullets that only gave reasons ("fails because it uses a barrel plug and supplies insufficient power"). Both were flagged. Bullets under a warning lead-in now count as warnings, and the word list includes the ways a failed check is stated (fails, insufficient, below, lacks). The real output is a unit test.
+     - The model also cites the target device (PROD-0001). It is in the evidence, so that's valid.
+3. **Stage 7 — Pedagogy API** (0017)
    - `POST /api/search/pedagogy` + `/answer` streaming the `answer` section, then the `explanation` section.
    - Two prompts: `pedagogy-system.md` (principles, fixed markdown headings, audience sections with label choice) and `pedagogy-baseline.md` (a fair, plain prompt with the same grounding rules), selected by `options.applyPedagogy`.
    - Heading parser; validator (Decision Compatible, Near miss Incompatible, concept-label heuristic), skipped for the baseline apart from citations; parsed structure in `final` (`null` for the baseline); per-section timings and the prompt used in the trace; tests.
-5. **UI** (0014)
-   - `useAnswerStream` (fetch + SSE parser, in parallel with the results request).
-   - Enable the **Answer tab**: `AnswerPanel` (streamed answer, `[PROD-…]` chips, citation validation badges, time to first token), `ExplanationPanel` (Stage 7's five headings, or the baseline), `EvidenceSet` (what the model was given; chips jump here). The Results tab badge shows results are ready before the first token ([design](../design/screens/stage-7-answer.png)).
+   - ✋ **Checkpoint with Pete:** review `pedagogy-baseline.md` (fair, not a straw man) and `pedagogy-system.md` with GQ-01 novice off and on side by side; freeze the prompts before the bake-off.
+4. **Model bake-off** (0015)
+   - Opt-in `BakeOff/ModelBakeOffTests` (`PI_BAKEOFF_MODELS`): the 7 golden queries with a query, 10 runs each, Stage 6 and Stage 7 (pedagogy on and off) in JSON mode. Record structure, citation warnings, sentinel, time to first token and totals in ADR-0015; choose the Ollama default.
+5. **UI plumbing** (0014)
+   - `gen:api`; `answerEvents.ts`; a pure incremental SSE parser; `useAnswerStream` (fetch + parser, in parallel with the results request, `AbortController`); Stages 6–7 selectable.
+6. **Answer tab and stage options** (0014, [design](../design/screens/stage-7-answer.png))
+   - Enable the **Answer tab**: `AnswerPanel` (streamed answer, `[PROD-…]` chips, citation validation badges, time to first token), `ExplanationPanel` (Stage 7's five headings, or the baseline), `EvidenceSet` (what the model was given; chips jump here). The Results tab badge shows results are ready before the first token.
    - **Audience picker** and Stage 7's **"Apply pedagogy" toggle** in `StageOptions` on the tab row (both part of URL state).
-   - `PromptView` renderer in the Under the hood tab; loading states for multi-second calls.
-   - Talk-mode steps, stage explanations and glossary entries for Stages 6–7, including the baseline-then-pedagogy sequence for GQ-01.
+7. **Under the hood for Stages 6–7** (0014, 0003)
+   - `PromptView`, `EvidenceView`, `GenerationView` renderers; the answer's `done` trace appended to the search trace; the coverage test extended to Stages 6–7.
+8. **Content, talk mode and glossary**
+   - Stage explanations for `rag` and `pedagogy`; talk steps `stage-rag`, `stage-pedagogy-baseline`, `stage-pedagogy`, `stage-pedagogy-audience`; glossary entries; content-integrity tests for Stages 1–7.
+9. **Acceptance run and ADR status**
+   - The acceptance criteria below, live under `aspire run` (Ollama and Anthropic), including mid-stream cancellation through the Vite proxy (left open in Phase 3 step 2); README, `architecture.md` and `src/PI.SearchApi/CLAUDE.md` updated; ADRs 0015–0017 → Accepted.
 
 ### Acceptance criteria
 - GQ-01 in Stage 6 gives a grounded answer citing the compatible charger and warning about the near miss.
@@ -484,8 +521,8 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 - ADRs 0015–0017 → **Accepted**.
 
 ### Open questions
-- ❓ Default model (from the bake-off).
-- ❓ Default hosted model IDs for learners (OpenAI and Anthropic). Confirm when Phase 4 starts, since model versions move quickly.
+- ❓ Default Ollama model (from the bake-off, step 4).
+- ✅ Default hosted model for learners: Anthropic `claude-sonnet-5` (decided 2026-09-15). OpenAI's is set at publish time (Phase 5 step 7).
 - ❓ Wording of `pedagogy-baseline.md`: review it with Pete so the comparison is fair, not a straw man.
 
 ---

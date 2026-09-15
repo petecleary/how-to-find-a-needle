@@ -1,8 +1,8 @@
-- **Name:** [Name]
-- **Title:** [Title]
-- **Email:** [email@example.com]
-- **LinkedIn:** [linkedin.com/in/…]
+- **Name:** Pete Cleary
+- **Title:** Director of PI & Mash
+- **Email:** pete@piandmash.com
+- **LinkedIn:** www.linkedin.com/in/pete-cleary-8628084
 - **Photo:**
-- **LinkedIn QR code:**
+- **LinkedIn QR code:** assets/images/linkedin_qrcode.png
 
-[Bio: two or three sentences about you and Pi & Mash.]
+Agentic AI Architect | 25 Years in Learning Technology & Business Strategy

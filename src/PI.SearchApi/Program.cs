@@ -1,15 +1,18 @@
 using System.Text.Json.Serialization;
 using FastEndpoints;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using PI.SearchApi.Data;
 using PI.SearchApi.Embeddings;
 using PI.SearchApi.Endpoints;
+using PI.SearchApi.Llm;
 using PI.SearchApi.Pipeline;
 using PI.SearchApi.Pipeline.Fusion;
 using PI.SearchApi.Pipeline.Hybrid;
 using PI.SearchApi.Pipeline.Keyword;
 using PI.SearchApi.Pipeline.Ontology;
+using PI.SearchApi.Pipeline.Rag;
 using PI.SearchApi.Pipeline.Structured;
 using PI.SearchApi.Pipeline.Vector;
 using Scalar.AspNetCore;
@@ -81,6 +84,26 @@ builder.Services.AddSingleton<ConceptClassifier>();
 builder.Services.AddSingleton<CompatibilityEvaluator>();
 builder.Services.AddTransient<TargetDeviceResolver>();
 builder.Services.AddTransient<IOntologySearch, OntologySearch>();
+
+// --- LLM for Stages 6–7 (ADR-0015) --------------------------------------------
+// One IChatClient, built from the Llm settings (appsettings.json + the user-secret API key). It's a singleton
+// created on first use: a misconfigured or stopped LLM turns into a 503 on the AI stages, never a failed startup.
+builder.Services.Configure<LlmOptions>(builder.Configuration.GetSection(LlmOptions.SectionName));
+builder.Services.AddSingleton<IChatClient>(services => LlmClientFactory.Create(
+    services.GetRequiredService<IOptions<LlmOptions>>().Value,
+    services.GetRequiredService<ILoggerFactory>(),
+    builder.Environment.IsDevelopment()));
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHostedService<LlmWarmUpService>();
+}
+
+// --- Stage 6: RAG — evidence set, streamed grounded answer, validation (ADR-0016) ------
+// Prompts are markdown files read once. The evidence builder only reads the ontology: a singleton.
+builder.Services.AddSingleton(new PromptLibrary(Path.Combine(AppContext.BaseDirectory, "assets", "prompts")));
+builder.Services.AddSingleton<EvidenceSetBuilder>();
+builder.Services.AddTransient<IRagSearch, RagSearch>();
+builder.Services.AddTransient<IAnswerGenerator, AnswerGenerator>();
 
 var app = builder.Build();
 

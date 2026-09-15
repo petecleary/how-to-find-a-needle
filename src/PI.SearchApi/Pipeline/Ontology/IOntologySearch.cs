@@ -9,4 +9,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 public interface IOntologySearch
 {
     Task<StageResult> SearchAsync(SearchRequest request, CancellationToken ct);
+
+    /// <summary>The same search, also returning the target device, the understood query and the rule checks (for Stages 6–7).</summary>
+    Task<OntologySearchResult> SearchWithContextAsync(SearchRequest request, CancellationToken ct);
 }

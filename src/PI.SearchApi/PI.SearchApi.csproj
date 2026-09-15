@@ -3,22 +3,30 @@
   <PropertyGroup>
     <AssemblyName>PI.SearchApi</AssemblyName>
     <RootNamespace>PI.SearchApi</RootNamespace>
+    <!-- The hosted LLM providers' API key (Llm:ApiKey) lives in user secrets, never in a committed file (ADR-0015). -->
+    <UserSecretsId>6f3c2a91-8d4e-4b7a-9c15-2e8f7d0b4a63</UserSecretsId>
   </PropertyGroup>
 
-  <!-- Catalog, ontology, SPARQL queries, schema and (later) embeddings are read from disk at startup.
+  <!-- Catalog, ontology, SPARQL queries, schema, embeddings and LLM prompts are read from disk at startup.
        Referencing projects (the unit tests) receive the same files in their output. -->
   <ItemGroup>
     <None Update="assets\data\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="assets\prompts\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Anthropic" />
     <PackageReference Include="Aspire.Npgsql" />
     <PackageReference Include="dotNetRdf.Core" />
     <PackageReference Include="FastEndpoints" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />

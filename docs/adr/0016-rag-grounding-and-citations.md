@@ -1,7 +1,7 @@
 # ADR-0016: Stage 6 — RAG: streamed, grounded summary with citations
 
 - **Status:** Proposed
-- **Date:** 2026-09-13
+- **Date:** 2026-09-13 (amended 2026-09-15 while building Phase 4 step 2: evidence for unchecked and out-of-concept items, descriptions read with one query, `invalidCitations` in `final`, errors before the first event)
 - **Related:** ADR-0003, ADR-0004, ADR-0013, ADR-0014, ADR-0015, ADR-0017; golden queries GQ-01, GQ-05, GQ-06; roadmap Phase 4
 
 ## Context
@@ -30,8 +30,12 @@ The UI sends both at once with the same body ([ADR-0014](0014-web-ui-architectur
   - Up to **5 Compatible** products (by rank).
   - Up to **3 Incompatible** products **with their reasons**, so the model can warn about them.
   - Up to **2 Unknown** products.
+  - Up to **5 not-checked** products (`NotEvaluated`: constraints are off, or no rule applies to them), so a query with no rules still has evidence to answer from.
+  - **Out-of-concept products are left out** (the phone battery for "cordless drill battery", DDR4 memory for "power adapter"): they aren't what the shopper asked for, and Stage 5 has already said so. Queries with no wanted concept keep every item.
+  - Items keep Stage 5's order; each records its rank and *why it was included*.
 - **Each item** is rendered as a compact, labelled block: `[PROD-0012] Voltline 65W USB-C GaN Charger — £49.99 — connector: USB-C, 65W — Compatibility: Compatible (connector USB-C matches; 65W ≥ 65W)`.
-- Descriptions are truncated to about 300 characters, and reviews are excluded (to save tokens and reduce noise).
+- Descriptions are truncated to about 300 characters, and reviews are excluded (to save tokens and reduce noise). Stage 5 doesn't carry descriptions, so the evidence step reads them for the chosen products with one parameterised query (`WHERE id = ANY(@ids)`), shown in its trace.
+- Stage 5's service exposes what the evidence needs besides the ranked candidates (the target device, the matched concepts and the rule checks) as a typed result, rather than the evidence builder reading them back out of trace dictionaries.
 - The matched concepts and the domain rules that fired are included once, with their `skos:definition` text, so the answer explains constraints in the domain's own words. Each concept also carries its English `prefLabel` and `altLabel`s (never `hiddenLabel` misspellings), which Stage 7 uses to choose words for its audience ([ADR-0013](0013-domain-ontology-and-compatibility.md), [ADR-0017](0017-pedagogy-engine.md)).
 
 ### Prompt (versioned files in `assets/prompts/rag-system.md` and `rag-user.md`)
@@ -57,13 +61,15 @@ event: delta
 data: {"section":"answer","text":"The Voltline 65W USB-C charger [PROD-0012] "}
 
 event: final
-data: {"section":"answer","markdown":"…full text…","citations":["PROD-0012","PROD-0014"],"insufficientEvidence":false,"warnings":[]}
+data: {"section":"answer","markdown":"…full text…","citations":["PROD-0012","PROD-0014"],"invalidCitations":[],"insufficientEvidence":false,"warnings":[]}
 
 event: done
 data: {"timeToFirstTokenMs":640,"totalMs":5210,"trace":[…]}
 ```
 
-- Failures send `event: error` with a ProblemDetails body (e.g. `503` "Is Ollama running?"). The results request is unaffected.
+- `invalidCitations` lists the cited IDs that weren't in the evidence, so the UI can mark exactly those chips without parsing warning text.
+- `done.trace` holds the answer's own steps (prompt, generation, validation). The evidence step is already in the results response's trace, so the UI shows it once.
+- Failures send `event: error` with a ProblemDetails body (e.g. `503` "Is Ollama running?"). The results request is unaffected. A failure **before the first event** (for example, no API key configured) is an ordinary `503` ProblemDetails response instead, because nothing has been streamed yet.
 - Closing the connection cancels generation; the request's `CancellationToken` flows into `IChatClient`.
 - The endpoint disables response buffering and compression, so chunks reach the browser as they're produced.
 

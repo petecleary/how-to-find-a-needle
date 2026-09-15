@@ -27,7 +27,10 @@ public sealed class OntologySearch(
     TargetDeviceResolver deviceResolver,
     CompatibilityEvaluator evaluator) : IOntologySearch
 {
-    public async Task<StageResult> SearchAsync(SearchRequest request, CancellationToken ct)
+    public async Task<StageResult> SearchAsync(SearchRequest request, CancellationToken ct) =>
+        (await SearchWithContextAsync(request, ct)).Result;
+
+    public async Task<OntologySearchResult> SearchWithContextAsync(SearchRequest request, CancellationToken ct)
     {
         using var activity = PipelineTelemetry.Source.StartActivity("Stage 5: ontology search");
         var options = request.Options;
@@ -92,7 +95,11 @@ public sealed class OntologySearch(
 
         var constrainStep = ConstrainStep(options, device, evaluations, ordered, targetId, PipelineTelemetry.ElapsedMs(start));
 
-        return new StageResult(ordered, [understandStep, expandStep, .. retrieved.Trace, classifyStep, constrainStep]);
+        return new OntologySearchResult(
+            new StageResult(ordered, [understandStep, expandStep, .. retrieved.Trace, classifyStep, constrainStep]),
+            device,
+            understanding,
+            [.. evaluations.Values.SelectMany(e => e.Checks)]);
     }
 
     // A matched device-type concept that the target device belongs to describes what the shopper owns:

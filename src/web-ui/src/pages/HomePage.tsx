@@ -11,11 +11,14 @@ import { pipelineStages, triadGroupClasses, triadGroups } from '@/lib/stageGroup
 import { talkStartPath } from '@/lib/talk';
 import { cn } from '@/lib/utils';
 
-const contentImages = Object.fromEntries(
-    Object.entries(
+const contentImages = Object.fromEntries([
+    ...Object.entries(
         import.meta.glob<string>('../../content/images/*', { query: '?url', import: 'default', eager: true }),
     ).map(([path, url]) => [path.replace(/^.*\/content\//, ''), url]),
-);
+    ...Object.entries(
+        import.meta.glob<string>('../../assets/images/*', { query: '?url', import: 'default', eager: true }),
+    ).map(([path, url]) => [path.replace(/^.*\/assets\//, 'assets/'), url]),
+]);
 
 const speaker = parseSpeaker(speakerMarkdown, contentImages);
 
