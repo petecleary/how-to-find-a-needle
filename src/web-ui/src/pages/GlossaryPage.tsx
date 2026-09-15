@@ -34,7 +34,7 @@ export function GlossaryPage() {
                     </p>
                 </div>
 
-                <label className="flex items-center gap-2.5 rounded-full border-2 bg-card px-4 py-2 focus-within:border-ring">
+                <label className="flex items-center gap-2.5 rounded-full border-2 bg-card px-4 py-2 focus-within:border-ring focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
                     <Search aria-hidden="true" className="size-5 text-muted-foreground" />
                     <span className="sr-only">Search the glossary</span>
                     <input

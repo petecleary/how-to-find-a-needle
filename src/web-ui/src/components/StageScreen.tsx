@@ -29,6 +29,7 @@ import {
     type SearchState,
     type StageTab,
 } from '@/lib/searchState';
+import { stageLabel, stageNumber } from '@/lib/stageGroup';
 import { isTabAvailable } from '@/lib/stageTabs';
 
 // Tailwind's `lg` breakpoint: from here the filters fit beside the results; below it they open as a drawer.
@@ -136,6 +137,10 @@ export function StageScreen({
                     </aside>
                 ) : null}
                 <main className="flex min-w-0 flex-1 flex-col gap-2.5 px-6 pt-3 pb-4">
+                    {/* The page's heading for screen readers; sighted users see the stage in the stepper. */}
+                    <h1 className="sr-only">
+                        Stage {stageNumber(stage)} · {stageLabel(stage)}
+                    </h1>
                     <SearchBar
                         query={state.query}
                         goldenQueryId={state.goldenQueryId}

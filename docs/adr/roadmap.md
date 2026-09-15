@@ -396,12 +396,26 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
     - Findings:
       - **Stages 6–7 steps** are added before Going further in Phase 4.
       - **Bundle size:** the ADRs are text in the bundle. Globbing only `NNNN-*.md` and lazy-loading the reading pages keeps them out of the first page; Vite's 500 kB warning remains for the main chunk (lucide's icon-name list, react-markdown, the app).
-      - **Hash links in headless Chrome** (`/glossary#rrf`, `/decisions/…#visual-design`) screenshot blank after scrolling, although the DOM renders fully with no console errors. Check in a real browser.
+      - **Hash links** (`/glossary#rrf`, `/decisions/…#visual-design`) screenshotted blank with Chrome's `--screenshot` flag after scrolling. Step 11's DevTools-protocol run shows `/glossary#rrf` scrolls to the entry and highlights it: the blank shots were the flag, not the page.
       - ❓ **Talk content is a first draft** (intro, the needle, captions, Going further, Summary): Pete to edit. **Speaker details** are still placeholders.
       - `ADR-0014` asks for talk mode to be validated with Pete before content is finalised: this is that point.
 11. **Presentation mode, themes and accessibility pass**
     - Presentation mode: large type, non-essential controls hidden; on by default in talk mode.
     - Check both themes against the design screens at 1280×720; contrast ≥ 4.5:1 (3:1 large text); visible focus; landmarks; keyboard-only run through the talk.
+    - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **219 pass (55 new)**. `dotnet` untouched. Built:
+      - **Presentation mode:** `PresentationProvider` puts `.presentation` on `<html>`; `index.css` zooms the page 12.5% (pixel sizes included, so proportions hold and popovers stay aligned), and a `presentation:` Tailwind variant hides non-essential controls (the page links in the header, the ←/→ hint in the talk bar). On by default in talk mode, off elsewhere; the header's `PresentationToggle` (`aria-pressed`) overrides it everywhere and is remembered on the device, like the theme. Rules in `lib/presentation.ts`, tested.
+      - **Accessibility fixes:** a *Skip to content* button first in the header; a visually hidden `<h1>` on stage screens (talk stage steps and the demo had none); a real focus ring on the two inputs that hid their outline (search bar, glossary search).
+      - **Contrast as a test:** `lib/contrast.ts` computes WCAG ratios, and `contrast.test.ts` reads the real tokens from `index.css` in both themes: 25 text-on-background pairings at ≥ 4.5:1, and the focus ring at ≥ 3:1 against the page and cards. It found one failure: white on dark-theme Search purple was **4.37:1**; `--search` in `.dark` is now `#6961ef` (4.61:1, still ≥ 3:1 against the dark background and cards). Vitest skips CSS unless told to, so `vite.config.ts` includes `index.css` for the test.
+    - **Keyboard-only run** (headless Chrome driven over the DevTools protocol with real key events, against the live API; no new package):
+      - → from `/talk/intro` visits all **19** positions in order (intro, the needle, each stage's three tabs, Going further, Summary) and stops; ← visits them in exactly reverse order. U on a stage step jumps to Under the hood.
+      - Presentation mode on in talk mode, off on `/demo`.
+      - Tab through Home, a talk stage step, the demo and the glossary: 43–45 focus stops each, **every one with a visible outline or ring**. The first stop is *Skip to content*.
+      - Landmarks on seven pages: one `header`, one `main`, labelled `nav`s ("Pages", "Talk steps"), one `h1`; no unnamed buttons; no images without `alt`.
+      - A dropdown opened by keyboard (golden-query picker, presentation mode, dark theme) lists its 9 options, aligned under its trigger.
+    - **Both themes at 1280×720** (Home, talk intro, Stage 5 How it works · Results · Under the hood, demo Hybrid, glossary `#rrf`) match the design screens' structure and colours: triad colours, red status badges with icons, Dosis only on the logo and title.
+    - Findings:
+      - Presentation mode makes pages taller than 720px, so talk steps scroll; the talk bar is sticky, so Previous/Next stay on screen.
+      - Card and input borders (`--border`) are about 1.2:1 against the page. WCAG 1.4.11 doesn't require them where text and position already identify the control, so they are left as the design has them.
 12. **CI** (0002)
     - Add `npm ci`, `typecheck`, `lint`, `build` and `test` for `web-ui` to the GitHub Actions workflow.
 

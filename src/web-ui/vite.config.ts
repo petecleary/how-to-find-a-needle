@@ -30,5 +30,7 @@ export default defineConfig({
     },
     test: {
         include: ['src/**/*.test.{ts,tsx}'],
+        // Vitest skips CSS by default, which empties `index.css?raw`; contrast.test.ts reads the theme tokens from it.
+        css: { include: [/index\.css/] },
     },
 });

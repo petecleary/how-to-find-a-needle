@@ -14,6 +14,8 @@
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
+/* presentation:hidden removes a control that a projector audience doesn't need (PresentationProvider). */
+@custom-variant presentation (&:where(.presentation, .presentation *));
 
 /*
  * Self-hosted fonts (SIL Open Font License 1.1; each folder holds its OFL.txt), so the talk
@@ -151,8 +153,9 @@
     --input: #2c323b;
     --code: #13171c;
 
-    /* Purple is lightened on dark so it still reads against the background */
-    --search: #6d66f0;
+    /* Purple is lightened on dark so it still reads against the background, but no further than white text
+       on it allows: #6961ef gives 4.61:1 (contrast.test.ts); the first choice, #6d66f0, gave 4.37:1. */
+    --search: #6961ef;
     --search-ink: #a9a4fb;
     --search-tint: #211e44;
 
@@ -245,6 +248,11 @@
     code,
     pre {
         font-variant-ligatures: none;
+    }
+    /* Presentation mode (ADR-0014): everything 12.5% larger for the back of the room. Zoom scales the whole page,
+       pixel sizes included, so the layout keeps its proportions; popovers scale with it. */
+    html.presentation {
+        zoom: 1.125;
     }
     /* A visible focus ring in both themes: the talk must be keyboard-operable */
     :focus-visible {

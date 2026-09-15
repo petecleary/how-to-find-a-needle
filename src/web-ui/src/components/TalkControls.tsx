@@ -18,7 +18,11 @@ export function TalkControls({ previousPath, nextPath, label }: TalkControlsProp
         >
             <StepLink path={previousPath} direction="previous" />
             <p aria-live="polite" className="flex-1 text-center text-sm text-muted-foreground">
-                {label} · <kbd className="font-mono">←</kbd> <kbd className="font-mono">→</kbd>
+                {label}
+                <span className="presentation:hidden">
+                    {' · '}
+                    <kbd className="font-mono">←</kbd> <kbd className="font-mono">→</kbd>
+                </span>
             </p>
             <StepLink path={nextPath} direction="next" />
         </nav>

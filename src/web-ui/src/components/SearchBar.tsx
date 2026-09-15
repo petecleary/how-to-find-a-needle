@@ -91,7 +91,7 @@ export function SearchBar({
             <form
                 role="search"
                 onSubmit={handleSubmit}
-                className="flex min-w-72 flex-1 items-center gap-2.5 rounded-full border-2 bg-card px-4 py-1.5 focus-within:border-ring"
+                className="flex min-w-72 flex-1 items-center gap-2.5 rounded-full border-2 bg-card px-4 py-1.5 focus-within:border-ring focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring"
             >
                 <Search aria-hidden="true" className="size-5 flex-none text-muted-foreground" />
                 <input
