@@ -157,6 +157,7 @@ The UI is branded **Pi & Mash** (Pete's company). Agreed on 2026-09-14 from a de
   - `usePipelineSearch`; trace-renderer selection; talk navigation (→ walks a step's `tabs`, then the next step); Stage 5 result grouping.
   - Content integrity: every `talk.json` step file exists, every `goldenQuery` id is in `golden-queries.json`, every `term:` link resolves to a glossary entry, every stage has an explanation file.
   - No end-to-end browser tests; golden queries are covered by the API integration tests.
+  - Hook tests render with `@testing-library/react` (`renderHook`) in a `jsdom` environment, chosen per test file with `// @vitest-environment jsdom`. Everything else runs in Node. Both are dev dependencies only (added in Phase 3 step 4).
 
 ## Consequences
 

@@ -300,6 +300,16 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - Same request across stages; `AbortController` per request; `pageSize: 50`.
    - URL state: `stage`, `tab`, `q`, `gq`, device, filters, toggles, audience. Talk position in `/talk/:step/:tab?`.
    - Vitest: re-run on stage change, cancellation, URL round-trip, golden-query preset fills the request.
+   - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **39 pass (22 new)**. `dotnet` untouched. Built:
+     - `src/lib/searchState.ts` (pure, no React): `parseSearchState` / `serializeSearchState` (defaults are left out of the URL; unknown values fall back to defaults), `toSearchRequest` (`pageSize: 50`), `applyGoldenQuery` (fills query, device and filters; keeps stage, tab and toggles).
+     - `src/lib/talkRoute.ts`: `talkPath(step, tab?)` and `parseTalkTab`. The routes themselves arrive with React Router in step 10.
+     - `src/hooks/usePipelineSearch.ts`: keyed on the request's JSON, so an equal object doesn't re-search; aborts the in-flight search on every change; a late answer to an old search is never shown; `idle` when a stage that needs a query has none; `rerun()`.
+     - **URL parameters:** `stage`, `tab`, `q`, `gq`, `device`, `brand`, `category` (repeated), `minPrice`, `maxPrice`, `spec.{key}`, `expandSynonyms`, `applyConstraints`, `audience`, `applyPedagogy`.
+     - **Checked against the live API:** the exact JSON `toSearchRequest` builds (asserted in the tests) was posted. GQ-01 on `/ontology` returns 50 of 50 with all 7 Incompatible items in the one response (PROD-0014 to 0016 among them); GQ-04 on `/structured` matches the numeric spec `voltageV: 18` (6 Brakk products ≤ £100); an empty query on `/keyword` is a 400, which is why the hook stays `idle`.
+   - Findings:
+     - **Spec values in the URL:** a URL carries text only, so numeric values are turned back into numbers. JSON containment matches 18 but not "18" (ADR-0007). Vocabulary values are notations (`usb-c`), never bare numbers, so nothing is converted by mistake.
+     - **Test dependencies:** hook tests need a DOM renderer. `@testing-library/react` and `jsdom` were added as dev dependencies, jsdom only for files that opt in; recorded in ADR-0014 § Quality bar.
+     - The hook shows no response while a new search is loading: nothing stale is labelled with the new stage. Revisit in step 7 if the flash is distracting on the projector.
 5. **Stage screen shell** (0014 § Stage screen)
    - `AppHeader`, `SearchBar` (golden-query picker from `/api/demo/queries`, device picker from `/api/demo/devices`, Filters button with count), `PipelineStepper` (three triad groups, ARIA tablist), `StageTabs` (How it works · Results · Answer · Under the hood; Answer disabled before Stage 6; H / R / A / U), `StageOptions` on the tab row (Stage 5 toggles; the audience picker is added in Phase 4).
    - Loading, empty and 503 states for the tab content.
