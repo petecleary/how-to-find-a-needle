@@ -1,6 +1,7 @@
 import { BookOpen, List, Settings, Sparkles, type LucideIcon } from 'lucide-react';
 import { Tabs as TabsPrimitive } from 'radix-ui';
 import { useEffect, type ReactNode } from 'react';
+import { isTypingTarget } from '@/lib/keyboard';
 import type { StageTab } from '@/lib/searchState';
 import { stageColourClasses, type PipelineStage } from '@/lib/stageGroup';
 import { isTabAvailable, stageTabDefinitions, tabForShortcut } from '@/lib/stageTabs';
@@ -34,7 +35,8 @@ export function StageTabs({ stage, tab, onChooseTab, counts, options, panels }: 
             if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
                 return;
             }
-            if (isTyping(event.target)) {
+            // Letters typed into the query box, or used to search a dropdown's options, must not switch tabs.
+            if (isTypingTarget(event.target)) {
                 return;
             }
 
@@ -103,19 +105,5 @@ export function StageTabs({ stage, tab, onChooseTab, counts, options, panels }: 
                 </TabsPrimitive.Content>
             ))}
         </TabsPrimitive.Root>
-    );
-}
-
-// Letters typed into the query box, or used to search a dropdown's options, must not switch tabs.
-function isTyping(target: EventTarget | null): boolean {
-    if (!(target instanceof HTMLElement)) {
-        return false;
-    }
-
-    const isTextField = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
-    return (
-        isTextField ||
-        target.isContentEditable ||
-        target.closest('[role="combobox"], [role="listbox"]') !== null
     );
 }

@@ -1,12 +1,17 @@
+import { isValidElement, type ReactNode } from 'react';
 import ReactMarkdown, { defaultUrlTransform, type Components } from 'react-markdown';
 import { Link } from 'react-router';
 import remarkGfm from 'remark-gfm';
 import { GlossaryTerm } from '@/components/GlossaryTerm';
+import { slugify } from '@/lib/slug';
 import { cn } from '@/lib/utils';
 
-// Markdown — renders text from content/ (ADR-0014 § Content). Two link schemes are this repo's own:
-// `term:` becomes a glossary hover card and `adr:` a link to the decision page. A custom `a` renderer does it,
-// with no remark plugin. Raw HTML in content is not rendered, so content can't inject markup.
+// Markdown — renders text from content/ and docs/adr (ADR-0014 § Content). Three link schemes are this repo's own:
+//   term:  a glossary hover card               adr:  a link to a decision page
+//   repo:  a repository file the UI doesn't serve, shown as text with its path on hover
+// A custom `a` renderer does it, with no remark plugin. Raw HTML in content is not rendered.
+
+const ownSchemes = ['term:', 'adr:', 'repo:'];
 
 const components: Components = {
     a({ href, children }) {
@@ -25,14 +30,65 @@ const components: Components = {
             );
         }
 
+        if (href?.startsWith('repo:')) {
+            return (
+                <span
+                    title={`${href.slice('repo:'.length)}: in the repository, not shown in the UI`}
+                    className="underline decoration-dashed underline-offset-4"
+                >
+                    {children}
+                </span>
+            );
+        }
+
         return (
             <a href={href} className="underline underline-offset-4">
                 {children}
             </a>
         );
     },
+    // Headings get GitHub-style ids, so links to a section of an ADR land on it.
+    h1: ({ children }) => (
+        <h1 id={slugify(textOf(children))} className="scroll-mt-4 text-3xl font-bold">
+            {children}
+        </h1>
+    ),
+    h2: ({ children }) => (
+        <h2 id={slugify(textOf(children))} className="mt-4 scroll-mt-4 text-2xl font-bold">
+            {children}
+        </h2>
+    ),
+    h3: ({ children }) => (
+        <h3 id={slugify(textOf(children))} className="mt-3 scroll-mt-4 text-xl font-bold">
+            {children}
+        </h3>
+    ),
+    h4: ({ children }) => (
+        <h4 id={slugify(textOf(children))} className="mt-2 scroll-mt-4 text-lg font-bold">
+            {children}
+        </h4>
+    ),
     code({ children }) {
         return <code className="rounded-md bg-muted px-1 py-0.5 font-mono text-[0.9em]">{children}</code>;
+    },
+    pre({ children }) {
+        return (
+            <pre className="overflow-x-auto rounded-xl bg-muted px-4 py-3 text-[0.85em] [&_code]:bg-transparent [&_code]:p-0">
+                {children}
+            </pre>
+        );
+    },
+    blockquote({ children }) {
+        return <blockquote className="border-l-4 pl-4 text-muted-foreground">{children}</blockquote>;
+    },
+    table({ children }) {
+        return (
+            <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left [&_td]:border-t-2 [&_td]:px-2 [&_td]:py-1.5 [&_td]:align-top [&_th]:px-2 [&_th]:py-1.5 [&_th]:font-bold">
+                    {children}
+                </table>
+            </div>
+        );
     },
     ol({ children }) {
         return <ol className="flex flex-col gap-2 [counter-reset:step]">{children}</ol>;
@@ -41,7 +97,7 @@ const components: Components = {
     // from --step-colour when the page sets one (the stage's triad colour), and the text colour otherwise.
     li({ children }) {
         return (
-            <li className="relative pl-9 [counter-increment:step] before:absolute before:top-0 before:left-0 before:flex before:size-6 before:items-center before:justify-center before:rounded-full before:border-2 before:border-[color:var(--step-colour,currentColor)] before:text-sm before:font-bold before:text-[color:var(--step-colour,currentColor)] before:content-[counter(step)]">
+            <li className="relative pl-9 [counter-increment:step] before:absolute before:top-0 before:left-0 before:flex before:size-6 before:items-center before:justify-center before:rounded-full before:border-2 before:border-[color:var(--step-colour,currentColor)] before:text-sm before:font-bold before:text-[color:var(--step-colour,currentColor)] before:content-[counter(step)] [ul>&]:pl-0 [ul>&]:before:hidden">
                 {children}
             </li>
         );
@@ -49,11 +105,28 @@ const components: Components = {
     ul({ children }) {
         return <ul className="flex list-disc flex-col gap-1 pl-5">{children}</ul>;
     },
+    hr() {
+        return <hr className="border-t-2" />;
+    },
 };
 
 // react-markdown blanks links with schemes it doesn't know, to stop `javascript:` URLs. Ours are safe.
 function urlTransform(url: string): string {
-    return url.startsWith('term:') || url.startsWith('adr:') ? url : defaultUrlTransform(url);
+    return ownSchemes.some((scheme) => url.startsWith(scheme)) ? url : defaultUrlTransform(url);
+}
+
+// The plain text of rendered children, for a heading's id.
+function textOf(node: ReactNode): string {
+    if (typeof node === 'string' || typeof node === 'number') {
+        return String(node);
+    }
+    if (Array.isArray(node)) {
+        return node.map(textOf).join('');
+    }
+    if (isValidElement(node)) {
+        return textOf((node.props as { children?: ReactNode }).children);
+    }
+    return '';
 }
 
 export interface MarkdownProps {

@@ -11,6 +11,8 @@ const searchApiUrl = process.env.services__searchapi__https__0 ?? process.env.se
 export default defineConfig({
     plugins: [react(), tailwindcss()],
     server: {
+        // The Decisions pages read docs/adr/*.md from the repository root, outside this folder (ADR-0014 § Content).
+        fs: { allow: [path.resolve(import.meta.dirname, '../..')] },
         proxy: searchApiUrl
             ? {
                   '/api': {

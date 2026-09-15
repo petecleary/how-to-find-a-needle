@@ -1,0 +1,47 @@
+[
+  { "id": "intro", "kind": "intro", "title": "How to Find a Needle", "file": "talk/intro.md" },
+  { "id": "the-needle", "kind": "intro", "title": "The needle", "file": "talk/the-needle.md" },
+  {
+    "id": "stage-structured",
+    "kind": "stage",
+    "title": "Stage 1 · Structured search",
+    "file": "talk/stage-structured.md",
+    "stage": "structured",
+    "goldenQuery": "GQ-04"
+  },
+  {
+    "id": "stage-keyword",
+    "kind": "stage",
+    "title": "Stage 2 · Keyword search",
+    "file": "talk/stage-keyword.md",
+    "stage": "keyword",
+    "goldenQuery": "GQ-02"
+  },
+  {
+    "id": "stage-vector",
+    "kind": "stage",
+    "title": "Stage 3 · Vector search",
+    "file": "talk/stage-vector.md",
+    "stage": "vector",
+    "goldenQuery": "GQ-01"
+  },
+  {
+    "id": "stage-hybrid",
+    "kind": "stage",
+    "title": "Stage 4 · Hybrid search",
+    "file": "talk/stage-hybrid.md",
+    "stage": "hybrid",
+    "goldenQuery": "GQ-03"
+  },
+  {
+    "id": "stage-ontology",
+    "kind": "stage",
+    "title": "Stage 5 · Ontology",
+    "file": "talk/stage-ontology.md",
+    "stage": "ontology",
+    "goldenQuery": "GQ-01",
+    "options": { "expandSynonyms": true, "applyConstraints": true }
+  },
+  { "id": "going-further", "kind": "summary", "title": "Going further", "file": "talk/going-further.md" },
+  { "id": "summary", "kind": "summary", "title": "Summary", "file": "talk/summary.md" }
+]
