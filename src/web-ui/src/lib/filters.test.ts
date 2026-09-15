@@ -3,7 +3,6 @@ import { taxonomyFixture, vocabulariesFixture } from '@/test/ontologyFixtures';
 import {
     changeSpecKey,
     clearFilters,
-    findConcept,
     hasSelectedNarrower,
     otherSpecs,
     parsePriceInput,
@@ -14,6 +13,7 @@ import {
     toggleCategory,
 } from './filters';
 import { defaultSearchState, toSearchRequest, type SearchFilterState } from './searchState';
+import { findConcept } from './taxonomy';
 
 const [connectors, memoryTypes] = vocabulariesFixture as [
     (typeof vocabulariesFixture)[0],

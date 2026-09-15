@@ -1,0 +1,3108 @@
+{
+  "stage": "ontology",
+  "query": "power adapter for my laptop",
+  "page": 1,
+  "pageSize": 50,
+  "totalResults": 50,
+  "executionTimeMs": 225.21,
+  "results": [
+    {
+      "id": "PROD-0012",
+      "name": "Voltline 65W USB-C GaN Charger",
+      "brand": "Voltline",
+      "categories": ["laptop-chargers", "usb-c-pd-chargers", "phone-chargers"],
+      "price": 49.99,
+      "specs": {
+        "wattageW": 65,
+        "connector": "usb-c",
+        "powerDelivery": true
+      },
+      "score": 0.03227,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 3,
+        "keywordScore": 0.83088,
+        "vectorRank": 1,
+        "vectorDistance": 0.16717,
+        "fusedRank": 1,
+        "conceptMatch": "InConcept"
+      },
+      "compatibility": {
+        "status": "Compatible",
+        "reasons": [
+          "✓ The charger must supply at least the power the laptop needs. Voltline 65W USB-C GaN Charger has 65W; Blackbird Aerobook 14 needs at least 65W.",
+          "✓ The charger's plug must fit the laptop's charging port. Voltline 65W USB-C GaN Charger has USB-C; Blackbird Aerobook 14 needs USB-C."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0013",
+      "name": "Voltline 100W USB-C GaN Charger",
+      "brand": "Voltline",
+      "categories": ["laptop-chargers", "usb-c-pd-chargers"],
+      "price": 64.99,
+      "specs": {
+        "wattageW": 100,
+        "connector": "usb-c",
+        "powerDelivery": true
+      },
+      "score": 0.03126,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 5,
+        "keywordScore": 0.65714,
+        "vectorRank": 3,
+        "vectorDistance": 0.19676,
+        "fusedRank": 5,
+        "conceptMatch": "InConcept"
+      },
+      "compatibility": {
+        "status": "Compatible",
+        "reasons": [
+          "✓ The charger must supply at least the power the laptop needs. Voltline 100W USB-C GaN Charger has 100W; Blackbird Aerobook 14 needs at least 65W.",
+          "✓ The charger's plug must fit the laptop's charging port. Voltline 100W USB-C GaN Charger has USB-C; Blackbird Aerobook 14 needs USB-C."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0011",
+      "name": "Blackbird 65W USB-C Charger",
+      "brand": "Blackbird",
+      "categories": ["laptop-chargers", "usb-c-pd-chargers"],
+      "price": 39.99,
+      "specs": {
+        "wattageW": 65,
+        "connector": "usb-c",
+        "powerDelivery": true
+      },
+      "score": 0.03055,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 4,
+        "keywordScore": 0.80866,
+        "vectorRank": 7,
+        "vectorDistance": 0.22302,
+        "fusedRank": 6,
+        "conceptMatch": "InConcept"
+      },
+      "compatibility": {
+        "status": "Compatible",
+        "reasons": [
+          "✓ The charger must supply at least the power the laptop needs. Blackbird 65W USB-C Charger has 65W; Blackbird Aerobook 14 needs at least 65W.",
+          "✓ The charger's plug must fit the laptop's charging port. Blackbird 65W USB-C Charger has USB-C; Blackbird Aerobook 14 needs USB-C."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0005",
+      "name": "Corvid Slate 15 Pro",
+      "brand": "Corvid",
+      "categories": ["laptops"],
+      "price": 1599.99,
+      "specs": {
+        "memoryType": "ddr5-sodimm",
+        "chargingPort": "usb-c",
+        "screenSizeIn": 15,
+        "m2SlotInterface": "nvme",
+        "minChargerWattageW": 100
+      },
+      "score": 0.0276,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 11,
+        "keywordScore": 0.00556,
+        "vectorRank": 14,
+        "vectorDistance": 0.31041,
+        "fusedRank": 9,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0003",
+      "name": "Blackbird Workmate 15",
+      "brand": "Blackbird",
+      "categories": ["laptops"],
+      "price": 649.99,
+      "specs": {
+        "memoryType": "ddr4-sodimm",
+        "chargingPort": "barrel-5.5mm",
+        "screenSizeIn": 15,
+        "m2SlotInterface": "sata",
+        "minChargerWattageW": 45
+      },
+      "score": 0.02655,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 12,
+        "keywordScore": 0.00538,
+        "vectorRank": 19,
+        "vectorDistance": 0.34903,
+        "fusedRank": 10,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0002",
+      "name": "Blackbird Aerobook 16",
+      "brand": "Blackbird",
+      "categories": ["laptops"],
+      "price": 1299.99,
+      "specs": {
+        "memoryType": "ddr5-sodimm",
+        "chargingPort": "usb-c",
+        "screenSizeIn": 16,
+        "m2SlotInterface": "nvme",
+        "minChargerWattageW": 100
+      },
+      "score": 0.02565,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 10,
+        "keywordScore": 0.00808,
+        "vectorRank": 28,
+        "vectorDistance": 0.36564,
+        "fusedRank": 11,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0052",
+      "name": "Blackbird 15-Inch Laptop Backpack",
+      "brand": "Blackbird",
+      "categories": ["bags"],
+      "price": 44.99,
+      "specs": {},
+      "score": 0.02534,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 7,
+        "keywordScore": 0.1,
+        "vectorRank": 36,
+        "vectorDistance": 0.3744,
+        "fusedRank": 12,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0036",
+      "name": "Voltline USB-C Hub 100W Pass-Through",
+      "brand": "Voltline",
+      "categories": ["usb-hubs"],
+      "price": 34.99,
+      "specs": {
+        "wattageW": 100
+      },
+      "score": 0.01449,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 9,
+        "vectorDistance": 0.24955,
+        "fusedRank": 13,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0031",
+      "name": "Tornio 20V MAX Charger",
+      "brand": "Tornio",
+      "categories": ["battery-chargers"],
+      "price": 27.99,
+      "specs": {
+        "platform": "tornio-20v-max",
+        "voltageV": 20
+      },
+      "score": 0.01429,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 10,
+        "vectorDistance": 0.27168,
+        "fusedRank": 14,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0035",
+      "name": "Voltline 10000mAh Power Bank",
+      "brand": "Voltline",
+      "categories": ["power-banks"],
+      "price": 24.99,
+      "specs": {
+        "wattageW": 18,
+        "capacityMah": 10000
+      },
+      "score": 0.01408,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 11,
+        "vectorDistance": 0.27591,
+        "fusedRank": 15,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0040",
+      "name": "Pinegrove USB-C to USB-C Cable 2m",
+      "brand": "Pinegrove",
+      "categories": ["cables"],
+      "price": 8.99,
+      "specs": {},
+      "score": 0.01389,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 12,
+        "vectorDistance": 0.29195,
+        "fusedRank": 16,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0034",
+      "name": "Hollis Phone Charging Cradle",
+      "brand": "Hollis",
+      "categories": ["phone-accessories"],
+      "price": 9.99,
+      "specs": {},
+      "score": 0.0137,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 13,
+        "vectorDistance": 0.30026,
+        "fusedRank": 17,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0030",
+      "name": "Brakk 18V Fast Charger",
+      "brand": "Brakk",
+      "categories": ["battery-chargers"],
+      "price": 24.99,
+      "specs": {
+        "platform": "brakk-18v",
+        "voltageV": 18
+      },
+      "score": 0.01333,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 15,
+        "vectorDistance": 0.32123,
+        "fusedRank": 18,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0001",
+      "name": "Blackbird Aerobook 14",
+      "brand": "Blackbird",
+      "categories": ["laptops"],
+      "price": 999.99,
+      "specs": {
+        "memoryType": "ddr5-sodimm",
+        "chargingPort": "usb-c",
+        "screenSizeIn": 14,
+        "m2SlotInterface": "nvme",
+        "minChargerWattageW": 65
+      },
+      "score": 0.01316,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 16,
+        "vectorDistance": 0.33954,
+        "fusedRank": 19,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": [
+          "This is your target device, Blackbird Aerobook 14: it's shown below the products for it, not removed."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0059",
+      "name": "Tornio 20V MAX Work Light (Body Only)",
+      "brand": "Tornio",
+      "categories": ["power-tool-accessories"],
+      "price": 32.99,
+      "specs": {
+        "voltageV": 20
+      },
+      "score": 0.01299,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 17,
+        "vectorDistance": 0.34331,
+        "fusedRank": 20,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0051",
+      "name": "Kestrel USB-C Card Reader",
+      "brand": "Kestrel",
+      "categories": ["peripherals"],
+      "price": 14.99,
+      "specs": {},
+      "score": 0.01282,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 18,
+        "vectorDistance": 0.34393,
+        "fusedRank": 21,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0043",
+      "name": "Pinegrove Wireless Mouse",
+      "brand": "Pinegrove",
+      "categories": ["peripherals"],
+      "price": 16.99,
+      "specs": {},
+      "score": 0.0125,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 20,
+        "vectorDistance": 0.34937,
+        "fusedRank": 22,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0027",
+      "name": "Brakk 18V 2.0Ah Battery",
+      "brand": "Brakk",
+      "categories": ["batteries"],
+      "price": 34.99,
+      "specs": {
+        "platform": "brakk-18v",
+        "voltageV": 18,
+        "capacityAh": 2.0
+      },
+      "score": 0.01235,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 21,
+        "vectorDistance": 0.35159,
+        "fusedRank": 23,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0057",
+      "name": "Hollis Phone Screen Protector (2 Pack)",
+      "brand": "Hollis",
+      "categories": ["phone-accessories"],
+      "price": 5.99,
+      "specs": {},
+      "score": 0.0122,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 22,
+        "vectorDistance": 0.35483,
+        "fusedRank": 24,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0056",
+      "name": "Anvik 8m Tape Measure",
+      "brand": "Anvik",
+      "categories": ["power-tool-accessories"],
+      "price": 7.99,
+      "specs": {},
+      "score": 0.01205,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 23,
+        "vectorDistance": 0.35539,
+        "fusedRank": 25,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0007",
+      "name": "Brakk 18V Drill Kit (2x4.0Ah + Case)",
+      "brand": "Brakk",
+      "categories": ["drills"],
+      "price": 149.99,
+      "specs": {
+        "voltageV": 18,
+        "batteryPlatform": "brakk-18v"
+      },
+      "score": 0.0119,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 24,
+        "vectorDistance": 0.35553,
+        "fusedRank": 26,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0010",
+      "name": "Brakk 18V LED Work Light (Body Only)",
+      "brand": "Brakk",
+      "categories": ["power-tool-accessories"],
+      "price": 29.99,
+      "specs": {
+        "voltageV": 18
+      },
+      "score": 0.01176,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 25,
+        "vectorDistance": 0.35631,
+        "fusedRank": 27,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0028",
+      "name": "Tornio 20V MAX 4.0Ah Battery",
+      "brand": "Tornio",
+      "categories": ["batteries"],
+      "price": 54.99,
+      "specs": {
+        "platform": "tornio-20v-max",
+        "voltageV": 20,
+        "capacityAh": 4.0
+      },
+      "score": 0.01163,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 26,
+        "vectorDistance": 0.3578,
+        "fusedRank": 28,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0054",
+      "name": "Corvid Adjustable Monitor Stand",
+      "brand": "Corvid",
+      "categories": ["peripherals"],
+      "price": 34.99,
+      "specs": {},
+      "score": 0.01149,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 27,
+        "vectorDistance": 0.36267,
+        "fusedRank": 29,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0039",
+      "name": "Anvik 25-Piece Drill Bit Set",
+      "brand": "Anvik",
+      "categories": ["power-tool-accessories"],
+      "price": 14.99,
+      "specs": {},
+      "score": 0.01124,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 29,
+        "vectorDistance": 0.36587,
+        "fusedRank": 30,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0044",
+      "name": "Pinegrove Mechanical Keyboard",
+      "brand": "Pinegrove",
+      "categories": ["peripherals"],
+      "price": 59.99,
+      "specs": {},
+      "score": 0.01111,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 30,
+        "vectorDistance": 0.36763,
+        "fusedRank": 31,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0004",
+      "name": "Corvid Slate 13",
+      "brand": "Corvid",
+      "categories": ["laptops"],
+      "price": 1099.99,
+      "specs": {
+        "memoryType": "ddr5-sodimm",
+        "chargingPort": "usb-c",
+        "screenSizeIn": 13,
+        "m2SlotInterface": "nvme",
+        "minChargerWattageW": 65
+      },
+      "score": 0.01099,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 31,
+        "vectorDistance": 0.36921,
+        "fusedRank": 32,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0029",
+      "name": "Brakk 12V 2.0Ah Battery",
+      "brand": "Brakk",
+      "categories": ["batteries"],
+      "price": 27.99,
+      "specs": {
+        "platform": "brakk-12v",
+        "voltageV": 12,
+        "capacityAh": 2.0
+      },
+      "score": 0.01087,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 32,
+        "vectorDistance": 0.36977,
+        "fusedRank": 33,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0053",
+      "name": "Blackbird 1080p Webcam",
+      "brand": "Blackbird",
+      "categories": ["peripherals"],
+      "price": 29.99,
+      "specs": {},
+      "score": 0.01075,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 33,
+        "vectorDistance": 0.37132,
+        "fusedRank": 34,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0032",
+      "name": "Hollis Cordless Phone Battery Pack",
+      "brand": "Hollis",
+      "categories": ["phone-batteries"],
+      "price": 12.99,
+      "specs": {
+        "voltageV": 3.6,
+        "capacityMah": 1500
+      },
+      "score": 0.01064,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 34,
+        "vectorDistance": 0.37283,
+        "fusedRank": 35,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0041",
+      "name": "Brakk 18V 5.0Ah Battery Twin Pack",
+      "brand": "Brakk",
+      "categories": ["batteries"],
+      "price": 109.99,
+      "specs": {
+        "platform": "brakk-18v",
+        "voltageV": 18,
+        "capacityAh": 10.0
+      },
+      "score": 0.01053,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 35,
+        "vectorDistance": 0.37336,
+        "fusedRank": 36,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0046",
+      "name": "Anvik Tool Box",
+      "brand": "Anvik",
+      "categories": ["power-tool-accessories"],
+      "price": 22.99,
+      "specs": {},
+      "score": 0.01031,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 37,
+        "vectorDistance": 0.37501,
+        "fusedRank": 37,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0058",
+      "name": "Hollis Phone Case",
+      "brand": "Hollis",
+      "categories": ["phone-accessories"],
+      "price": 11.99,
+      "specs": {},
+      "score": 0.0102,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 38,
+        "vectorDistance": 0.37815,
+        "fusedRank": 38,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0060",
+      "name": "Brakk 18V Angle Grinder (Body Only)",
+      "brand": "Brakk",
+      "categories": ["angle-grinders"],
+      "price": 119.99,
+      "specs": {
+        "voltageV": 18,
+        "batteryPlatform": "brakk-18v"
+      },
+      "score": 0.0101,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 39,
+        "vectorDistance": 0.3784,
+        "fusedRank": 39,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0006",
+      "name": "Brakk 18V Combi Drill (Body Only)",
+      "brand": "Brakk",
+      "categories": ["drills"],
+      "price": 89.99,
+      "specs": {
+        "voltageV": 18,
+        "batteryPlatform": "brakk-18v"
+      },
+      "score": 0.01,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 40,
+        "vectorDistance": 0.37866,
+        "fusedRank": 40,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0055",
+      "name": "Pinegrove Extension Cable 5m",
+      "brand": "Pinegrove",
+      "categories": ["cables"],
+      "price": 11.99,
+      "specs": {},
+      "score": 0.0099,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 41,
+        "vectorDistance": 0.37968,
+        "fusedRank": 41,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0009",
+      "name": "Tornio 20V MAX Drill (Body Only)",
+      "brand": "Tornio",
+      "categories": ["drills"],
+      "price": 94.99,
+      "specs": {
+        "voltageV": 20,
+        "batteryPlatform": "tornio-20v-max"
+      },
+      "score": 0.0098,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 42,
+        "vectorDistance": 0.38401,
+        "fusedRank": 42,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0026",
+      "name": "Brakk 18V 4.0Ah Battery",
+      "brand": "Brakk",
+      "categories": ["batteries"],
+      "price": 49.99,
+      "specs": {
+        "platform": "brakk-18v",
+        "voltageV": 18,
+        "capacityAh": 4.0
+      },
+      "score": 0.00971,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 43,
+        "vectorDistance": 0.38514,
+        "fusedRank": 43,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0018",
+      "name": "Kestrel 1TB NVMe M.2 2280 SSD",
+      "brand": "Kestrel",
+      "categories": ["nvme-ssds"],
+      "price": 79.99,
+      "specs": {
+        "interface": "nvme",
+        "capacityGb": 1000,
+        "formFactor": "m2-2280"
+      },
+      "score": 0.00962,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 44,
+        "vectorDistance": 0.38515,
+        "fusedRank": 44,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "Compatible",
+        "reasons": [
+          "✓ The SSD's interface must match what the laptop's M.2 slot wires up — NVMe and SATA drives can share the same physical M.2 2280 shape and still not work. Kestrel 1TB NVMe M.2 2280 SSD has NVMe; Blackbird Aerobook 14 needs NVMe."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0048",
+      "name": "Anvik Work Gloves",
+      "brand": "Anvik",
+      "categories": ["power-tool-accessories"],
+      "price": 9.99,
+      "specs": {},
+      "score": 0.00943,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 46,
+        "vectorDistance": 0.38648,
+        "fusedRank": 46,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0022",
+      "name": "Kestrel 16GB DDR5 SO-DIMM",
+      "brand": "Kestrel",
+      "categories": ["so-dimm-memory"],
+      "price": 54.99,
+      "specs": {
+        "capacityGb": 16,
+        "memoryType": "ddr5-sodimm"
+      },
+      "score": 0.00935,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 47,
+        "vectorDistance": 0.39125,
+        "fusedRank": 47,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "Compatible",
+        "reasons": [
+          "✓ The memory module's generation must match what the laptop's memory controller supports. Kestrel 16GB DDR5 SO-DIMM has DDR5 SO-DIMM; Blackbird Aerobook 14 needs DDR5 SO-DIMM."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0042",
+      "name": "Solace Bluetooth Speaker",
+      "brand": "Solace",
+      "categories": ["audio"],
+      "price": 39.99,
+      "specs": {},
+      "score": 0.00917,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 49,
+        "vectorDistance": 0.39165,
+        "fusedRank": 49,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0033",
+      "name": "Hollis Cordless Phone Twin Pack",
+      "brand": "Hollis",
+      "categories": ["cordless-phones"],
+      "price": 44.99,
+      "specs": {},
+      "score": 0.00909,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 50,
+        "vectorDistance": 0.39477,
+        "fusedRank": 50,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "NotEvaluated",
+        "reasons": []
+      }
+    },
+    {
+      "id": "PROD-0014",
+      "name": "Voltline 45W Barrel Charger",
+      "brand": "Voltline",
+      "categories": ["laptop-chargers"],
+      "price": 29.99,
+      "specs": {
+        "wattageW": 45,
+        "connector": "barrel-5.5mm",
+        "powerDelivery": false
+      },
+      "score": 0.03202,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 1,
+        "keywordScore": 1.10596,
+        "vectorRank": 4,
+        "vectorDistance": 0.19727,
+        "fusedRank": 2,
+        "conceptMatch": "InConcept"
+      },
+      "compatibility": {
+        "status": "Incompatible",
+        "reasons": [
+          "✗ The charger must supply at least the power the laptop needs. Voltline 45W Barrel Charger has 45W; Blackbird Aerobook 14 needs at least 65W.",
+          "✗ The charger's plug must fit the laptop's charging port. Voltline 45W Barrel Charger has 5.5mm barrel; Blackbird Aerobook 14 needs USB-C."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0015",
+      "name": "Voltline 90W Barrel Charger",
+      "brand": "Voltline",
+      "categories": ["laptop-chargers"],
+      "price": 34.99,
+      "specs": {
+        "wattageW": 90,
+        "connector": "barrel-5.5mm",
+        "powerDelivery": false
+      },
+      "score": 0.03151,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 2,
+        "keywordScore": 0.8927,
+        "vectorRank": 5,
+        "vectorDistance": 0.21991,
+        "fusedRank": 3,
+        "conceptMatch": "InConcept"
+      },
+      "compatibility": {
+        "status": "Incompatible",
+        "reasons": [
+          "✗ The charger's plug must fit the laptop's charging port. Voltline 90W Barrel Charger has 5.5mm barrel; Blackbird Aerobook 14 needs USB-C."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0016",
+      "name": "Voltline 45W USB-C Charger",
+      "brand": "Voltline",
+      "categories": ["laptop-chargers", "usb-c-pd-chargers", "phone-chargers"],
+      "price": 27.99,
+      "specs": {
+        "wattageW": 45,
+        "connector": "usb-c",
+        "powerDelivery": true
+      },
+      "score": 0.03128,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 6,
+        "keywordScore": 0.62381,
+        "vectorRank": 2,
+        "vectorDistance": 0.17481,
+        "fusedRank": 4,
+        "conceptMatch": "InConcept"
+      },
+      "compatibility": {
+        "status": "Incompatible",
+        "reasons": [
+          "✗ The charger must supply at least the power the laptop needs. Voltline 45W USB-C Charger has 45W; Blackbird Aerobook 14 needs at least 65W."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0017",
+      "name": "Voltline 20W USB-C Phone Charger",
+      "brand": "Voltline",
+      "categories": ["phone-chargers", "usb-c-pd-chargers"],
+      "price": 14.99,
+      "specs": {
+        "wattageW": 20,
+        "connector": "usb-c",
+        "powerDelivery": true
+      },
+      "score": 0.02964,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 9,
+        "keywordScore": 0.06444,
+        "vectorRank": 6,
+        "vectorDistance": 0.22201,
+        "fusedRank": 7,
+        "conceptMatch": "InConcept"
+      },
+      "compatibility": {
+        "status": "Incompatible",
+        "reasons": [
+          "✗ The charger must supply at least the power the laptop needs. Voltline 20W USB-C Phone Charger has 20W; Blackbird Aerobook 14 needs at least 65W."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0049",
+      "name": "Voltline 12W USB-C Fast Charger",
+      "brand": "Voltline",
+      "categories": ["phone-chargers"],
+      "price": 9.99,
+      "specs": {
+        "wattageW": 12,
+        "connector": "usb-c",
+        "powerDelivery": true
+      },
+      "score": 0.02941,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": 8,
+        "keywordScore": 0.07302,
+        "vectorRank": 8,
+        "vectorDistance": 0.23127,
+        "fusedRank": 8,
+        "conceptMatch": "InConcept"
+      },
+      "compatibility": {
+        "status": "Incompatible",
+        "reasons": [
+          "✗ The charger must supply at least the power the laptop needs. Voltline 12W USB-C Fast Charger has 12W; Blackbird Aerobook 14 needs at least 65W."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0025",
+      "name": "Kestrel 8GB DDR4 SO-DIMM",
+      "brand": "Kestrel",
+      "categories": ["so-dimm-memory"],
+      "price": 24.99,
+      "specs": {
+        "capacityGb": 8,
+        "memoryType": "ddr4-sodimm"
+      },
+      "score": 0.00952,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 45,
+        "vectorDistance": 0.38593,
+        "fusedRank": 45,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "Incompatible",
+        "reasons": [
+          "✗ The memory module's generation must match what the laptop's memory controller supports. Kestrel 8GB DDR4 SO-DIMM has DDR4 SO-DIMM; Blackbird Aerobook 14 needs DDR5 SO-DIMM."
+        ]
+      }
+    },
+    {
+      "id": "PROD-0023",
+      "name": "Kestrel 16GB DDR4 SO-DIMM",
+      "brand": "Kestrel",
+      "categories": ["so-dimm-memory"],
+      "price": 44.99,
+      "specs": {
+        "capacityGb": 16,
+        "memoryType": "ddr4-sodimm"
+      },
+      "score": 0.00926,
+      "signals": {
+        "structuredMatch": null,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": 48,
+        "vectorDistance": 0.39155,
+        "fusedRank": 48,
+        "conceptMatch": "OutOfConcept"
+      },
+      "compatibility": {
+        "status": "Incompatible",
+        "reasons": [
+          "✗ The memory module's generation must match what the laptop's memory controller supports. Kestrel 16GB DDR4 SO-DIMM has DDR4 SO-DIMM; Blackbird Aerobook 14 needs DDR5 SO-DIMM."
+        ]
+      }
+    }
+  ],
+  "debugTrace": {
+    "steps": [
+      {
+        "stage": "ontology",
+        "title": "Understand: target device, and query phrases matched to SKOS labels",
+        "durationMs": 8.91,
+        "sql": null,
+        "parameters": null,
+        "details": {
+          "targetDevice": {
+            "id": "PROD-0001",
+            "name": "Blackbird Aerobook 14",
+            "categories": ["laptops"]
+          },
+          "targetDeviceMethod": "context.targetProductId",
+          "deviceMention": null,
+          "queryWithoutDevice": "power adapter for my laptop",
+          "tokens": [
+            {
+              "original": "power",
+              "folded": "power"
+            },
+            {
+              "original": "adapter",
+              "folded": "adapter"
+            },
+            {
+              "original": "for",
+              "folded": "for"
+            },
+            {
+              "original": "my",
+              "folded": "my"
+            },
+            {
+              "original": "laptop",
+              "folded": "laptop"
+            }
+          ],
+          "matches": [
+            {
+              "phrase": "power adapter",
+              "labels": [
+                {
+                  "concept": "chargers",
+                  "scheme": "taxonomy",
+                  "label": "power adapter",
+                  "language": "en",
+                  "kind": "Alternative"
+                }
+              ]
+            },
+            {
+              "phrase": "laptop",
+              "labels": [
+                {
+                  "concept": "laptops",
+                  "scheme": "taxonomy",
+                  "label": "Laptops",
+                  "language": "en",
+                  "kind": "Preferred"
+                }
+              ]
+            }
+          ],
+          "wantedConcepts": ["chargers"],
+          "contextConcepts": ["laptops"],
+          "remainingText": "for my laptop"
+        },
+        "notes": [
+          "Longest match first, no overlaps, phrases of 1–3 words, labels in every language.",
+          "Matching is lexical: lower case, accents folded and simple plurals folded. \"brick\" alone would not match \"power brick\".",
+          "laptops describes the device you own, so it isn't expanded or used for classification.",
+          "Value concepts (such as a connector) are shown, but only wanted categories are expanded and used for classification."
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Expand: synonyms and narrower concepts",
+        "durationMs": 1.56,
+        "sql": null,
+        "parameters": null,
+        "details": {
+          "expandSynonyms": true,
+          "phrases": [
+            {
+              "phrase": "power adapter",
+              "concepts": ["chargers"],
+              "terms": [
+                "power adapter",
+                "Chargers",
+                "AC adapter",
+                "PSU",
+                "power brick",
+                "Laptop chargers",
+                "notebook charger",
+                "laptop power supply",
+                "Phone chargers",
+                "USB-C PD chargers"
+              ]
+            }
+          ],
+          "keywordOrGroups": [
+            [
+              "power adapter",
+              "Chargers",
+              "AC adapter",
+              "PSU",
+              "power brick",
+              "Laptop chargers",
+              "notebook charger",
+              "laptop power supply",
+              "Phone chargers",
+              "USB-C PD chargers"
+            ]
+          ],
+          "keywordRemainingText": "for my laptop",
+          "embeddingText": "power adapter for my laptop (chargers, laptop chargers, phone chargers, usb-c pd chargers)"
+        },
+        "notes": [
+          "Each wanted phrase becomes an OR group of up to 10 terms per concept, AND-ed with the rest of the query.",
+          "Vector search embeds the query, without the device name, with the wanted concepts' names appended."
+        ]
+      },
+      {
+        "stage": "keyword",
+        "title": "Postgres full-text search with ontology expansion (BM25-style)",
+        "durationMs": 5.66,
+        "sql": "SELECT id, name, brand, categories, price, specs::text AS specs,\n       ts_rank_cd(search_vector, q) AS score,\n       ts_headline('english', name || '. ' || brand || ' ' || array_to_string(categories, ' ') || '. ' || description || ' ' || array_to_string(reviews, ' '), q,\n                   'MaxFragments=3, MinWords=3, MaxWords=10, StartSel=«, StopSel=»') AS headline\nFROM products, (SELECT (phraseto_tsquery('english', @g0t0) || phraseto_tsquery('english', @g0t1) || phraseto_tsquery('english', @g0t2) || phraseto_tsquery('english', @g0t3) || phraseto_tsquery('english', @g0t4) || phraseto_tsquery('english', @g0t5) || phraseto_tsquery('english', @g0t6) || phraseto_tsquery('english', @g0t7) || phraseto_tsquery('english', @g0t8) || phraseto_tsquery('english', @g0t9)) && websearch_to_tsquery('english', @rest) AS q) AS expanded\nWHERE search_vector @@ q\nORDER BY score DESC, id\nLIMIT @candidateDepth;",
+        "parameters": {
+          "g0t0": "power adapter",
+          "g0t1": "Chargers",
+          "g0t2": "AC adapter",
+          "g0t3": "PSU",
+          "g0t4": "power brick",
+          "g0t5": "Laptop chargers",
+          "g0t6": "notebook charger",
+          "g0t7": "laptop power supply",
+          "g0t8": "Phone chargers",
+          "g0t9": "USB-C PD chargers",
+          "rest": "for my laptop",
+          "candidateDepth": 50
+        },
+        "details": {
+          "tsquery": "( 'power' <-> 'adapt' | 'charger' | 'ac' <-> 'adapt' | 'psu' | 'power' <-> 'brick' | 'laptop' <-> 'charger' | 'notebook' <-> 'charger' | 'laptop' <-> 'power' <-> 'suppli' | 'phone' <-> 'charger' | 'usb-c' <-> 'usb' <-> 'c' <-> 'pd' <-> 'charger' ) & 'laptop'",
+          "tsqueryExpression": "(phraseto_tsquery('english', @g0t0) || phraseto_tsquery('english', @g0t1) || phraseto_tsquery('english', @g0t2) || phraseto_tsquery('english', @g0t3) || phraseto_tsquery('english', @g0t4) || phraseto_tsquery('english', @g0t5) || phraseto_tsquery('english', @g0t6) || phraseto_tsquery('english', @g0t7) || phraseto_tsquery('english', @g0t8) || phraseto_tsquery('english', @g0t9)) && websearch_to_tsquery('english', @rest)",
+          "expanded": true,
+          "ranking": "ts_rank_cd (cover density), field weights A = name, B = brand + categories, C = description, D = reviews",
+          "matches": [
+            {
+              "id": "PROD-0014",
+              "rank": 1,
+              "score": 1.10596,
+              "matchedTerms": ["laptop", "charger", "power", "adapter", "usb", "c"]
+            },
+            {
+              "id": "PROD-0015",
+              "rank": 2,
+              "score": 0.8927,
+              "matchedTerms": ["laptop", "charger", "power", "usb", "c"]
+            },
+            {
+              "id": "PROD-0012",
+              "rank": 3,
+              "score": 0.83088,
+              "matchedTerms": ["power", "adapter", "usb", "c", "laptop", "phones", "laptops"]
+            },
+            {
+              "id": "PROD-0011",
+              "rank": 4,
+              "score": 0.80866,
+              "matchedTerms": ["power", "charger", "laptop", "adapter"]
+            },
+            {
+              "id": "PROD-0013",
+              "rank": 5,
+              "score": 0.65714,
+              "matchedTerms": ["charger", "laptops"]
+            },
+            {
+              "id": "PROD-0016",
+              "rank": 6,
+              "score": 0.62381,
+              "matchedTerms": ["power", "charger", "usb", "c", "laptop"]
+            },
+            {
+              "id": "PROD-0052",
+              "rank": 7,
+              "score": 0.1,
+              "matchedTerms": ["laptop", "charger"]
+            },
+            {
+              "id": "PROD-0049",
+              "rank": 8,
+              "score": 0.07302,
+              "matchedTerms": ["c", "charger", "phone", "laptop"]
+            },
+            {
+              "id": "PROD-0017",
+              "rank": 9,
+              "score": 0.06444,
+              "matchedTerms": ["c", "charger", "phone", "laptop"]
+            },
+            {
+              "id": "PROD-0002",
+              "rank": 10,
+              "score": 0.00808,
+              "matchedTerms": ["laptops", "usb", "c", "power", "charger"]
+            },
+            {
+              "id": "PROD-0005",
+              "rank": 11,
+              "score": 0.00556,
+              "matchedTerms": ["laptop", "usb", "c", "charger"]
+            },
+            {
+              "id": "PROD-0003",
+              "rank": 12,
+              "score": 0.00538,
+              "matchedTerms": ["laptop", "usb", "c", "charger"]
+            }
+          ],
+          "optionsUsed": {
+            "candidateDepth": 50
+          }
+        },
+        "notes": [
+          "ts_rank_cd is not true BM25 — no IDF (rare words don't count for more) and no term-frequency saturation. Hence \"BM25-style\".",
+          "Every term in the tsquery must match (AND), so a single word the catalog never uses — a synonym — returns nothing.",
+          "The English stemmer reduces words to lexemes ('batteries' → 'batteri') and drops stop words ('for', 'my').",
+          "totalResults counts the candidates retrieved (at most candidateDepth = 50), not the whole catalog."
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "Query embedding (Nomic Embed v1.5, ONNX Runtime)",
+        "durationMs": 192.49,
+        "sql": null,
+        "parameters": null,
+        "details": {
+          "provider": "nomic",
+          "model": "nomic-embed-text-v1.5-int8",
+          "prefix": "search_query: ",
+          "embeddedText": "search_query: power adapter for my laptop (chargers, laptop chargers, phone chargers, usb-c pd chargers)",
+          "tokenCount": 28,
+          "truncated": false,
+          "dimensions": 768,
+          "firstDimensions": [0.0257, 0.059, -0.1662, -0.0073, 0.0809, -0.0536, -0.0288, 0.0069]
+        },
+        "notes": [
+          "Tokenizer → network → mean pooling → L2 normalisation. The vector has length 1, so cosine similarity is a dot product.",
+          "Nomic is asymmetric: queries get \"search_query: \" and products get \"search_document: \"."
+        ]
+      },
+      {
+        "stage": "vector",
+        "title": "pgvector cosine distance",
+        "durationMs": 6.1,
+        "sql": "SELECT set_config('hnsw.ef_search', @efSearch, true);\nSELECT id, name, brand, categories, price, specs::text AS specs,\n       embedding_dense <=> @queryVector AS distance\nFROM products\nWHERE embedding_model = @activeModel\nORDER BY embedding_dense <=> @queryVector, id\nLIMIT @candidateDepth;",
+        "parameters": {
+          "queryVector": "[0.0257, 0.0590, -0.1662, -0.0073, … 768 dimensions]",
+          "activeModel": "nomic-embed-text-v1.5-int8",
+          "candidateDepth": 50,
+          "efSearch": 100
+        },
+        "details": {
+          "metric": "cosine distance (<=>)",
+          "activeModel": "nomic-embed-text-v1.5-int8",
+          "efSearch": 100,
+          "distances": [
+            {
+              "id": "PROD-0012",
+              "rank": 1,
+              "distance": 0.16717,
+              "similarity": 0.83283
+            },
+            {
+              "id": "PROD-0016",
+              "rank": 2,
+              "distance": 0.17481,
+              "similarity": 0.82519
+            },
+            {
+              "id": "PROD-0013",
+              "rank": 3,
+              "distance": 0.19676,
+              "similarity": 0.80324
+            },
+            {
+              "id": "PROD-0014",
+              "rank": 4,
+              "distance": 0.19727,
+              "similarity": 0.80273
+            },
+            {
+              "id": "PROD-0015",
+              "rank": 5,
+              "distance": 0.21991,
+              "similarity": 0.78009
+            },
+            {
+              "id": "PROD-0017",
+              "rank": 6,
+              "distance": 0.22201,
+              "similarity": 0.77799
+            },
+            {
+              "id": "PROD-0011",
+              "rank": 7,
+              "distance": 0.22302,
+              "similarity": 0.77698
+            },
+            {
+              "id": "PROD-0049",
+              "rank": 8,
+              "distance": 0.23127,
+              "similarity": 0.76873
+            },
+            {
+              "id": "PROD-0036",
+              "rank": 9,
+              "distance": 0.24955,
+              "similarity": 0.75045
+            },
+            {
+              "id": "PROD-0031",
+              "rank": 10,
+              "distance": 0.27168,
+              "similarity": 0.72832
+            },
+            {
+              "id": "PROD-0035",
+              "rank": 11,
+              "distance": 0.27591,
+              "similarity": 0.72409
+            },
+            {
+              "id": "PROD-0040",
+              "rank": 12,
+              "distance": 0.29195,
+              "similarity": 0.70805
+            },
+            {
+              "id": "PROD-0034",
+              "rank": 13,
+              "distance": 0.30026,
+              "similarity": 0.69974
+            },
+            {
+              "id": "PROD-0005",
+              "rank": 14,
+              "distance": 0.31041,
+              "similarity": 0.68959
+            },
+            {
+              "id": "PROD-0030",
+              "rank": 15,
+              "distance": 0.32123,
+              "similarity": 0.67877
+            },
+            {
+              "id": "PROD-0001",
+              "rank": 16,
+              "distance": 0.33954,
+              "similarity": 0.66046
+            },
+            {
+              "id": "PROD-0059",
+              "rank": 17,
+              "distance": 0.34331,
+              "similarity": 0.65669
+            },
+            {
+              "id": "PROD-0051",
+              "rank": 18,
+              "distance": 0.34393,
+              "similarity": 0.65607
+            },
+            {
+              "id": "PROD-0003",
+              "rank": 19,
+              "distance": 0.34903,
+              "similarity": 0.65097
+            },
+            {
+              "id": "PROD-0043",
+              "rank": 20,
+              "distance": 0.34937,
+              "similarity": 0.65063
+            },
+            {
+              "id": "PROD-0027",
+              "rank": 21,
+              "distance": 0.35159,
+              "similarity": 0.64841
+            },
+            {
+              "id": "PROD-0057",
+              "rank": 22,
+              "distance": 0.35483,
+              "similarity": 0.64517
+            },
+            {
+              "id": "PROD-0056",
+              "rank": 23,
+              "distance": 0.35539,
+              "similarity": 0.64461
+            },
+            {
+              "id": "PROD-0007",
+              "rank": 24,
+              "distance": 0.35553,
+              "similarity": 0.64447
+            },
+            {
+              "id": "PROD-0010",
+              "rank": 25,
+              "distance": 0.35631,
+              "similarity": 0.64369
+            },
+            {
+              "id": "PROD-0028",
+              "rank": 26,
+              "distance": 0.3578,
+              "similarity": 0.6422
+            },
+            {
+              "id": "PROD-0054",
+              "rank": 27,
+              "distance": 0.36267,
+              "similarity": 0.63733
+            },
+            {
+              "id": "PROD-0002",
+              "rank": 28,
+              "distance": 0.36564,
+              "similarity": 0.63436
+            },
+            {
+              "id": "PROD-0039",
+              "rank": 29,
+              "distance": 0.36587,
+              "similarity": 0.63413
+            },
+            {
+              "id": "PROD-0044",
+              "rank": 30,
+              "distance": 0.36763,
+              "similarity": 0.63237
+            },
+            {
+              "id": "PROD-0004",
+              "rank": 31,
+              "distance": 0.36921,
+              "similarity": 0.63079
+            },
+            {
+              "id": "PROD-0029",
+              "rank": 32,
+              "distance": 0.36977,
+              "similarity": 0.63023
+            },
+            {
+              "id": "PROD-0053",
+              "rank": 33,
+              "distance": 0.37132,
+              "similarity": 0.62868
+            },
+            {
+              "id": "PROD-0032",
+              "rank": 34,
+              "distance": 0.37283,
+              "similarity": 0.62717
+            },
+            {
+              "id": "PROD-0041",
+              "rank": 35,
+              "distance": 0.37336,
+              "similarity": 0.62664
+            },
+            {
+              "id": "PROD-0052",
+              "rank": 36,
+              "distance": 0.3744,
+              "similarity": 0.6256
+            },
+            {
+              "id": "PROD-0046",
+              "rank": 37,
+              "distance": 0.37501,
+              "similarity": 0.62499
+            },
+            {
+              "id": "PROD-0058",
+              "rank": 38,
+              "distance": 0.37815,
+              "similarity": 0.62185
+            },
+            {
+              "id": "PROD-0060",
+              "rank": 39,
+              "distance": 0.3784,
+              "similarity": 0.6216
+            },
+            {
+              "id": "PROD-0006",
+              "rank": 40,
+              "distance": 0.37866,
+              "similarity": 0.62134
+            },
+            {
+              "id": "PROD-0055",
+              "rank": 41,
+              "distance": 0.37968,
+              "similarity": 0.62032
+            },
+            {
+              "id": "PROD-0009",
+              "rank": 42,
+              "distance": 0.38401,
+              "similarity": 0.61599
+            },
+            {
+              "id": "PROD-0026",
+              "rank": 43,
+              "distance": 0.38514,
+              "similarity": 0.61486
+            },
+            {
+              "id": "PROD-0018",
+              "rank": 44,
+              "distance": 0.38515,
+              "similarity": 0.61485
+            },
+            {
+              "id": "PROD-0025",
+              "rank": 45,
+              "distance": 0.38593,
+              "similarity": 0.61407
+            },
+            {
+              "id": "PROD-0048",
+              "rank": 46,
+              "distance": 0.38648,
+              "similarity": 0.61352
+            },
+            {
+              "id": "PROD-0022",
+              "rank": 47,
+              "distance": 0.39125,
+              "similarity": 0.60875
+            },
+            {
+              "id": "PROD-0023",
+              "rank": 48,
+              "distance": 0.39155,
+              "similarity": 0.60845
+            },
+            {
+              "id": "PROD-0042",
+              "rank": 49,
+              "distance": 0.39165,
+              "similarity": 0.60835
+            },
+            {
+              "id": "PROD-0033",
+              "rank": 50,
+              "distance": 0.39477,
+              "similarity": 0.60523
+            }
+          ],
+          "optionsUsed": {
+            "candidateDepth": 50,
+            "explain": false
+          }
+        },
+        "notes": [
+          "score = 1 − cosine distance (cosine similarity). Vectors are unit length, so inner product would rank identically.",
+          "Similarity is not compatibility: a product can read exactly like the right answer and still not fit.",
+          "There is no similarity threshold, so vector search always returns its nearest neighbours — even for nonsense.",
+          "Filters run in the same SQL statement: they remove wrong answers first, then similarity orders the rest.",
+          "hnsw.ef_search = 100 for this transaction; pgvector's default of 40 would cap results below candidateDepth.",
+          "With a filter, an HNSW index finds neighbours first and filters after, which can lose recall. At this catalog size the planner usually scans exactly; production systems use hnsw.iterative_scan (pgvector ≥ 0.8), partial indexes or over-fetching."
+        ]
+      },
+      {
+        "stage": "hybrid",
+        "title": "Reciprocal Rank Fusion (k=60)",
+        "durationMs": 5.68,
+        "sql": null,
+        "parameters": null,
+        "details": {
+          "formula": "RRF(d) = Σ wᵢ / (k + rᵢ(d))",
+          "k": 60,
+          "weights": {
+            "keyword": 1,
+            "vector": 1
+          },
+          "listSizes": {
+            "keyword": 12,
+            "vector": 50
+          },
+          "overlap": 12,
+          "formulas": [
+            "PROD-0012: 1/(60+3) + 1/(60+1) = 0.03227",
+            "PROD-0014: 1/(60+1) + 1/(60+4) = 0.03202",
+            "PROD-0015: 1/(60+2) + 1/(60+5) = 0.03151",
+            "PROD-0016: 1/(60+6) + 1/(60+2) = 0.03128",
+            "PROD-0013: 1/(60+5) + 1/(60+3) = 0.03126",
+            "PROD-0011: 1/(60+4) + 1/(60+7) = 0.03055",
+            "PROD-0017: 1/(60+9) + 1/(60+6) = 0.02964",
+            "PROD-0049: 1/(60+8) + 1/(60+8) = 0.02941",
+            "PROD-0005: 1/(60+11) + 1/(60+14) = 0.02760",
+            "PROD-0003: 1/(60+12) + 1/(60+19) = 0.02655",
+            "PROD-0002: 1/(60+10) + 1/(60+28) = 0.02565",
+            "PROD-0052: 1/(60+7) + 1/(60+36) = 0.02534",
+            "PROD-0036: — + 1/(60+9) = 0.01449 (not in keyword list)",
+            "PROD-0031: — + 1/(60+10) = 0.01429 (not in keyword list)",
+            "PROD-0035: — + 1/(60+11) = 0.01408 (not in keyword list)",
+            "PROD-0040: — + 1/(60+12) = 0.01389 (not in keyword list)",
+            "PROD-0034: — + 1/(60+13) = 0.01370 (not in keyword list)",
+            "PROD-0030: — + 1/(60+15) = 0.01333 (not in keyword list)",
+            "PROD-0001: — + 1/(60+16) = 0.01316 (not in keyword list)",
+            "PROD-0059: — + 1/(60+17) = 0.01299 (not in keyword list)",
+            "PROD-0051: — + 1/(60+18) = 0.01282 (not in keyword list)",
+            "PROD-0043: — + 1/(60+20) = 0.01250 (not in keyword list)",
+            "PROD-0027: — + 1/(60+21) = 0.01235 (not in keyword list)",
+            "PROD-0057: — + 1/(60+22) = 0.01220 (not in keyword list)",
+            "PROD-0056: — + 1/(60+23) = 0.01205 (not in keyword list)",
+            "PROD-0007: — + 1/(60+24) = 0.01190 (not in keyword list)",
+            "PROD-0010: — + 1/(60+25) = 0.01176 (not in keyword list)",
+            "PROD-0028: — + 1/(60+26) = 0.01163 (not in keyword list)",
+            "PROD-0054: — + 1/(60+27) = 0.01149 (not in keyword list)",
+            "PROD-0039: — + 1/(60+29) = 0.01124 (not in keyword list)",
+            "PROD-0044: — + 1/(60+30) = 0.01111 (not in keyword list)",
+            "PROD-0004: — + 1/(60+31) = 0.01099 (not in keyword list)",
+            "PROD-0029: — + 1/(60+32) = 0.01087 (not in keyword list)",
+            "PROD-0053: — + 1/(60+33) = 0.01075 (not in keyword list)",
+            "PROD-0032: — + 1/(60+34) = 0.01064 (not in keyword list)",
+            "PROD-0041: — + 1/(60+35) = 0.01053 (not in keyword list)",
+            "PROD-0046: — + 1/(60+37) = 0.01031 (not in keyword list)",
+            "PROD-0058: — + 1/(60+38) = 0.01020 (not in keyword list)",
+            "PROD-0060: — + 1/(60+39) = 0.01010 (not in keyword list)",
+            "PROD-0006: — + 1/(60+40) = 0.01000 (not in keyword list)",
+            "PROD-0055: — + 1/(60+41) = 0.00990 (not in keyword list)",
+            "PROD-0009: — + 1/(60+42) = 0.00980 (not in keyword list)",
+            "PROD-0026: — + 1/(60+43) = 0.00971 (not in keyword list)",
+            "PROD-0018: — + 1/(60+44) = 0.00962 (not in keyword list)",
+            "PROD-0025: — + 1/(60+45) = 0.00952 (not in keyword list)",
+            "PROD-0048: — + 1/(60+46) = 0.00943 (not in keyword list)",
+            "PROD-0022: — + 1/(60+47) = 0.00935 (not in keyword list)",
+            "PROD-0023: — + 1/(60+48) = 0.00926 (not in keyword list)",
+            "PROD-0042: — + 1/(60+49) = 0.00917 (not in keyword list)",
+            "PROD-0033: — + 1/(60+50) = 0.00909 (not in keyword list)"
+          ],
+          "optionsUsed": {
+            "candidateDepth": 50,
+            "rrfK": 60,
+            "keywordWeight": 1,
+            "vectorWeight": 1
+          }
+        },
+        "notes": [
+          "Fuse ranks, not scores: ts_rank_cd and cosine distance come from different universes and can't be added.",
+          "With k = 60, being 1st rather than 2nd barely matters; appearing in both lists matters a lot.",
+          "RRF ignores how far apart two results were: a near tie and a landslide fuse the same way.",
+          "Fusion improves relevance, not correctness: an incompatible item both retrievers like still ranks well."
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Classify: in or out of concept",
+        "durationMs": 0.23,
+        "sql": null,
+        "parameters": null,
+        "details": {
+          "wantedConcepts": ["chargers"],
+          "contextConcepts": ["laptops"],
+          "classifications": [
+            {
+              "id": "PROD-0012",
+              "categories": ["laptop-chargers", "usb-c-pd-chargers", "phone-chargers"],
+              "conceptMatch": "InConcept",
+              "matchedConcept": "chargers",
+              "broaderChain": ["laptop-chargers", "chargers"],
+              "categoryChains": {
+                "laptop-chargers": ["laptop-chargers", "chargers", "power"],
+                "usb-c-pd-chargers": ["usb-c-pd-chargers", "chargers", "power"],
+                "phone-chargers": ["phone-chargers", "chargers", "power"]
+              }
+            },
+            {
+              "id": "PROD-0014",
+              "categories": ["laptop-chargers"],
+              "conceptMatch": "InConcept",
+              "matchedConcept": "chargers",
+              "broaderChain": ["laptop-chargers", "chargers"],
+              "categoryChains": {
+                "laptop-chargers": ["laptop-chargers", "chargers", "power"]
+              }
+            },
+            {
+              "id": "PROD-0015",
+              "categories": ["laptop-chargers"],
+              "conceptMatch": "InConcept",
+              "matchedConcept": "chargers",
+              "broaderChain": ["laptop-chargers", "chargers"],
+              "categoryChains": {
+                "laptop-chargers": ["laptop-chargers", "chargers", "power"]
+              }
+            },
+            {
+              "id": "PROD-0016",
+              "categories": ["laptop-chargers", "usb-c-pd-chargers", "phone-chargers"],
+              "conceptMatch": "InConcept",
+              "matchedConcept": "chargers",
+              "broaderChain": ["laptop-chargers", "chargers"],
+              "categoryChains": {
+                "laptop-chargers": ["laptop-chargers", "chargers", "power"],
+                "usb-c-pd-chargers": ["usb-c-pd-chargers", "chargers", "power"],
+                "phone-chargers": ["phone-chargers", "chargers", "power"]
+              }
+            },
+            {
+              "id": "PROD-0013",
+              "categories": ["laptop-chargers", "usb-c-pd-chargers"],
+              "conceptMatch": "InConcept",
+              "matchedConcept": "chargers",
+              "broaderChain": ["laptop-chargers", "chargers"],
+              "categoryChains": {
+                "laptop-chargers": ["laptop-chargers", "chargers", "power"],
+                "usb-c-pd-chargers": ["usb-c-pd-chargers", "chargers", "power"]
+              }
+            },
+            {
+              "id": "PROD-0011",
+              "categories": ["laptop-chargers", "usb-c-pd-chargers"],
+              "conceptMatch": "InConcept",
+              "matchedConcept": "chargers",
+              "broaderChain": ["laptop-chargers", "chargers"],
+              "categoryChains": {
+                "laptop-chargers": ["laptop-chargers", "chargers", "power"],
+                "usb-c-pd-chargers": ["usb-c-pd-chargers", "chargers", "power"]
+              }
+            },
+            {
+              "id": "PROD-0017",
+              "categories": ["phone-chargers", "usb-c-pd-chargers"],
+              "conceptMatch": "InConcept",
+              "matchedConcept": "chargers",
+              "broaderChain": ["phone-chargers", "chargers"],
+              "categoryChains": {
+                "phone-chargers": ["phone-chargers", "chargers", "power"],
+                "usb-c-pd-chargers": ["usb-c-pd-chargers", "chargers", "power"]
+              }
+            },
+            {
+              "id": "PROD-0049",
+              "categories": ["phone-chargers"],
+              "conceptMatch": "InConcept",
+              "matchedConcept": "chargers",
+              "broaderChain": ["phone-chargers", "chargers"],
+              "categoryChains": {
+                "phone-chargers": ["phone-chargers", "chargers", "power"]
+              }
+            },
+            {
+              "id": "PROD-0005",
+              "categories": ["laptops"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "laptops": ["laptops", "computers"]
+              }
+            },
+            {
+              "id": "PROD-0003",
+              "categories": ["laptops"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "laptops": ["laptops", "computers"]
+              }
+            },
+            {
+              "id": "PROD-0002",
+              "categories": ["laptops"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "laptops": ["laptops", "computers"]
+              }
+            },
+            {
+              "id": "PROD-0052",
+              "categories": ["bags"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "bags": ["bags", "accessories"]
+              }
+            },
+            {
+              "id": "PROD-0036",
+              "categories": ["usb-hubs"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "usb-hubs": ["usb-hubs", "accessories"]
+              }
+            },
+            {
+              "id": "PROD-0031",
+              "categories": ["battery-chargers"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "battery-chargers": ["battery-chargers", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0035",
+              "categories": ["power-banks"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "power-banks": ["power-banks", "power"]
+              }
+            },
+            {
+              "id": "PROD-0040",
+              "categories": ["cables"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "cables": ["cables", "accessories"]
+              }
+            },
+            {
+              "id": "PROD-0034",
+              "categories": ["phone-accessories"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "phone-accessories": ["phone-accessories", "telephony"]
+              }
+            },
+            {
+              "id": "PROD-0030",
+              "categories": ["battery-chargers"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "battery-chargers": ["battery-chargers", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0001",
+              "categories": ["laptops"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "laptops": ["laptops", "computers"]
+              }
+            },
+            {
+              "id": "PROD-0059",
+              "categories": ["power-tool-accessories"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "power-tool-accessories": ["power-tool-accessories", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0051",
+              "categories": ["peripherals"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "peripherals": ["peripherals", "accessories"]
+              }
+            },
+            {
+              "id": "PROD-0043",
+              "categories": ["peripherals"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "peripherals": ["peripherals", "accessories"]
+              }
+            },
+            {
+              "id": "PROD-0027",
+              "categories": ["batteries"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "batteries": ["batteries", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0057",
+              "categories": ["phone-accessories"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "phone-accessories": ["phone-accessories", "telephony"]
+              }
+            },
+            {
+              "id": "PROD-0056",
+              "categories": ["power-tool-accessories"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "power-tool-accessories": ["power-tool-accessories", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0007",
+              "categories": ["drills"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "drills": ["drills", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0010",
+              "categories": ["power-tool-accessories"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "power-tool-accessories": ["power-tool-accessories", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0028",
+              "categories": ["batteries"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "batteries": ["batteries", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0054",
+              "categories": ["peripherals"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "peripherals": ["peripherals", "accessories"]
+              }
+            },
+            {
+              "id": "PROD-0039",
+              "categories": ["power-tool-accessories"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "power-tool-accessories": ["power-tool-accessories", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0044",
+              "categories": ["peripherals"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "peripherals": ["peripherals", "accessories"]
+              }
+            },
+            {
+              "id": "PROD-0004",
+              "categories": ["laptops"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "laptops": ["laptops", "computers"]
+              }
+            },
+            {
+              "id": "PROD-0029",
+              "categories": ["batteries"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "batteries": ["batteries", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0053",
+              "categories": ["peripherals"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "peripherals": ["peripherals", "accessories"]
+              }
+            },
+            {
+              "id": "PROD-0032",
+              "categories": ["phone-batteries"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "phone-batteries": ["phone-batteries", "telephony"]
+              }
+            },
+            {
+              "id": "PROD-0041",
+              "categories": ["batteries"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "batteries": ["batteries", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0046",
+              "categories": ["power-tool-accessories"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "power-tool-accessories": ["power-tool-accessories", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0058",
+              "categories": ["phone-accessories"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "phone-accessories": ["phone-accessories", "telephony"]
+              }
+            },
+            {
+              "id": "PROD-0060",
+              "categories": ["angle-grinders"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "angle-grinders": ["angle-grinders", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0006",
+              "categories": ["drills"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "drills": ["drills", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0055",
+              "categories": ["cables"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "cables": ["cables", "accessories"]
+              }
+            },
+            {
+              "id": "PROD-0009",
+              "categories": ["drills"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "drills": ["drills", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0026",
+              "categories": ["batteries"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "batteries": ["batteries", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0018",
+              "categories": ["nvme-ssds"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "nvme-ssds": ["nvme-ssds", "ssds", "storage"]
+              }
+            },
+            {
+              "id": "PROD-0025",
+              "categories": ["so-dimm-memory"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "so-dimm-memory": ["so-dimm-memory", "memory"]
+              }
+            },
+            {
+              "id": "PROD-0048",
+              "categories": ["power-tool-accessories"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "power-tool-accessories": ["power-tool-accessories", "power-tools"]
+              }
+            },
+            {
+              "id": "PROD-0022",
+              "categories": ["so-dimm-memory"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "so-dimm-memory": ["so-dimm-memory", "memory"]
+              }
+            },
+            {
+              "id": "PROD-0023",
+              "categories": ["so-dimm-memory"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "so-dimm-memory": ["so-dimm-memory", "memory"]
+              }
+            },
+            {
+              "id": "PROD-0042",
+              "categories": ["audio"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "audio": ["audio", "accessories"]
+              }
+            },
+            {
+              "id": "PROD-0033",
+              "categories": ["cordless-phones"],
+              "conceptMatch": "OutOfConcept",
+              "matchedConcept": null,
+              "broaderChain": [],
+              "categoryChains": {
+                "cordless-phones": ["cordless-phones", "telephony"]
+              }
+            }
+          ]
+        },
+        "notes": [
+          "InConcept: a category is a wanted concept or narrower than one (skos:broader*). OutOfConcept: none is.",
+          "OutOfConcept items are moved below InConcept ones, keeping their fused order. Nothing is removed."
+        ]
+      },
+      {
+        "stage": "ontology",
+        "title": "Constrain: domain rules vs the target device",
+        "durationMs": 2.22,
+        "sql": null,
+        "parameters": null,
+        "details": {
+          "applyConstraints": true,
+          "targetDevice": {
+            "id": "PROD-0001",
+            "name": "Blackbird Aerobook 14",
+            "categories": ["laptops"]
+          },
+          "targetDeviceMethod": "context.targetProductId",
+          "rulesSparql": "# Every compatibility rule and its checks: which accessory type is compared\n# against which device type, on what spec names, with what operator, and\n# whether the values are vocabulary-backed concepts (ex:valueScheme) or raw\n# values (numbers). One row per check; a rule with two checks (e.g. \"charger\n# fits laptop\") produces two rows sharing the same ?rule and type notations.\nPREFIX ex:   <https://needle.example/ontology#>\nPREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n\nSELECT ?rule ?accessoryTypeNotation ?deviceTypeNotation\n       ?accessorySpec ?operator ?deviceSpec ?valueSchemeNotation ?definition\nWHERE {\n    ?rule a ex:CompatibilityRule ;\n          ex:accessoryType ?accessoryType ;\n          ex:deviceType    ?deviceType ;\n          ex:check         ?check .\n    ?accessoryType skos:notation ?accessoryTypeNotation .\n    ?deviceType    skos:notation ?deviceTypeNotation .\n    ?check ex:accessorySpec ?accessorySpec ;\n           ex:operator      ?operator ;\n           ex:deviceSpec    ?deviceSpec ;\n           skos:definition  ?definition .\n    OPTIONAL { ?check ex:valueScheme ?valueScheme . ?valueScheme skos:notation ?valueSchemeNotation . }\n}\n",
+          "rulesApplied": ["chargers → laptops", "ssds → laptops", "so-dimm-memory → laptops"],
+          "checks": [
+            {
+              "candidateId": "PROD-0012",
+              "rule": "chargers → laptops",
+              "definition": "The charger must supply at least the power the laptop needs.",
+              "accessorySpec": "wattageW",
+              "accessoryValue": "65W",
+              "operator": "greaterOrEqual",
+              "deviceSpec": "minChargerWattageW",
+              "deviceValue": "65W",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0012",
+              "rule": "chargers → laptops",
+              "definition": "The charger's plug must fit the laptop's charging port.",
+              "accessorySpec": "connector",
+              "accessoryValue": "USB-C",
+              "operator": "equals",
+              "deviceSpec": "chargingPort",
+              "deviceValue": "USB-C",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0014",
+              "rule": "chargers → laptops",
+              "definition": "The charger must supply at least the power the laptop needs.",
+              "accessorySpec": "wattageW",
+              "accessoryValue": "45W",
+              "operator": "greaterOrEqual",
+              "deviceSpec": "minChargerWattageW",
+              "deviceValue": "65W",
+              "result": "Fail"
+            },
+            {
+              "candidateId": "PROD-0014",
+              "rule": "chargers → laptops",
+              "definition": "The charger's plug must fit the laptop's charging port.",
+              "accessorySpec": "connector",
+              "accessoryValue": "5.5mm barrel",
+              "operator": "equals",
+              "deviceSpec": "chargingPort",
+              "deviceValue": "USB-C",
+              "result": "Fail"
+            },
+            {
+              "candidateId": "PROD-0015",
+              "rule": "chargers → laptops",
+              "definition": "The charger must supply at least the power the laptop needs.",
+              "accessorySpec": "wattageW",
+              "accessoryValue": "90W",
+              "operator": "greaterOrEqual",
+              "deviceSpec": "minChargerWattageW",
+              "deviceValue": "65W",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0015",
+              "rule": "chargers → laptops",
+              "definition": "The charger's plug must fit the laptop's charging port.",
+              "accessorySpec": "connector",
+              "accessoryValue": "5.5mm barrel",
+              "operator": "equals",
+              "deviceSpec": "chargingPort",
+              "deviceValue": "USB-C",
+              "result": "Fail"
+            },
+            {
+              "candidateId": "PROD-0016",
+              "rule": "chargers → laptops",
+              "definition": "The charger must supply at least the power the laptop needs.",
+              "accessorySpec": "wattageW",
+              "accessoryValue": "45W",
+              "operator": "greaterOrEqual",
+              "deviceSpec": "minChargerWattageW",
+              "deviceValue": "65W",
+              "result": "Fail"
+            },
+            {
+              "candidateId": "PROD-0016",
+              "rule": "chargers → laptops",
+              "definition": "The charger's plug must fit the laptop's charging port.",
+              "accessorySpec": "connector",
+              "accessoryValue": "USB-C",
+              "operator": "equals",
+              "deviceSpec": "chargingPort",
+              "deviceValue": "USB-C",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0013",
+              "rule": "chargers → laptops",
+              "definition": "The charger must supply at least the power the laptop needs.",
+              "accessorySpec": "wattageW",
+              "accessoryValue": "100W",
+              "operator": "greaterOrEqual",
+              "deviceSpec": "minChargerWattageW",
+              "deviceValue": "65W",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0013",
+              "rule": "chargers → laptops",
+              "definition": "The charger's plug must fit the laptop's charging port.",
+              "accessorySpec": "connector",
+              "accessoryValue": "USB-C",
+              "operator": "equals",
+              "deviceSpec": "chargingPort",
+              "deviceValue": "USB-C",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0011",
+              "rule": "chargers → laptops",
+              "definition": "The charger must supply at least the power the laptop needs.",
+              "accessorySpec": "wattageW",
+              "accessoryValue": "65W",
+              "operator": "greaterOrEqual",
+              "deviceSpec": "minChargerWattageW",
+              "deviceValue": "65W",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0011",
+              "rule": "chargers → laptops",
+              "definition": "The charger's plug must fit the laptop's charging port.",
+              "accessorySpec": "connector",
+              "accessoryValue": "USB-C",
+              "operator": "equals",
+              "deviceSpec": "chargingPort",
+              "deviceValue": "USB-C",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0017",
+              "rule": "chargers → laptops",
+              "definition": "The charger must supply at least the power the laptop needs.",
+              "accessorySpec": "wattageW",
+              "accessoryValue": "20W",
+              "operator": "greaterOrEqual",
+              "deviceSpec": "minChargerWattageW",
+              "deviceValue": "65W",
+              "result": "Fail"
+            },
+            {
+              "candidateId": "PROD-0017",
+              "rule": "chargers → laptops",
+              "definition": "The charger's plug must fit the laptop's charging port.",
+              "accessorySpec": "connector",
+              "accessoryValue": "USB-C",
+              "operator": "equals",
+              "deviceSpec": "chargingPort",
+              "deviceValue": "USB-C",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0049",
+              "rule": "chargers → laptops",
+              "definition": "The charger must supply at least the power the laptop needs.",
+              "accessorySpec": "wattageW",
+              "accessoryValue": "12W",
+              "operator": "greaterOrEqual",
+              "deviceSpec": "minChargerWattageW",
+              "deviceValue": "65W",
+              "result": "Fail"
+            },
+            {
+              "candidateId": "PROD-0049",
+              "rule": "chargers → laptops",
+              "definition": "The charger's plug must fit the laptop's charging port.",
+              "accessorySpec": "connector",
+              "accessoryValue": "USB-C",
+              "operator": "equals",
+              "deviceSpec": "chargingPort",
+              "deviceValue": "USB-C",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0018",
+              "rule": "ssds → laptops",
+              "definition": "The SSD's interface must match what the laptop's M.2 slot wires up — NVMe and SATA drives can share the same physical M.2 2280 shape and still not work.",
+              "accessorySpec": "interface",
+              "accessoryValue": "NVMe",
+              "operator": "equals",
+              "deviceSpec": "m2SlotInterface",
+              "deviceValue": "NVMe",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0025",
+              "rule": "so-dimm-memory → laptops",
+              "definition": "The memory module's generation must match what the laptop's memory controller supports.",
+              "accessorySpec": "memoryType",
+              "accessoryValue": "DDR4 SO-DIMM",
+              "operator": "equals",
+              "deviceSpec": "memoryType",
+              "deviceValue": "DDR5 SO-DIMM",
+              "result": "Fail"
+            },
+            {
+              "candidateId": "PROD-0022",
+              "rule": "so-dimm-memory → laptops",
+              "definition": "The memory module's generation must match what the laptop's memory controller supports.",
+              "accessorySpec": "memoryType",
+              "accessoryValue": "DDR5 SO-DIMM",
+              "operator": "equals",
+              "deviceSpec": "memoryType",
+              "deviceValue": "DDR5 SO-DIMM",
+              "result": "Pass"
+            },
+            {
+              "candidateId": "PROD-0023",
+              "rule": "so-dimm-memory → laptops",
+              "definition": "The memory module's generation must match what the laptop's memory controller supports.",
+              "accessorySpec": "memoryType",
+              "accessoryValue": "DDR4 SO-DIMM",
+              "operator": "equals",
+              "deviceSpec": "memoryType",
+              "deviceValue": "DDR5 SO-DIMM",
+              "result": "Fail"
+            }
+          ],
+          "flagged": [
+            {
+              "id": "PROD-0005",
+              "name": "Corvid Slate 15 Pro",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0003",
+              "name": "Blackbird Workmate 15",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0002",
+              "name": "Blackbird Aerobook 16",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0052",
+              "name": "Blackbird 15-Inch Laptop Backpack",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0036",
+              "name": "Voltline USB-C Hub 100W Pass-Through",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0031",
+              "name": "Tornio 20V MAX Charger",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0035",
+              "name": "Voltline 10000mAh Power Bank",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0040",
+              "name": "Pinegrove USB-C to USB-C Cable 2m",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0034",
+              "name": "Hollis Phone Charging Cradle",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0030",
+              "name": "Brakk 18V Fast Charger",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0001",
+              "name": "Blackbird Aerobook 14",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": [
+                "This is your target device, Blackbird Aerobook 14: it's shown below the products for it, not removed."
+              ]
+            },
+            {
+              "id": "PROD-0059",
+              "name": "Tornio 20V MAX Work Light (Body Only)",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0051",
+              "name": "Kestrel USB-C Card Reader",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0043",
+              "name": "Pinegrove Wireless Mouse",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0027",
+              "name": "Brakk 18V 2.0Ah Battery",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0057",
+              "name": "Hollis Phone Screen Protector (2 Pack)",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0056",
+              "name": "Anvik 8m Tape Measure",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0007",
+              "name": "Brakk 18V Drill Kit (2x4.0Ah + Case)",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0010",
+              "name": "Brakk 18V LED Work Light (Body Only)",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0028",
+              "name": "Tornio 20V MAX 4.0Ah Battery",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0054",
+              "name": "Corvid Adjustable Monitor Stand",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0039",
+              "name": "Anvik 25-Piece Drill Bit Set",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0044",
+              "name": "Pinegrove Mechanical Keyboard",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0004",
+              "name": "Corvid Slate 13",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0029",
+              "name": "Brakk 12V 2.0Ah Battery",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0053",
+              "name": "Blackbird 1080p Webcam",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0032",
+              "name": "Hollis Cordless Phone Battery Pack",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0041",
+              "name": "Brakk 18V 5.0Ah Battery Twin Pack",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0046",
+              "name": "Anvik Tool Box",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0058",
+              "name": "Hollis Phone Case",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0060",
+              "name": "Brakk 18V Angle Grinder (Body Only)",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0006",
+              "name": "Brakk 18V Combi Drill (Body Only)",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0055",
+              "name": "Pinegrove Extension Cable 5m",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0009",
+              "name": "Tornio 20V MAX Drill (Body Only)",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0026",
+              "name": "Brakk 18V 4.0Ah Battery",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0018",
+              "name": "Kestrel 1TB NVMe M.2 2280 SSD",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "Compatible",
+              "reasons": [
+                "✓ The SSD's interface must match what the laptop's M.2 slot wires up — NVMe and SATA drives can share the same physical M.2 2280 shape and still not work. Kestrel 1TB NVMe M.2 2280 SSD has NVMe; Blackbird Aerobook 14 needs NVMe."
+              ]
+            },
+            {
+              "id": "PROD-0048",
+              "name": "Anvik Work Gloves",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0022",
+              "name": "Kestrel 16GB DDR5 SO-DIMM",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "Compatible",
+              "reasons": [
+                "✓ The memory module's generation must match what the laptop's memory controller supports. Kestrel 16GB DDR5 SO-DIMM has DDR5 SO-DIMM; Blackbird Aerobook 14 needs DDR5 SO-DIMM."
+              ]
+            },
+            {
+              "id": "PROD-0042",
+              "name": "Solace Bluetooth Speaker",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0033",
+              "name": "Hollis Cordless Phone Twin Pack",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "NotEvaluated",
+              "reasons": []
+            },
+            {
+              "id": "PROD-0014",
+              "name": "Voltline 45W Barrel Charger",
+              "conceptMatch": "InConcept",
+              "compatibility": "Incompatible",
+              "reasons": [
+                "✗ The charger must supply at least the power the laptop needs. Voltline 45W Barrel Charger has 45W; Blackbird Aerobook 14 needs at least 65W.",
+                "✗ The charger's plug must fit the laptop's charging port. Voltline 45W Barrel Charger has 5.5mm barrel; Blackbird Aerobook 14 needs USB-C."
+              ]
+            },
+            {
+              "id": "PROD-0015",
+              "name": "Voltline 90W Barrel Charger",
+              "conceptMatch": "InConcept",
+              "compatibility": "Incompatible",
+              "reasons": [
+                "✗ The charger's plug must fit the laptop's charging port. Voltline 90W Barrel Charger has 5.5mm barrel; Blackbird Aerobook 14 needs USB-C."
+              ]
+            },
+            {
+              "id": "PROD-0016",
+              "name": "Voltline 45W USB-C Charger",
+              "conceptMatch": "InConcept",
+              "compatibility": "Incompatible",
+              "reasons": [
+                "✗ The charger must supply at least the power the laptop needs. Voltline 45W USB-C Charger has 45W; Blackbird Aerobook 14 needs at least 65W."
+              ]
+            },
+            {
+              "id": "PROD-0017",
+              "name": "Voltline 20W USB-C Phone Charger",
+              "conceptMatch": "InConcept",
+              "compatibility": "Incompatible",
+              "reasons": [
+                "✗ The charger must supply at least the power the laptop needs. Voltline 20W USB-C Phone Charger has 20W; Blackbird Aerobook 14 needs at least 65W."
+              ]
+            },
+            {
+              "id": "PROD-0049",
+              "name": "Voltline 12W USB-C Fast Charger",
+              "conceptMatch": "InConcept",
+              "compatibility": "Incompatible",
+              "reasons": [
+                "✗ The charger must supply at least the power the laptop needs. Voltline 12W USB-C Fast Charger has 12W; Blackbird Aerobook 14 needs at least 65W."
+              ]
+            },
+            {
+              "id": "PROD-0025",
+              "name": "Kestrel 8GB DDR4 SO-DIMM",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "Incompatible",
+              "reasons": [
+                "✗ The memory module's generation must match what the laptop's memory controller supports. Kestrel 8GB DDR4 SO-DIMM has DDR4 SO-DIMM; Blackbird Aerobook 14 needs DDR5 SO-DIMM."
+              ]
+            },
+            {
+              "id": "PROD-0023",
+              "name": "Kestrel 16GB DDR4 SO-DIMM",
+              "conceptMatch": "OutOfConcept",
+              "compatibility": "Incompatible",
+              "reasons": [
+                "✗ The memory module's generation must match what the laptop's memory controller supports. Kestrel 16GB DDR4 SO-DIMM has DDR4 SO-DIMM; Blackbird Aerobook 14 needs DDR5 SO-DIMM."
+              ]
+            }
+          ],
+          "finalOrder": [
+            "PROD-0012",
+            "PROD-0013",
+            "PROD-0011",
+            "PROD-0005",
+            "PROD-0003",
+            "PROD-0002",
+            "PROD-0052",
+            "PROD-0036",
+            "PROD-0031",
+            "PROD-0035",
+            "PROD-0040",
+            "PROD-0034",
+            "PROD-0030",
+            "PROD-0001",
+            "PROD-0059",
+            "PROD-0051",
+            "PROD-0043",
+            "PROD-0027",
+            "PROD-0057",
+            "PROD-0056",
+            "PROD-0007",
+            "PROD-0010",
+            "PROD-0028",
+            "PROD-0054",
+            "PROD-0039",
+            "PROD-0044",
+            "PROD-0004",
+            "PROD-0029",
+            "PROD-0053",
+            "PROD-0032",
+            "PROD-0041",
+            "PROD-0046",
+            "PROD-0058",
+            "PROD-0060",
+            "PROD-0006",
+            "PROD-0055",
+            "PROD-0009",
+            "PROD-0026",
+            "PROD-0018",
+            "PROD-0048",
+            "PROD-0022",
+            "PROD-0042",
+            "PROD-0033",
+            "PROD-0014",
+            "PROD-0015",
+            "PROD-0016",
+            "PROD-0017",
+            "PROD-0049",
+            "PROD-0025",
+            "PROD-0023"
+          ]
+        },
+        "notes": [
+          "Rules are data from domain-ontology.ttl, found with rules.rq. The evaluator runs their checks and never names a rule.",
+          "Order: unflagged first, then OutOfConcept and the target device itself, then Incompatible; each group keeps its fused order. Nothing is removed."
+        ]
+      }
+    ]
+  }
+}

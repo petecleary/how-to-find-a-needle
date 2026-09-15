@@ -1,30 +1,10 @@
 import type { TaxonomyNode, ValueVocabulary } from '@/api/client';
 import { defaultSearchState, type SearchFilterState, type SpecValue } from './searchState';
+import { findConcept, narrowerNotations } from './taxonomy';
 
 // The rules behind FilterPanel, kept free of React so they can be tested on their own. Every function
 // takes the current filters and returns new ones; the panel only decides which function a click calls.
 // The taxonomy and vocabularies come from the API, so nothing here knows a category or spec value by name.
-
-/** Finds a concept anywhere in the taxonomy tree by its notation (e.g. "laptop-chargers"). */
-export function findConcept(taxonomy: readonly TaxonomyNode[], notation: string): TaxonomyNode | null {
-    for (const node of taxonomy) {
-        if (node.notation === notation) {
-            return node;
-        }
-
-        const found = findConcept(node.narrower, notation);
-        if (found !== null) {
-            return found;
-        }
-    }
-
-    return null;
-}
-
-/** Every concept below this one, at any depth: SKOS `narrower`, followed transitively. */
-export function narrowerNotations(concept: TaxonomyNode): string[] {
-    return concept.narrower.flatMap((child) => [child.notation, ...narrowerNotations(child)]);
-}
 
 /** True when a concept somewhere below this one is selected, so its branch should start expanded. */
 export function hasSelectedNarrower(concept: TaxonomyNode, selected: readonly string[]): boolean {

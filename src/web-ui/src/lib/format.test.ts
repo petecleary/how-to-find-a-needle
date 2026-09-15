@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { formatMilliseconds, formatPrice } from './format';
+import { formatMilliseconds, formatPrice, formatResultRange } from './format';
+
+describe('formatResultRange', () => {
+    it('shows which results are on the page, out of all that matched', () => {
+        expect(formatResultRange(1, 50, 60)).toBe('1–50 of 60');
+        expect(formatResultRange(1, 4, 4)).toBe('1–4 of 4');
+        expect(formatResultRange(1, 0, 0)).toBe('0 of 0');
+    });
+});
 
 describe('formatPrice', () => {
     it('formats GBP the en-GB way', () => {

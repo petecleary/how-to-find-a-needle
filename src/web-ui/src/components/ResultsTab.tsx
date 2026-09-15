@@ -1,22 +1,25 @@
-import type { SearchResponse } from '@/api/client';
-import { formatMilliseconds, formatPrice } from '@/lib/format';
+import type { SearchResponse, TaxonomyNode } from '@/api/client';
+import { ConceptGroupedResults } from '@/components/ConceptGroupedResults';
+import { ResultRow } from '@/components/ResultRow';
+import { formatMilliseconds, formatResultRange } from '@/lib/format';
+import { scoreMeaning, signalBadges } from '@/lib/signals';
+import { isPipelineStage } from '@/lib/stageGroup';
+import { categoryIcon } from '@/lib/taxonomy';
 
-// TODO(Phase 3): step 7 replaces these plain rows with ResultRow (signal, concept and compatibility
-// badges) and Stage 5's grouping into in concept · out of concept · flagged.
-
-const compatibilityLabels = {
-    NotEvaluated: 'Not evaluated',
-    Compatible: 'Compatible',
-    Incompatible: 'Incompatible',
-    Unknown: 'Unknown',
-} as const;
+// ResultsTab — the candidates a stage returned, in that stage's order. Stages 1–4 show one list with each
+// technique's signals, so the same query can be compared stage by stage. Stage 5 with its rules on splits
+// the list into its groups, so the audience sees the near miss kept and flagged, not removed (ADR-0013).
 
 export interface ResultsTabProps {
     response: SearchResponse;
+    /** For category labels and icons; `null` while it loads. */
+    taxonomy: TaxonomyNode[] | null;
+    targetProductId: string | null;
+    /** Stage 5's rules switch. With it off, Stage 5 shows one list with its concept badges, nothing demoted. */
+    applyConstraints: boolean;
 }
 
-/** The candidates the stage returned, in its order. */
-export function ResultsTab({ response }: ResultsTabProps) {
+export function ResultsTab({ response, taxonomy, targetProductId, applyConstraints }: ResultsTabProps) {
     if (response.results.length === 0) {
         return (
             <div className="flex flex-col gap-1 rounded-card border-2 bg-card px-5 py-4">
@@ -26,33 +29,38 @@ export function ResultsTab({ response }: ResultsTabProps) {
         );
     }
 
+    const stage = isPipelineStage(response.stage) ? response.stage : null;
+
+    if (stage === 'ontology' && applyConstraints) {
+        return (
+            <ConceptGroupedResults
+                response={response}
+                taxonomy={taxonomy}
+                targetProductId={targetProductId}
+            />
+        );
+    }
+
     const firstRank = (response.page - 1) * response.pageSize + 1;
+    const meaning = stage === null ? null : scoreMeaning(stage);
 
     return (
         <section aria-label="Results" className="overflow-hidden rounded-card border-2 bg-card">
             <p className="border-b-2 px-4 py-2 text-sm text-muted-foreground">
-                {response.totalResults} results · {formatMilliseconds(response.executionTimeMs)}
+                {formatResultRange(firstRank, response.results.length, response.totalResults)} ·{' '}
+                {formatMilliseconds(response.executionTimeMs)}
+                {meaning === null ? null : ` · ${meaning}`}
             </p>
             <ol>
                 {response.results.map((product, index) => (
-                    <li
+                    <ResultRow
                         key={product.id}
-                        className="flex items-center gap-3 border-b-2 px-4 py-1.5 last:border-b-0"
-                    >
-                        <span className="flex size-[26px] flex-none items-center justify-center rounded-full bg-muted text-sm font-bold">
-                            {firstRank + index}
-                        </span>
-                        <div className="flex min-w-0 flex-1 flex-col leading-tight">
-                            <b className="truncate text-[17px]">{product.name}</b>
-                            <span className="text-[13px] text-muted-foreground">
-                                <span className="font-mono">{product.id}</span> · {product.brand} ·{' '}
-                                {formatPrice(product.price)}
-                            </span>
-                        </div>
-                        <span className="rounded-full border-2 px-2.5 text-sm font-bold whitespace-nowrap text-muted-foreground">
-                            {compatibilityLabels[product.compatibility.status]}
-                        </span>
-                    </li>
+                        product={product}
+                        rank={firstRank + index}
+                        icon={categoryIcon(taxonomy, product.categories)}
+                        signals={stage === null ? [] : signalBadges(stage, product)}
+                        showConcept={stage === 'ontology'}
+                    />
                 ))}
             </ol>
         </section>

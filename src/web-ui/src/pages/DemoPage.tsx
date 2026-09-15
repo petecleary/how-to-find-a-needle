@@ -151,7 +151,14 @@ export function DemoPage() {
                             'how-it-works': <HowItWorksTab stage={stage} />,
                             results: (
                                 <SearchOutcome search={search}>
-                                    {(response) => <ResultsTab response={response} />}
+                                    {(response) => (
+                                        <ResultsTab
+                                            response={response}
+                                            taxonomy={taxonomy.data}
+                                            targetProductId={state.targetProductId}
+                                            applyConstraints={state.applyConstraints}
+                                        />
+                                    )}
                                 </SearchOutcome>
                             ),
                             // TODO(Phase 4): AnswerPanel, ExplanationPanel and EvidenceSet (the tab is disabled until Stage 6).
