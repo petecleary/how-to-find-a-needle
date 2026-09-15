@@ -313,6 +313,15 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 5. **Stage screen shell** (0014 § Stage screen)
    - `AppHeader`, `SearchBar` (golden-query picker from `/api/demo/queries`, device picker from `/api/demo/devices`, Filters button with count), `PipelineStepper` (three triad groups, ARIA tablist), `StageTabs` (How it works · Results · Answer · Under the hood; Answer disabled before Stage 6; H / R / A / U), `StageOptions` on the tab row (Stage 5 toggles; the audience picker is added in Phase 4).
    - Loading, empty and 503 states for the tab content.
+   - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **55 pass (16 new)**. Checked in headless Chrome at 1280×720, light and dark, with GQ-01 on Stage 5 against the live API (Results and Under the hood). Built:
+     - `/demo` (`DemoPage`), with React Router; every other path redirects to it until step 10 adds the pages. State comes from the URL (`useSearchState`); golden queries and devices load with `useApiData`.
+     - `AppHeader` (logo, title, theme toggle), `SearchBar` (golden-query picker, query submitted on Enter, "I own" device picker, Filters button with the active count), `PipelineStepper` (tablist in three triad groups; ←/→/Home/End), `StageTabs` (Radix tablist; H / R / A / U from anywhere except while typing; Answer disabled before Stage 6), `StageOptions` (Stage 5 switches).
+     - `SearchOutcome`: idle ("needs a query"), loading, and errors with the ProblemDetails title and `detail`, validation failures and **Try again**. An unreachable API asks whether `aspire run` is still running.
+     - `lib/stageTabs.ts` (tab order, shortcuts, availability), `lib/format.ts` (GBP en-GB, ms), stage labels and triad captions in `stageGroup.ts`, `countActiveFilters`, and a runtime `searchStages` list type-checked against the generated `SearchStage`.
+   - Placeholders, each with a `TODO(Phase 3)`: `ResultsTab` rows (step 7), `UnderTheHoodTab` list (step 8), `HowItWorksTab` text (step 9), the disabled Filters button (step 6). Stages 6–7 are shown but not selectable (`TODO(Phase 4)`).
+   - Findings:
+     - **Tab order:** the tabs follow ADR-0014 and `web-ui/CLAUDE.md` (How it works · Results · Answer · Under the hood), which is also the order → walks in talk mode. The design screens show Results first. ✅ Confirmed with Pete (2026-09-15): the ADR order stands, and the design screens are out of date on this point.
+     - shadcn's `TabsTrigger` styles fight the design's underline (a dark-theme active border rule wins), so `StageTabs` uses the Radix `Tabs` primitive directly with its own classes.
 6. **Filters** (0014, 0013)
    - `FilterPanel`: brand, price range, category checkbox tree from `/api/taxonomy` (a parent includes its narrower concepts), spec vocabularies from `/api/vocabularies` with synonyms as hints. No hard-coded values.
    - Demo: collapsible sidebar. Talk: `Sheet` drawer from the Filters button.

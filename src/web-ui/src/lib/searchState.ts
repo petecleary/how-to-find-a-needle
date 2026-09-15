@@ -177,6 +177,14 @@ export function applyGoldenQuery(state: SearchState, goldenQuery: GoldenQuery): 
     };
 }
 
+/** How many filters are set, for the Filters button: the brand, each category, the price range (once) and each spec. */
+export function countActiveFilters(filters: SearchFilterState): number {
+    const brand = filters.brand === null ? 0 : 1;
+    const priceRange = filters.minPrice !== null || filters.maxPrice !== null ? 1 : 0;
+
+    return brand + filters.categories.length + priceRange + Object.keys(filters.specs).length;
+}
+
 function oneOf<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
     return allowed.find((candidate) => candidate === value) ?? fallback;
 }

@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
-import { ApiError, getGoldenQueries, search, type SearchResponse, type SearchStage } from './client';
+import {
+    ApiError,
+    getGoldenQueries,
+    isSearchStage,
+    search,
+    searchStages,
+    type SearchResponse,
+    type SearchStage,
+} from './client';
 
 function jsonResponse(body: unknown, status = 200, contentType = 'application/json'): Response {
     return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': contentType } });
@@ -37,6 +45,12 @@ describe('search', () => {
         expectTypeOf<SearchStage>().toEqualTypeOf<
             'structured' | 'keyword' | 'vector' | 'hybrid' | 'ontology'
         >();
+    });
+
+    it('keeps the runtime stage list identical to the generated stage type', () => {
+        expectTypeOf<(typeof searchStages)[number]>().toEqualTypeOf<SearchStage>();
+        expect(isSearchStage('hybrid')).toBe(true);
+        expect(isSearchStage('rag')).toBe(false);
     });
 
     it('POSTs the same JSON request to the stage endpoint and returns the response', async () => {

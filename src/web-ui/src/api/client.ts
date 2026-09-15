@@ -23,6 +23,22 @@ type SearchPath = Extract<keyof paths, `/api/search/${string}`>;
  */
 export type SearchStage = SearchPath extends `/api/search/${infer Stage}` ? Stage : never;
 
+/**
+ * The same stages as a list the UI can check at runtime (types disappear when the code runs).
+ * `client.test.ts` fails to compile if this list and `SearchStage` ever differ.
+ */
+export const searchStages = [
+    'structured',
+    'keyword',
+    'vector',
+    'hybrid',
+    'ontology',
+] as const satisfies readonly SearchStage[];
+
+export function isSearchStage(stage: string): stage is SearchStage {
+    return searchStages.some((candidate) => candidate === stage);
+}
+
 /** The JSON body of a path's 200 response, as the OpenAPI document describes it. */
 type OkJson<Path extends keyof paths, Method extends 'get' | 'post'> = paths[Path][Method] extends {
     responses: { 200: { content: { 'application/json': infer Body } } };

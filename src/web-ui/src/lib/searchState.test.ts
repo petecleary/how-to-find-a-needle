@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { GoldenQuery } from '@/api/client';
 import {
     applyGoldenQuery,
+    countActiveFilters,
     defaultSearchState,
     parseSearchState,
     serializeSearchState,
@@ -131,6 +132,14 @@ describe('toSearchRequest', () => {
         const onTrace = toSearchRequest({ ...everyFieldChanged, tab: 'under-the-hood', stage: 'keyword' });
 
         expect(onTrace).toEqual(onResults);
+    });
+});
+
+describe('countActiveFilters', () => {
+    it('counts the brand, each category, the price range once and each spec', () => {
+        expect(countActiveFilters(defaultSearchState.filters)).toBe(0);
+        expect(countActiveFilters(everyFieldChanged.filters)).toBe(6);
+        expect(countActiveFilters(applyGoldenQuery(defaultSearchState, gq04).filters)).toBe(3);
     });
 });
 

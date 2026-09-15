@@ -90,3 +90,37 @@ export function triadGroupClasses(group: TriadGroup): TriadGroupClasses {
 export function stageColourClasses(stage: PipelineStage): TriadGroupClasses {
     return classesByGroup[stageGroup(stage)];
 }
+
+/** True for one of the seven stage slugs, e.g. a trace step's `stage`. */
+export function isPipelineStage(value: string): value is PipelineStage {
+    return pipelineStages.some((stage) => stage === value);
+}
+
+const stageLabels: Record<PipelineStage, string> = {
+    structured: 'Structured',
+    keyword: 'Keyword',
+    vector: 'Vector',
+    hybrid: 'Hybrid',
+    ontology: 'Ontology',
+    rag: 'RAG',
+    pedagogy: 'Pedagogy',
+};
+
+/** The stage's name as the talk says it, e.g. "Hybrid" or "RAG". */
+export function stageLabel(stage: PipelineStage): string {
+    return stageLabels[stage];
+}
+
+export interface TriadGroupInfo {
+    group: TriadGroup;
+    label: string;
+    /** The question this part of the pipeline answers, shown above its stages. */
+    question: string;
+}
+
+/** The three groups in talk order. */
+export const triadGroups: readonly TriadGroupInfo[] = [
+    { group: 'search', label: 'Search', question: 'what is relevant?' },
+    { group: 'ontology', label: 'Ontology', question: 'how is it related?' },
+    { group: 'pedagogy', label: 'Pedagogy', question: 'how should I explain it?' },
+];

@@ -25,6 +25,6 @@ The visual design for the `web-ui`, agreed with Pete on 2026-09-14. The decision
 - **Type.** Dosis for the logo wordmark and the talk title only; Atkinson Hyperlegible for everything else; JetBrains Mono for SQL, formulas and IDs in traces. All three are SIL Open Font License 1.1 and self-hosted.
 - **Shape language from the logo.** Circles for stage and step numbers, pills for controls, 18px card radius, 2px borders, flat colour.
 - **Logos.** Filled logo on light, outline logo on dark (`src/web-ui/assets/images/`).
-- **Stage tabs.** Each stage has *How it works · Results · Answer · Under the hood*. → steps through them in the talk; the presenter can jump to any tab when someone asks a question. Answer is disabled before Stage 6.
+- **Stage tabs.** Each stage has *How it works · Results · Answer · Under the hood*. → steps through them in the talk; the presenter can jump to any tab when someone asks a question. Answer is disabled before Stage 6. *The screens draw Results first; the order above is the agreed one (confirmed 2026-09-15), and the screens were not redrawn for it.*
 - **Stage options sit on the tab row**, next to what they change: Stage 5's *Expand synonyms* / *Apply constraints*; the audience picker and Stage 7's *Apply pedagogy*.
 - **Filters** open from a *Filters* button in every search bar: a sidebar in the Demo, a drawer in talk mode. Every category and spec value comes from `/api/taxonomy` and `/api/vocabularies`.
