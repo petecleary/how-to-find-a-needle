@@ -12,7 +12,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 //           "AC adapter" and "laptop chargers", because the ontology lists them as the same thing.
 // Failure:  Expansion only knows what someone wrote down. Too many terms dilutes precision, which
 //           is why the term list is capped and the classify step follows.
-// Decision: docs/adr/0013-domain-ontology-and-compatibility.md
+// Decision: docs/decisions/0013-domain-ontology-and-compatibility.md
 public sealed class QueryExpander(IOntology ontology)
 {
     /// <summary>ADR-0013: at most 10 terms per matched concept.</summary>

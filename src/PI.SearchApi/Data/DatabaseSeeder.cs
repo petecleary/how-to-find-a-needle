@@ -16,7 +16,7 @@ namespace PI.SearchApi.Data;
 // Failure:  Seeding is synchronous and blocks app.Run() until it finishes — simple and
 //           predictable for a demo, but a much larger catalog would need a background job
 //           instead (see "Alternatives considered" in the decision below).
-// Decision: docs/adr/0006-database-schema-and-seeding.md
+// Decision: docs/decisions/0006-database-schema-and-seeding.md
 public sealed class DatabaseSeeder(
     NpgsqlDataSource dataSource,
     ISearchEmbedder embedder,

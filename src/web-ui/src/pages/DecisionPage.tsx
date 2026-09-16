@@ -5,7 +5,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { Markdown } from '@/components/Markdown';
 import { findDecision, rewriteDecisionLinks } from '@/lib/decisions';
 
-/** `/decisions/:id`: one ADR, rendered from docs/adr, with its links to other ADRs pointing at their pages. */
+/** `/decisions/:id`: one ADR, rendered from docs/decisions, with its links to other ADRs pointing at their pages. */
 export function DecisionPage() {
     const { id } = useParams();
     const { hash } = useLocation();

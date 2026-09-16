@@ -17,7 +17,7 @@ import {
 // talk.json's checks (step files, tabs values) arrive with talk mode in roadmap Phase 3 step 10.
 
 // The decision records on disk. Only the file names are read, not the files.
-const adrFileIds = Object.keys(import.meta.glob('../../../../docs/adr/*.md')).map((path) =>
+const adrFileIds = Object.keys(import.meta.glob('../../../../docs/decisions/*.md')).map((path) =>
     path.replace(/^.*\/|\.md$/g, ''),
 );
 

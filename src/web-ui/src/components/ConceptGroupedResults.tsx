@@ -123,7 +123,7 @@ export function ConceptGroupedResults({ response, taxonomy, targetProductId }: C
                 ) : (
                     <p className="rounded-card border-2 bg-card px-4 py-2.5 text-muted-foreground">
                         {targetProductId === null
-                            ? 'Nothing flagged. Choose the device you own: without one, no rule can fail.'
+                            ? 'Nothing flagged. Choose the device you own, or say what you need ("65W USB-C"): without either, no rule can fail.'
                             : 'Nothing flagged: every product a rule applies to fits your device.'}
                     </p>
                 )}

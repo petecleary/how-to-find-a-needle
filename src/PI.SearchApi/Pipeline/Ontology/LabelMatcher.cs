@@ -11,7 +11,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 // Failure:  Purely lexical. "brick" alone won't match "power brick", and an unlisted synonym
 //           matches nothing. Entity recognition is the next step up; an LLM is the black box
 //           this talk argues against for this job.
-// Decision: docs/adr/0013-domain-ontology-and-compatibility.md
+// Decision: docs/decisions/0013-domain-ontology-and-compatibility.md
 public sealed class LabelMatcher
 {
     /// <summary>ADR-0013: phrases of 1–3 words.</summary>

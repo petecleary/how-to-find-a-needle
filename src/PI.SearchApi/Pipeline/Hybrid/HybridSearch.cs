@@ -14,7 +14,7 @@ namespace PI.SearchApi.Pipeline.Hybrid;
 //           comparing their incompatible raw scores; only ranks are fused.
 // Failure:  Still has no idea what "compatible" means: a near miss that both
 //           retrievers like ranks near the top.
-// Decision: docs/adr/0011-hybrid-search-rrf.md
+// Decision: docs/decisions/0011-hybrid-search-rrf.md
 public sealed class HybridSearch(IKeywordSearch keywordSearch, IVectorSearch vectorSearch, IRankFusion fusion) : IHybridSearch
 {
     public async Task<StageResult> SearchAsync(

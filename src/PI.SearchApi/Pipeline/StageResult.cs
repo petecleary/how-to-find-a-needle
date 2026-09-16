@@ -6,7 +6,8 @@ namespace PI.SearchApi.Pipeline;
 /// </summary>
 /// <param name="TotalResults">
 /// Only Stage 1 sets this, from a real COUNT(*). Ranked stages leave it null, and the endpoint
-/// reports the number of candidates retrieved instead (bounded by candidateDepth).
+/// reports the number of candidates retrieved instead: at most candidateDepth per retriever, and up to
+/// twice that after hybrid fusion, which keeps the union of the keyword and vector lists.
 /// </param>
 public sealed record StageResult(
     IReadOnlyList<Candidate> Candidates,

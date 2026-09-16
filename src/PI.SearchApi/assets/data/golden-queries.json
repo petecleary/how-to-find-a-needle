@@ -30,7 +30,7 @@
   {
     "id": "GQ-02",
     "title": "The synonym miss",
-    "moment": "Nobody's catalog says \"power brick\": keyword search finds nothing useful, vector search finds the laptop chargers, and Stage 5 synonym expansion rescues the keyword side.",
+    "moment": "Nobody's catalog says \"power brick\": keyword search finds nothing useful. Vector search finds power products, but ranks power banks above the laptop chargers (\"brick\" sits close to \"bank\"). Stage 5 synonym expansion rescues the keyword side and puts a charger first.",
     "request": {
       "query": "power brick for laptop"
     },
@@ -40,10 +40,10 @@
         { "productId": "PROD-0011", "absentFromTop": 10 }
       ],
       "vector": [
-        { "productId": "PROD-0012", "rank": { "max": 5 } }
+        { "productId": "PROD-0012", "rank": { "max": 10 } }
       ],
       "hybrid": [
-        { "productId": "PROD-0012", "rank": { "max": 5 } }
+        { "productId": "PROD-0012", "rank": { "max": 10 } }
       ],
       "ontology": [
         { "productId": "PROD-0012", "conceptMatch": "InConcept", "rank": { "max": 3 }, "keywordRank": { "max": 10 } }
@@ -53,7 +53,7 @@
   {
     "id": "GQ-03",
     "title": "The keyword trap",
-    "moment": "Keyword search ranks a cordless phone battery first because it shares the words; vector search puts the drill battery first; hybrid lifts the drill battery above the trap but can't push it out of the top 3; the ontology marks the phone battery OutOfConcept.",
+    "moment": "Keyword search ranks a cordless phone battery first because it shares the words; vector search puts the drill battery first; hybrid lifts the drill battery above the trap, which stays close behind; the ontology marks the phone battery OutOfConcept.",
     "request": {
       "query": "cordless drill battery"
     },
@@ -153,7 +153,8 @@
         { "productId": "PROD-0012", "absentFromTop": 10 }
       ],
       "ontology": [
-        { "productId": "PROD-0012", "conceptMatch": "InConcept", "rank": { "max": 5 } }
+        { "productId": "PROD-0012", "conceptMatch": "InConcept", "rank": { "max": 5 } },
+        { "productId": "PROD-0014", "compatibility": "Incompatible" }
       ]
     }
   },
@@ -179,6 +180,21 @@
         { "productId": "PROD-0014", "compatibility": "Incompatible" },
         { "productId": "PROD-0015", "compatibility": "Incompatible" },
         { "productId": "PROD-0001", "absentFromTop": 5 }
+      ]
+    }
+  },
+  {
+    "id": "GQ-09",
+    "title": "No device, still checked",
+    "moment": "The shopper hasn't picked a device, but the query states what it needs. Stage 5 reads \"USB-C\" and \"65W\" as requirements, checks every charger against them with the same rules, flags the barrel and 45W chargers with reasons, and says which catalog laptops each charger fits.",
+    "request": {
+      "query": "65W USB-C charger"
+    },
+    "expectations": {
+      "ontology": [
+        { "productId": "PROD-0012", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0014", "compatibility": "Incompatible" },
+        { "productId": "PROD-0016", "compatibility": "Incompatible" }
       ]
     }
   }

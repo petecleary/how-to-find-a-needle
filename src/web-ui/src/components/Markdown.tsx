@@ -7,7 +7,7 @@ import { productLinkScheme } from '@/lib/citations';
 import { slugify } from '@/lib/slug';
 import { cn } from '@/lib/utils';
 
-// Markdown — renders text from content/, docs/adr and the LLM (ADR-0014 § Content). Four link schemes are this repo's own:
+// Markdown — renders text from content/, docs/decisions and the LLM (ADR-0014 § Content). Four link schemes are this repo's own:
 //   term:     a glossary hover card               adr:  a link to a decision page
 //   repo:     a repository file the UI doesn't serve, shown as text with its path on hover
 //   product:  a citation in LLM text, rendered by the page (a chip that shows the product in the evidence set)

@@ -16,7 +16,7 @@ namespace PI.SearchApi.Pipeline.Rag;
 //           using the rules' own reasons, and streaming makes a multi-second call feel immediate.
 // Failure:  The LLM is still the least reliable part: it can misquote a spec with a valid citation, or ignore an
 //           instruction. Validation catches the form of a mistake, not every mistake, and shows what it found.
-// Decision: docs/adr/0016-rag-grounding-and-citations.md
+// Decision: docs/decisions/0016-rag-grounding-and-citations.md
 public sealed class AnswerGenerator(
     IRagSearch ragSearch,
     IChatClient chatClient,

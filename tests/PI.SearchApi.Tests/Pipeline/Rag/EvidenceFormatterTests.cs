@@ -1,3 +1,4 @@
+using PI.SearchApi.Contracts;
 using PI.SearchApi.Pipeline;
 using PI.SearchApi.Pipeline.Rag;
 using Xunit;
@@ -36,6 +37,32 @@ public sealed class EvidenceFormatterTests
 
         Assert.DoesNotContain("[PROD-0001]", EvidenceFormatter.FormatProducts(evidence));
         Assert.StartsWith("[PROD-0001] Blackbird Aerobook 14", EvidenceFormatter.FormatTargetDevice(evidence));
+    }
+
+    [Fact]
+    public void FormatTargetDevice_NoDeviceButStatedRequirements_NamesWhatWasAskedFor()
+    {
+        var evidence = new EvidenceSet([], [], []) { StatedRequirements = ["\"USB-C\": connector is usb-c", "\"65W\": wattageW at least 65"] };
+
+        var text = EvidenceFormatter.FormatTargetDevice(evidence);
+
+        Assert.StartsWith("None: the shopper hasn't said which device they own.", text);
+        Assert.Contains("\"USB-C\": connector is usb-c; \"65W\": wattageW at least 65", text);
+    }
+
+    [Fact]
+    public void FormatProduct_Fits_ListsTheCatalogDevices()
+    {
+        var item = Gq01Evidence().Find("PROD-0012")!;
+        item = item with
+        {
+            Compatibility = item.Compatibility with
+            {
+                Fits = [new DeviceFit("laptops", "Laptops", 3, [new FittingDevice("PROD-0001", "Blackbird Aerobook 14")])],
+            },
+        };
+
+        Assert.Contains("\nFits 1 of 3 laptops in this catalog: Blackbird Aerobook 14.", EvidenceFormatter.FormatProduct(item));
     }
 
     [Fact]

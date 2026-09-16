@@ -13,7 +13,7 @@ namespace PI.SearchApi.Pipeline.Rag;
 //           related and constrained, which is why the results can render before any LLM text exists.
 // Failure:  The answer can only be as good as this evidence. If Stage 5 missed a product or the limits cut it,
 //           the model can't mention it, however fluent it is.
-// Decision: docs/adr/0016-rag-grounding-and-citations.md
+// Decision: docs/decisions/0016-rag-grounding-and-citations.md
 public sealed class RagSearch(
     IOntologySearch ontologySearch,
     EvidenceSetBuilder evidenceBuilder,
@@ -38,7 +38,8 @@ public sealed class RagSearch(
             stage5.Result.Candidates,
             stage5.Device.Product,
             stage5.Understanding.TaxonomyConcepts,
-            stage5.Checks);
+            stage5.Checks,
+            stage5.Requirements);
 
         var ids = evidence.ProductIds.ToArray();
         var descriptions = await ReadDescriptionsAsync(ids, ct);
@@ -88,6 +89,7 @@ public sealed class RagSearch(
                 rank = item.Rank,
                 compatibility = item.Compatibility.Status.ToString(),
                 reasons = item.Compatibility.Reasons,
+                fits = item.Compatibility.Fits,
                 conceptMatch = item.ConceptMatch?.ToString(),
                 whyIncluded = item.WhyIncluded,
                 description = item.Description,
@@ -100,6 +102,7 @@ public sealed class RagSearch(
                 notChecked = EvidenceLimits.NotChecked,
                 descriptionCharacters = EvidenceFormatter.MaxDescriptionLength,
             },
+            ["statedRequirements"] = evidence.StatedRequirements,
             ["concepts"] = evidence.Concepts,
             ["rules"] = evidence.Rules,
         },

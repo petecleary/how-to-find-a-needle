@@ -14,7 +14,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 // Failure:  No OWL reasoning and no instance data: subsumption is skos:broader* only, and the
 //           ontology knows product *types*, never individual products. That boundary is on
 //           purpose; past it you're building a knowledge graph.
-// Decision: docs/adr/0013-domain-ontology-and-compatibility.md
+// Decision: docs/decisions/0013-domain-ontology-and-compatibility.md
 public sealed class DomainOntology : IOntology
 {
     private readonly Dictionary<string, OntologyConcept> _conceptsByNotation;

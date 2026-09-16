@@ -1,6 +1,6 @@
 # CLAUDE.md — PI.SearchApi (C# / API)
 
-Repo-wide rules (teaching principles, commenting standard, vocabulary) are in the [root CLAUDE.md](../../CLAUDE.md). Decisions: [ADR-0002](../../docs/adr/0002-solution-structure-and-orchestration.md) (structure), [ADR-0003](../../docs/adr/0003-search-api-contract-and-debug-trace.md) (contract and trace), [ADR-0004](../../docs/adr/0004-pipeline-composition.md) (pipeline).
+Repo-wide rules (teaching principles, commenting standard, vocabulary) are in the [root CLAUDE.md](../../CLAUDE.md). Decisions: [ADR-0002](../../docs/decisions/0002-solution-structure-and-orchestration.md) (structure), [ADR-0003](../../docs/decisions/0003-search-api-contract-and-debug-trace.md) (contract and trace), [ADR-0004](../../docs/decisions/0004-pipeline-composition.md) (pipeline).
 
 ## Layout and responsibilities
 
@@ -80,7 +80,7 @@ namespace PI.SearchApi.Pipeline.Keyword;
 // Strength: Fast and exact; great for names, model numbers and specific terms.
 // Failure:  Matches words, not meaning: misses synonyms ("power brick" vs "adapter")
 //           and is fooled by shared words ("cordless" phone vs drill battery).
-// Decision: docs/adr/0008-keyword-search-bm25-style.md
+// Decision: docs/decisions/0008-keyword-search-bm25-style.md
 public sealed class KeywordSearch(NpgsqlDataSource dataSource) : IKeywordSearch
 {
     // Explain each clause that teaches something: weights A/B, why ts_rank_cd, why LIMIT is candidateDepth.
@@ -102,8 +102,8 @@ Composed stages call earlier services and **append** their own trace step after 
 
 ## LLM code (Stages 6–7)
 
-- Depend on `IChatClient` only. All provider differences live in `LlmClientFactory` ([ADR-0015](../../docs/adr/0015-llm-hosting-and-client.md)).
+- Depend on `IChatClient` only. All provider differences live in `LlmClientFactory` ([ADR-0015](../../docs/decisions/0015-llm-hosting-and-client.md)).
 - Sampling is provider-specific: `Temperature = 0.1` for Ollama/OpenAI; **never send `temperature` to Anthropic**.
 - No retries; 60 s timeout; output-token cap for a short summary.
-- Stream with `GetStreamingResponseAsync` as `meta` / `delta` / `final` / `done` / `error` events. Validate citations, sentinels and headings after completion ([ADR-0016](../../docs/adr/0016-rag-grounding-and-citations.md), [ADR-0017](../../docs/adr/0017-pedagogy-engine.md)).
+- Stream with `GetStreamingResponseAsync` as `meta` / `delta` / `final` / `done` / `error` events. Validate citations, sentinels and headings after completion ([ADR-0016](../../docs/decisions/0016-rag-grounding-and-citations.md), [ADR-0017](../../docs/decisions/0017-pedagogy-engine.md)).
 - Prompts are loaded from `assets/prompts/*.md`, and the trace records prompts, raw output and timings. **Never put an API key in the trace or logs.**

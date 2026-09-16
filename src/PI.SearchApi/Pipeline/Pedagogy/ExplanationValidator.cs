@@ -13,7 +13,7 @@ namespace PI.SearchApi.Pipeline.Pedagogy;
 //           system can say whether it taught the right thing: the right product, the right counter-example.
 // Failure:  It checks shape and citations, not understanding. An explanation can pass every check and still be
 //           muddled, and the concept heuristic matches words, not meaning.
-// Decision: docs/adr/0017-pedagogy-engine.md
+// Decision: docs/decisions/0017-pedagogy-engine.md
 public static partial class ExplanationValidator
 {
     public static ExplanationValidation Validate(string markdown, EvidenceSet evidence, bool applyPedagogy, bool answerFoundInsufficientEvidence)

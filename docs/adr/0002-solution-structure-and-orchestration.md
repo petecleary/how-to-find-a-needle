@@ -54,6 +54,8 @@ src/
 tests/
   PI.SearchApi.Tests/            # fast unit tests, no Docker
   PI.SearchApi.IntegrationTests/ # Aspire.Hosting.Testing, golden queries
+tools/
+  PI.CatalogGenerator/           # grows products.json with template-built distractors (ADR-0005)
 ```
 
 ### Code conventions

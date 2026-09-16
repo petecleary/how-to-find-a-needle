@@ -1,6 +1,6 @@
 # CLAUDE.md — web-ui (React / TypeScript)
 
-Repo-wide rules (teaching principles, commenting standard, vocabulary) are in the [root CLAUDE.md](../../CLAUDE.md). The decision is [ADR-0014](../../docs/adr/0014-web-ui-architecture.md).
+Repo-wide rules (teaching principles, commenting standard, vocabulary) are in the [root CLAUDE.md](../../CLAUDE.md). The decision is [ADR-0014](../../docs/decisions/0014-web-ui-architecture.md).
 
 **The UI is the talk.** It replaces slides: home, talk mode, demo, glossary and ADR pages. It is an instrument for the experiment: same input, switchable technique, visible internals.
 
@@ -30,7 +30,7 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 
 ## Visual design
 
-Decided in [ADR-0014 § Visual design](../../docs/adr/0014-web-ui-architecture.md#visual-design); pictures in [docs/design](../../docs/design/README.md). Match them.
+Decided in [ADR-0014 § Visual design](../../docs/decisions/0014-web-ui-architecture.md#visual-design); pictures in [docs/design](../../docs/design/README.md). Match them.
 
 - **Triad colours:** purple = Search (Stages 1–4), green = Ontology (Stage 5), orange = Pedagogy (Stages 6–7). Get a stage's colour from `stageGroup()`, never by hard-coding.
 - **Status colours are not brand colours.** Incompatible is red, never orange. Every badge has an icon and text.
@@ -73,7 +73,7 @@ Decided in [ADR-0014 § Visual design](../../docs/adr/0014-web-ui-architecture.m
 - Talk text, stage explanations, glossary entries and speaker details live in `content/`, **never hard-coded in components**.
 - Stage explanation headings are fixed: *What it is · How it works · What to look for · Strength · Failure mode · Try this · Read the decision*.
 - Inline glossary terms use `[RRF](term:rrf)`; every `term:` link must resolve to a `glossary.json` entry.
-- ADRs are imported from `docs/adr/*.md` with `import.meta.glob`; don't copy them into the UI.
+- ADRs are imported from `docs/decisions/*.md` with `import.meta.glob`; don't copy them into the UI.
 - Content is British English, as in the root CLAUDE.md.
 
 ## Comments

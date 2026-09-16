@@ -15,6 +15,12 @@ public sealed record EvidenceSet(
 
     public EvidenceItem? TargetDevice => Items.FirstOrDefault(i => i.Role == EvidenceRole.TargetDevice);
 
+    /// <summary>
+    /// With no target device: what the query asked for, e.g. <c>"USB-C": connector is usb-c</c>. The products'
+    /// compatibility was checked against these instead of a device (ADR-0013).
+    /// </summary>
+    public IReadOnlyList<string> StatedRequirements { get; init; } = [];
+
     public EvidenceItem? Find(string productId) => Items.FirstOrDefault(i => i.Product.Id == productId);
 
     /// <summary>The same evidence with each product's description filled in and truncated.</summary>

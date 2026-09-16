@@ -30,6 +30,7 @@ The UI sends both at once with the same body ([ADR-0014](0014-web-ui-architectur
   - Up to **5 Compatible** products (by rank).
   - Up to **3 Incompatible** products **with their reasons**, so the model can warn about them.
   - Up to **2 Unknown** products.
+  - With no target device, the requirements the query states ("65W", "USB-C") are named where the device would be, and each product's block says which catalog devices it fits (amended 2026-09-16, [ADR-0013](0013-domain-ontology-and-compatibility.md)).
   - Up to **5 not-checked** products (`NotEvaluated`: constraints are off, or no rule applies to them), so a query with no rules still has evidence to answer from.
   - **Out-of-concept products are left out** (the phone battery for "cordless drill battery", DDR4 memory for "power adapter"): they aren't what the shopper asked for, and Stage 5 has already said so. Queries with no wanted concept keep every item.
   - Items keep Stage 5's order; each records its rank and *why it was included*.

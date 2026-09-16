@@ -16,7 +16,7 @@ public sealed class DemoEndpointTests(AppHostFixture fixture)
 
         var queries = await client.GetFromJsonAsync<JsonArray>("/api/demo/queries", TestContext.Current.CancellationToken);
 
-        Assert.Equal(8, queries!.Count);
+        Assert.Equal(9, queries!.Count);
         Assert.Equal("GQ-01", queries[0]!["id"]!.GetValue<string>());
     }
 

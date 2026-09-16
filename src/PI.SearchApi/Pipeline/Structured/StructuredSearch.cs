@@ -12,7 +12,7 @@ namespace PI.SearchApi.Pipeline.Structured;
 //           £100"), a WHERE clause gives perfect precision and needs no ranking at all.
 // Failure:  Users don't speak in attributes. It can't understand "something to charge my
 //           laptop", and a request with no filters simply returns the whole catalog.
-// Decision: docs/adr/0007-structured-search.md
+// Decision: docs/decisions/0007-structured-search.md
 public sealed class StructuredSearch(NpgsqlDataSource dataSource, SqlFilterBuilder filterBuilder) : IStructuredSearch
 {
     // {where} is replaced with fragments from SqlFilterBuilder's fixed list; every value is a parameter.

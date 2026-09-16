@@ -26,7 +26,7 @@ Seven stages are built. Topics the talk discusses but doesn't build (chunking, B
 
 ## 2. Dataset Strategy
 
-The demo uses a **hand-curated, synthetic electronics catalog**, `products.json`. It starts at ~60 items and later grows to ~500 by adding generated distractors around the curated core. It uses **fictional brands** and is built so that each stage produces a **visibly different** result for the same query. → [ADR-0005](0005-curated-dataset-and-golden-queries.md)
+The demo uses a **hand-curated, synthetic electronics catalog**, `products.json`. It has 60 hand-written items, grown to 300 by template-generated distractors around the curated core (`tools/PI.CatalogGenerator`). It uses **fictional brands** and is built so that each stage produces a **visibly different** result for the same query. → [ADR-0005](0005-curated-dataset-and-golden-queries.md)
 
 Items are authored to create:
 - **Near-miss semantic matches:** similar in vector space, wrong in reality (similarity ≠ compatibility).

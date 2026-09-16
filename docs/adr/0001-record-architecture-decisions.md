@@ -16,7 +16,7 @@ The repo is a single finished codebase on `main`. Learners do not step through b
 
 1. We use a lightweight [MADR](https://adr.github.io/madr/)-style format: **Context / Decision / Consequences / Alternatives considered / Teaching notes**. The template is in [README.md](README.md).
 2. Working ADRs live in `docs/adr/` and are committed on the **build branch**. They are not presented to learners until the build is complete.
-3. Every ADR has a **Teaching notes** section. When the build is complete (roadmap Phase 5), we write public, learner-facing ADRs from these notes and commit them to a separate public location (to be decided in Phase 5).
+3. Every ADR has a **Teaching notes** section. When the build is complete (roadmap Phase 5), we write public, learner-facing ADRs from these notes and commit them to `docs/decisions/`, with the same numbers and file names (decided in Phase 5). The working ADRs are not merged to `main`.
 4. We change an ADR in place while it is **Proposed**. Once it is **Accepted** (implemented and verified), a change of direction is recorded in a new ADR.
    - If the new ADR replaces the whole decision, the old one is marked **Superseded**.
    - If it changes only part of it (for example, removing a stage or renumbering stages), the old ADR is **amended in place** so it stays a correct reference, and its status line links the ADR that caused the change.

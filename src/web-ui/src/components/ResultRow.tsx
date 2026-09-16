@@ -2,6 +2,7 @@ import type { ProductResult } from '@/api/client';
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { CompatibilityBadge } from '@/components/CompatibilityBadge';
 import { ConceptBadge } from '@/components/ConceptBadge';
+import { DeviceFits } from '@/components/DeviceFits';
 import { SignalBadges } from '@/components/SignalBadges';
 import { formatPrice } from '@/lib/format';
 import type { SignalBadge } from '@/lib/signals';
@@ -57,6 +58,7 @@ export function ResultRow({
                         {reason}
                     </span>
                 ))}
+                <DeviceFits fits={compatibility.fits} />
             </div>
             <SignalBadges badges={signals} />
             {showConcept ? <ConceptBadge conceptMatch={product.signals.conceptMatch} /> : null}

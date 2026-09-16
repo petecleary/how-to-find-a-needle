@@ -41,7 +41,7 @@ describe('rewriteDecisionLinks', () => {
         expect(rewriteDecisionLinks(markdown)).toBe(
             [
                 '[ADR-0013](adr:0013-domain-ontology-and-compatibility#tests)',
-                '[roadmap](repo:docs/adr/roadmap.md)',
+                '[roadmap](repo:docs/decisions/roadmap.md)',
                 '[design](repo:docs/design/README.md)',
                 '[SKOS](https://www.w3.org/TR/skos-reference/)',
                 '[below](#consequences)',

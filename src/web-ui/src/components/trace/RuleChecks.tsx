@@ -5,8 +5,8 @@ import { useShowMore } from '@/hooks/useShowMore';
 import { operatorSymbol, type CheckResult, type ConstrainDetails, type RuleCheck } from '@/lib/traceDetails';
 import { cn } from '@/lib/utils';
 
-// RuleChecks — every domain rule check against the target device: the two specs compared, their values, the
-// operator and the result. The rules are data in the TTL, found with SPARQL (shown below); the evaluator runs
+// RuleChecks — every domain rule check against the target device (or, with no device, against the values the
+// query stated): the two specs compared, their values, the operator and the result. The rules are data in the TTL, found with SPARQL (shown below); the evaluator runs
 // whatever checks it finds and never names a rule. This is the step beyond SKOS (ADR-0013).
 
 const results: Record<CheckResult, { Icon: LucideIcon; className: string }> = {
@@ -37,9 +37,15 @@ export function RuleChecks({ details, productNames }: RuleChecksProps) {
     return (
         <div className="flex flex-col gap-4">
             <TraceSection title="Target device">
-                {details.targetDevice === null ? (
+                {details.targetDevice === null && details.checkedAgainst === 'query' ? (
+                    <p>
+                        None, so each check ran against <b>what the query asked for</b>. A check the query
+                        says nothing about stays Unknown.
+                    </p>
+                ) : details.targetDevice === null ? (
                     <p className="text-unknown-ink">
-                        None ({details.targetDeviceMethod ?? '—'}), so there is nothing to check against.
+                        None ({details.targetDeviceMethod ?? '—'}), and the query states no value a rule
+                        compares, so there is nothing to check against.
                     </p>
                 ) : (
                     <p>
@@ -117,7 +123,9 @@ function CheckRow({ check }: { check: RuleCheck }) {
                 </b>{' '}
                 <span className="font-mono">{operatorSymbol(check.operator)}</span>{' '}
                 <b>{check.deviceValue ?? 'no value'}</b>{' '}
-                <code className="font-mono text-xs text-muted-foreground">{check.deviceSpec}</code>
+                <code className="font-mono text-xs text-muted-foreground">
+                    {check.source === 'Query' ? 'you asked' : check.deviceSpec}
+                </code>
             </span>
             <span className={cn('flex items-center gap-1 font-bold', className)}>
                 <Icon aria-hidden="true" className="size-4" />

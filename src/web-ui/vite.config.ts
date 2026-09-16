@@ -5,13 +5,13 @@ import { defineConfig } from 'vitest/config';
 
 // Aspire injects the Search API's address through service discovery (WithReference in AppHost.cs).
 // The dev server proxies /api to it, so the browser only ever talks to the Vite origin: no CORS.
-// See docs/adr/0014-web-ui-architecture.md#stack-and-hosting.
+// See docs/decisions/0014-web-ui-architecture.md#stack-and-hosting.
 const searchApiUrl = process.env.services__searchapi__https__0 ?? process.env.services__searchapi__http__0;
 
 export default defineConfig({
     plugins: [react(), tailwindcss()],
     server: {
-        // The Decisions pages read docs/adr/*.md from the repository root, outside this folder (ADR-0014 § Content).
+        // The Decisions pages read docs/decisions/*.md from the repository root, outside this folder (ADR-0014 § Content).
         fs: { allow: [path.resolve(import.meta.dirname, '../..')] },
         proxy: searchApiUrl
             ? {

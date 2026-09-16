@@ -23,8 +23,11 @@ export interface RuleCheck {
     accessoryValue: string | null;
     operator: string;
     deviceSpec: string;
+    /** The device's value, or, when `source` is "Query", the value the shopper stated ("65W", "USB-C"). */
     deviceValue: string | null;
     result: CheckResult;
+    /** What the check ran against: the target device, or what the query asked for when there is no device. */
+    source?: string;
 }
 
 /** The `details` value under `key` in the first trace step that has it, or `undefined`. */
@@ -92,6 +95,8 @@ export interface ConstrainDetails {
     rulesApplied: string[];
     checks: RuleCheck[];
     flaggedCount: number;
+    /** "device", "query" (no device, but the query stated requirements) or "none". */
+    checkedAgainst: string | null;
 }
 
 export function readConstrainDetails(details: Details): ConstrainDetails {
@@ -103,6 +108,7 @@ export function readConstrainDetails(details: Details): ConstrainDetails {
         rulesApplied: asStrings(details.rulesApplied),
         checks: Array.isArray(details.checks) ? details.checks.filter(isRuleCheck) : [],
         flaggedCount: Array.isArray(details.flagged) ? details.flagged.length : 0,
+        checkedAgainst: asString(details.checkedAgainst),
     };
 }
 
@@ -135,6 +141,21 @@ export interface UnderstandDetails {
     wantedConcepts: string[];
     contextConcepts: string[];
     remainingText: string | null;
+    /** Values and quantities the query states that a rule compares: "USB-C" → connector = usb-c. */
+    requirements: StatedRequirement[];
+    /** True when the requirements were what the rules ran against (no target device). */
+    requirementsApplied: boolean;
+    /** Value phrases no relevant rule compares, e.g. "18V" for batteries (the rule compares platforms). */
+    unusedValuePhrases: string[];
+    /** Stated requirements the target device contradicts; the device decides. */
+    requirementConflicts: string[];
+}
+
+export interface StatedRequirement {
+    phrase: string;
+    accessorySpec: string;
+    operator: string;
+    value: string;
 }
 
 export function readUnderstandDetails(details: Details): UnderstandDetails {
@@ -160,6 +181,18 @@ export function readUnderstandDetails(details: Details): UnderstandDetails {
         wantedConcepts: asStrings(details.wantedConcepts),
         contextConcepts: asStrings(details.contextConcepts),
         remainingText: asString(details.remainingText),
+        requirements: asRecords(details.requirements).map((requirement) => ({
+            phrase: asString(requirement.phrase) ?? '',
+            accessorySpec: asString(requirement.accessorySpec) ?? '',
+            operator: asString(requirement.operator) ?? '',
+            value:
+                typeof requirement.value === 'number'
+                    ? String(requirement.value)
+                    : (asString(requirement.value) ?? ''),
+        })),
+        requirementsApplied: details.requirementsApplied === true,
+        unusedValuePhrases: asStrings(details.unusedValuePhrases),
+        requirementConflicts: asStrings(details.requirementConflicts),
     };
 }
 

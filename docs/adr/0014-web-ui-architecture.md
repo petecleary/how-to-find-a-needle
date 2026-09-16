@@ -54,7 +54,7 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 
 - **A "Going further" talk step** follows the last stage step and comes before the summary. It is a `summary`-kind step with no live demo: one table of the topics the talk discusses but doesn't build, grouped by where they sit in the pipeline ([ADR-0018](0018-scope-and-going-further.md)).
 - **Inline terms:** in any markdown content, `[RRF](term:rrf)` renders as an underlined term with a hover card showing its definition and a link to the glossary. A custom `a` renderer in `react-markdown` does this, with no remark plugin. Trace notes from the API may use the same syntax.
-- **ADRs are read straight from the repo at build time.** `import.meta.glob` loads `docs/adr/*.md` as raw text (`server.fs.allow` includes the repo root), and links between ADRs are rewritten to `/decisions/:id`. There's no copy to drift and no API endpoint. In Phase 5 the glob points at the public learner ADRs instead.
+- **ADRs are read straight from the repo at build time.** `import.meta.glob` loads `docs/adr/*.md` as raw text (`server.fs.allow` includes the repo root), and links between ADRs are rewritten to `/decisions/:id`. There's no copy to drift and no API endpoint. Since Phase 5 the glob reads the public learner ADRs in `docs/decisions/`.
 
 ### API types
 
@@ -66,7 +66,7 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 - **One hook, `usePipelineSearch`**, holds `{ request, stage, response, status, error }`. It is used by `/demo` and by talk stage steps.
   - Changing the stage or submitting re-runs `POST /api/search/{stage}` with the **same request**.
   - An `AbortController` cancels in-flight calls when the stage changes quickly.
-  - It asks for **`pageSize: 50`**, the API's maximum and the default `candidateDepth`, so one response holds every candidate. Switching tabs never refetches.
+  - It asks for **`pageSize: 50`**, the API's maximum and the default `candidateDepth`. For ranked stages it then reads any further pages, because hybrid fusion can retrieve more than 50 (Phase 5: GQ-08's flagged chargers rank 52nd–67th at 300 products). Stage 1 keeps its first page, since its total counts the whole filtered catalog. Switching tabs never refetches.
   - Why: Stage 5 orders flagged items *after* the out-of-concept ones and keeps them all. At the default page size of 10, GQ-01's three incompatible chargers aren't on page 1, so the near-miss moment would be invisible. The endpoint still pages exactly once ("retrieve deep, page late"); the UI only groups and collapses what it received.
 - **`useAnswerStream`** (Stages 6–7) runs **in parallel** with `usePipelineSearch`, so the results list never waits for the LLM ([ADR-0016](0016-rag-grounding-and-citations.md)).
   - It POSTs the same request to `/api/search/{rag|pedagogy}/answer`.

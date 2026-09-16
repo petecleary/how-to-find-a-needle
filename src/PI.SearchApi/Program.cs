@@ -83,6 +83,8 @@ builder.Services.AddSingleton<LabelMatcher>();
 builder.Services.AddSingleton<QueryExpander>();
 builder.Services.AddSingleton<ConceptClassifier>();
 builder.Services.AddSingleton<CompatibilityEvaluator>();
+builder.Services.AddSingleton<QueryRequirementExtractor>();
+builder.Services.AddSingleton<DeviceFitFinder>();
 builder.Services.AddTransient<TargetDeviceResolver>();
 builder.Services.AddTransient<IOntologySearch, OntologySearch>();
 

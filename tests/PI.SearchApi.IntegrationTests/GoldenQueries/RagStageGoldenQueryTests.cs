@@ -52,6 +52,34 @@ public sealed class RagStageGoldenQueryTests(AppHostFixture fixture)
     }
 
     [Fact]
+    public async Task GQ09_Rag_NoDeviceButStatedRequirements_AnswersWithACompatibleCharger()
+    {
+        // Talk moment: with no device, the evidence says what the shopper asked for and which chargers meet it,
+        // so the answer can recommend one instead of saying there isn't enough evidence.
+        RepositoryPaths.SkipUnlessNomicModelIsPresent();
+        using var client = fixture.CreateSearchApiClient();
+        var request = GoldenQueryCase.Load("GQ-09").Request;
+
+        var response = await SearchApiClient.SearchAsync(client, "rag", request, TestContext.Current.CancellationToken);
+        var evidenceStep = response.DebugTrace.Steps[^1];
+        Assert.Equal(2, evidenceStep.Details!["statedRequirements"].GetArrayLength());
+        var compatible = evidenceStep.Details["evidence"].EnumerateArray()
+            .Where(e => e.GetProperty("role").GetString() == "Compatible")
+            .Select(e => e.GetProperty("id").GetString()!)
+            .ToHashSet();
+        Assert.Contains("PROD-0012", compatible);
+
+        var answer = await AnswerApiClient.AnswerAsync(client, "rag", request, TestContext.Current.CancellationToken);
+
+        var section = Assert.Single(answer.Sections);
+        Assert.False(section.InsufficientEvidence, section.Markdown);
+        Assert.Contains(section.Citations, compatible.Contains);
+        Assert.True(
+            section.InvalidCitations.Count == 0,
+            $"Cited outside the evidence: {string.Join(", ", section.InvalidCitations)}\n{section.Markdown}");
+    }
+
+    [Fact]
     public async Task GQ01_Rag_EventStreamRunsFromMetaThroughToDone()
     {
         // Talk moment: results don't wait for the LLM; the answer streams in as Server-Sent Events.

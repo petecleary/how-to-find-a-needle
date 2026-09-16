@@ -18,7 +18,7 @@ namespace PI.SearchApi.Pipeline.Pedagogy;
 //           reader's clearest lesson, and the baseline toggle shows what the teaching design adds on its own.
 // Failure:  Two LLM calls per request, so it's the slowest stage; and the explanation is only as good as the
 //           ontology's definitions and the model's discipline. Validation shows drift, it can't prevent it.
-// Decision: docs/adr/0017-pedagogy-engine.md
+// Decision: docs/decisions/0017-pedagogy-engine.md
 public sealed class PedagogyEngine(
     IRagSearch ragSearch,
     IAnswerGenerator answerGenerator,

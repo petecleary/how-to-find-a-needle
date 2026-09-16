@@ -48,8 +48,8 @@ export interface SearchState {
 /**
  * Why 50, the API's maximum: Stage 5 keeps every flagged item but orders it after the out-of-concept
  * ones. At the default page size of 10, GQ-01's incompatible chargers wouldn't be on page 1, and the
- * near-miss moment would be invisible. One response holds every candidate, so switching tabs never
- * refetches (ADR-0014).
+ * near-miss moment would be invisible. Fusion can retrieve more than 50, so `usePipelineSearch` reads
+ * the remaining pages too; switching tabs never refetches (ADR-0014).
  */
 export const resultsPageSize = 50;
 

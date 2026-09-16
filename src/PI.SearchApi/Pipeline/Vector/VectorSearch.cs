@@ -16,7 +16,7 @@ namespace PI.SearchApi.Pipeline.Vector;
 // Failure:  Similarity is not compatibility. A 45W barrel charger reads almost exactly like
 //           the 65W USB-C one, so it ranks near the top. And there's no threshold: nonsense
 //           queries still return their nearest neighbours.
-// Decision: docs/adr/0010-vector-search-pgvector.md
+// Decision: docs/decisions/0010-vector-search-pgvector.md
 public sealed class VectorSearch(NpgsqlDataSource dataSource, ISearchEmbedder embedder, SqlFilterBuilder filterBuilder) : IVectorSearch
 {
     // HNSW explores ef_search candidates per query. pgvector's default of 40 would silently return fewer

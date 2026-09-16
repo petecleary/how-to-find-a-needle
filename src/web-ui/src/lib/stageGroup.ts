@@ -3,7 +3,7 @@
 // The talk asks three questions in order: Search (what is relevant?), Ontology (how is it related
 // and constrained?) and Pedagogy (how should I explain it?). Every stage is coloured by its group
 // in the stepper, tabs and trace chips, so the audience always sees where in the argument they are.
-// Decision: docs/adr/0014-web-ui-architecture.md#visual-design
+// Decision: docs/decisions/0014-web-ui-architecture.md#visual-design
 
 /** The seven stage slugs in talk order. They match the API routes: `POST /api/search/{stage}`. */
 export const pipelineStages = [

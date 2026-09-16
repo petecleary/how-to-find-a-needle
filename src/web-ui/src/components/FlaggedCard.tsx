@@ -2,13 +2,15 @@ import { Check, CircleQuestionMark, X, type LucideIcon } from 'lucide-react';
 import type { ProductResult } from '@/api/client';
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { CompatibilityBadge } from '@/components/CompatibilityBadge';
+import { DeviceFits } from '@/components/DeviceFits';
 import { formatPrice } from '@/lib/format';
 import { operatorPrefix, type CheckResult, type RuleCheck } from '@/lib/traceDetails';
 import { cn } from '@/lib/utils';
 
 // FlaggedCard — a near miss: similar enough to rank high, but failing a domain rule against the device the
-// shopper owns. Every check is listed, passed and failed, with the value the product has and the value the
-// device needs, so the audience sees exactly why it doesn't fit. "#2 before rules" is the rank from Stage 5's
+// shopper owns, or, with no device, against what the query asked for ("65W USB-C"). Every check is listed,
+// passed and failed, with the value the product has and the value needed, so the audience sees exactly why
+// it doesn't fit. "#2 before rules" is the rank from Stage 5's
 // own fusion, before the rules moved it down; it is not the Hybrid stage's rank (ADR-0014).
 
 const checkIcons: Record<CheckResult, { Icon: LucideIcon; label: string; className: string }> = {
@@ -71,6 +73,7 @@ export function FlaggedCard({ product, checks, icon }: FlaggedCardProps) {
                     ))}
                 </ul>
             )}
+            <DeviceFits fits={product.compatibility.fits} />
         </article>
     );
 }
@@ -87,7 +90,9 @@ function CheckLine({ check }: { check: RuleCheck }) {
             <b className={cn(check.result === 'Fail' && 'text-incompatible-ink')}>
                 {check.accessoryValue ?? 'no value'}
             </b>
-            <span className="text-muted-foreground">· needs</span>
+            <span className="text-muted-foreground">
+                {check.source === 'Query' ? '· you asked for' : '· needs'}
+            </span>
             <b>
                 {operatorPrefix(check.operator)}
                 {check.deviceValue ?? 'unknown'}

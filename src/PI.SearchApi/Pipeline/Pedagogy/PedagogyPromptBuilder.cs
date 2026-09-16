@@ -15,7 +15,7 @@ namespace PI.SearchApi.Pipeline.Pedagogy;
 //           teaching design differs, and the trace shows both messages in full.
 // Failure:  The words come from the labels the ontology has. A concept with no everyday altLabel gives a novice
 //           only its preferred label, and the model may still reach for jargon.
-// Decision: docs/adr/0017-pedagogy-engine.md
+// Decision: docs/decisions/0017-pedagogy-engine.md
 public sealed partial class PedagogyPromptBuilder(PromptLibrary prompts)
 {
     public const string SystemPromptFile = "pedagogy-system.md";

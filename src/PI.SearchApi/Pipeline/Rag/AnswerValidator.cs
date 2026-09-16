@@ -11,7 +11,7 @@ namespace PI.SearchApi.Pipeline.Rag;
 //           and the failures stay visible as warnings instead of being silently stripped or regenerated.
 // Failure:  It checks form, not truth: a correctly cited sentence can still misstate a spec, and the warning-
 //           language heuristic can be fooled either way ("not only compatible…"). The trace labels it a heuristic.
-// Decision: docs/adr/0016-rag-grounding-and-citations.md
+// Decision: docs/decisions/0016-rag-grounding-and-citations.md
 public static partial class AnswerValidator
 {
     /// <summary>The exact first line the prompt asks for when the evidence doesn't answer the question.</summary>

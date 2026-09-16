@@ -1,3 +1,4 @@
+using System.Text.Json;
 using PI.SearchApi.Contracts;
 using PI.SearchApi.Pipeline.Ontology;
 
@@ -13,17 +14,19 @@ namespace PI.SearchApi.Pipeline.Rag;
 //           the near miss fails), so it can warn instead of recommending; and it's small enough for a local model.
 // Failure:  A bound is a cut-off. A relevant product beyond the limits is invisible to the model, however good;
 //           the trace lists exactly what was included, and why, so the omission can be seen.
-// Decision: docs/adr/0016-rag-grounding-and-citations.md
+// Decision: docs/decisions/0016-rag-grounding-and-citations.md
 public sealed class EvidenceSetBuilder(IOntology ontology)
 {
     /// <param name="ranked">Stage 5's candidates, in its final order.</param>
     /// <param name="matchedConcepts">Every taxonomy concept the query matched: wanted and context concepts.</param>
     /// <param name="checks">Every rule check Stage 5 ran, so the rules can be quoted in the domain's own words.</param>
+    /// <param name="statedRequirements">With no target device, what the query asked for ("65W", "USB-C").</param>
     public EvidenceSet Build(
         IReadOnlyList<Candidate> ranked,
         ProductSummary? targetDevice,
         IReadOnlyList<string> matchedConcepts,
-        IReadOnlyList<CheckOutcome> checks)
+        IReadOnlyList<CheckOutcome> checks,
+        QueryRequirements? statedRequirements = null)
     {
         var items = new List<EvidenceItem>();
 
@@ -78,7 +81,27 @@ public sealed class EvidenceSetBuilder(IOntology ontology)
             rules = ApplicableRules(items);
         }
 
-        return new EvidenceSet(items, ConceptsFor(matchedConcepts), rules);
+        return new EvidenceSet(items, ConceptsFor(matchedConcepts), rules)
+        {
+            StatedRequirements = [.. (statedRequirements ?? QueryRequirements.None).Requirements.Select(Describe)],
+        };
+    }
+
+    // "65W": wattageW at least 65. Plain enough for a model, and exact about which spec was compared.
+    private static string Describe(QueryRequirement requirement)
+    {
+        var comparison = requirement.Operator switch
+        {
+            "greaterOrEqual" => "at least",
+            "lessOrEqual" => "at most",
+            _ => "is",
+        };
+
+        var value = requirement.Value.ValueKind == JsonValueKind.String
+            ? requirement.Value.GetString()
+            : requirement.Value.GetRawText();
+
+        return $"\"{requirement.Phrase}\": {requirement.AccessorySpec} {comparison} {value}";
     }
 
     private List<EvidenceRule> ApplicableRules(List<EvidenceItem> items) =>

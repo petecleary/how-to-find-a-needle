@@ -138,8 +138,9 @@ The legacy `GET /api/products` endpoint is removed.
 
 - `score` means different things per stage; the trace explains it. `signals` keeps each technique's raw rank and score, so the UI can show badges.
 - `compatibility.status` is one of `NotEvaluated | Compatible | Incompatible | Unknown`. `reasons` holds human-readable strings that quote the domain rule and the spec values compared.
+- `compatibility.source` (`None | Device | Query`) says what the rules ran against: the target device, or, with no device, the requirements the query states. `compatibility.fits` (with no device) lists, per device type, the catalog devices the product is compatible with (amended 2026-09-16, [ADR-0013](0013-domain-ontology-and-compatibility.md)).
 - `signals.conceptMatch` is `InConcept | OutOfConcept | NoConcept`, set by Stage 5 ([ADR-0013](0013-domain-ontology-and-compatibility.md)); `null` in other stages.
-- `totalResults` for ranked stages is the number of candidates retrieved, which is bounded by `candidateDepth`. It is **not** a count of the whole catalog. The trace says so.
+- `totalResults` for ranked stages is the number of candidates retrieved: at most `candidateDepth` per retriever, and up to twice that after hybrid fusion, which keeps the union of both lists (found when the catalog grew to 300 in Phase 5). It is **not** a count of the whole catalog. The trace says so.
 - `SearchResponse` never contains LLM text. Stages 6–7 stream it from their answer endpoints (see *LLM answer streams* above).
 
 ### Debug trace (`Contracts/DebugTrace.cs`)

@@ -1,4 +1,4 @@
-// The Decisions pages read the ADRs straight from docs/adr at build time (ADR-0014 § Content): there is no
+// The Decisions pages read the ADRs straight from docs/decisions at build time (ADR-0014 § Content): there is no
 // copy to drift and no API endpoint. vite.config.ts allows the dev server to read outside the web-ui folder.
 
 export interface Decision {
@@ -12,7 +12,7 @@ export interface Decision {
 }
 
 // Only the numbered records: README, architecture and roadmap are working documents, and the pages never show them.
-const adrFiles = import.meta.glob<string>('../../../../docs/adr/[0-9][0-9][0-9][0-9]-*.md', {
+const adrFiles = import.meta.glob<string>('../../../../docs/decisions/[0-9][0-9][0-9][0-9]-*.md', {
     query: '?raw',
     import: 'default',
     eager: true,
@@ -51,7 +51,7 @@ export function rewriteDecisionLinks(markdown: string): string {
             return `](adr:${adrId}${anchor === undefined ? '' : `#${anchor}`})`;
         }
 
-        const repositoryPath = new URL(file, 'https://repository.invalid/docs/adr/').pathname.slice(1);
+        const repositoryPath = new URL(file, 'https://repository.invalid/docs/decisions/').pathname.slice(1);
         return `](repo:${repositoryPath})`;
     });
 }

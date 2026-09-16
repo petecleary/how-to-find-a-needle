@@ -4,10 +4,30 @@ Search that knows the domain. A [SKOS](term:skos) [taxonomy](term:taxonomy) name
 
 ## How it works
 
+The taxonomy is plain SKOS in `domain-ontology.ttl`. This is the start of the Power branch:
+
+```turtle
+ex:Power a skos:Concept ; skos:topConceptOf ex:Taxonomy ;
+    skos:notation "power" ;
+    skos:prefLabel "Power"@en .
+
+ex:Chargers a skos:Concept ; skos:broader ex:Power ;
+    skos:notation "chargers" ;
+    skos:prefLabel "Chargers"@en , "Cargadores"@es ;
+    skos:altLabel "power adapter"@en , "power brick"@en , "cargador"@es ;
+    skos:definition "A device that supplies electrical power to run or recharge another device."@en .
+
+ex:LaptopChargers a skos:Concept ; skos:broader ex:Chargers ;
+    skos:notation "laptop-chargers" ;
+    skos:prefLabel "Laptop chargers"@en .
+```
+
+The **Filters** panel is built from this file, through `GET /api/taxonomy`: `prefLabel` is the checkbox label, `skos:broader` nests the tree (ticking _Chargers_ includes _Laptop chargers_), `skos:definition` is the tooltip, and `skos:notation` is the value the filter sends. No category is hard-coded in the UI. Stage 5 uses the same labels to understand your query:
+
 1. **Understand.** Match query phrases to SKOS labels, and spot the [target device](term:target-device) you own.
 2. **Expand.** Add [synonyms](term:alt-label) and [narrower concepts](term:broader-narrower), then run hybrid search again.
 3. **Classify.** Is each candidate in the concept you asked for?
-4. **Constrain.** Check the class-level rules against your device. Failures are flagged and moved down, never removed.
+4. **Constrain.** Check the class-level rules against your device. Failures are flagged and moved down, never removed. With no device, the rules check what your query asks for ("USB-C", "65W") instead, and each product says which catalogue devices it fits.
 
 ## What to look for
 
@@ -23,7 +43,7 @@ Only as good as the [ontology](term:ontology). Labels match words exactly ("bric
 
 ## Try this
 
-Turn off **Apply constraints** and watch the barrel charger climb back up. Then choose **GQ-02** and turn off **Expand synonyms**: "power brick" loses its keyword matches.
+Turn off **Apply constraints** and watch the barrel charger climb back up. Then choose **GQ-02** and turn off **Expand synonyms**: "power brick" loses its keyword matches. Choose **GQ-09** with no device: "65W USB-C" is enough to flag the barrel charger.
 
 ## Read the decision
 

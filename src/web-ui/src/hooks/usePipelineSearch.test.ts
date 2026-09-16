@@ -127,4 +127,35 @@ describe('usePipelineSearch', () => {
         await waitFor(() => expect(result.current.status).toBe('success'));
         expect(searchMock).toHaveBeenCalledTimes(2);
     });
+    it('reads every page of a ranked stage, so flagged items past the first 50 stay visible', async () => {
+        const product = (id: string) => ({ id }) as unknown as SearchResponse['results'][number];
+        searchMock.mockImplementation((stage, body) =>
+            Promise.resolve({
+                ...responseFor(stage),
+                page: body.page ?? 1,
+                totalResults: 3,
+                results:
+                    body.page === 2 ? [product('PROD-0003')] : [product('PROD-0001'), product('PROD-0002')],
+            }),
+        );
+
+        const { result } = renderHook(() => usePipelineSearch('ontology', request));
+
+        await waitFor(() => expect(result.current.status).toBe('success'));
+        expect(result.current.response?.results.map((r) => r.id)).toEqual([
+            'PROD-0001',
+            'PROD-0002',
+            'PROD-0003',
+        ]);
+        expect(searchMock).toHaveBeenCalledWith('ontology', { ...request, page: 2 }, expect.any(AbortSignal));
+    });
+
+    it('leaves structured search on its first page, because its total counts the whole filtered catalog', async () => {
+        searchMock.mockResolvedValue({ ...responseFor('structured'), totalResults: 300 });
+
+        const { result } = renderHook(() => usePipelineSearch('structured', request));
+
+        await waitFor(() => expect(result.current.status).toBe('success'));
+        expect(searchMock).toHaveBeenCalledTimes(1);
+    });
 });

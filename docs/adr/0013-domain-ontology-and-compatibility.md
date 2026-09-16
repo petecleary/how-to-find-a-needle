@@ -1,6 +1,6 @@
 # ADR-0013: Stage 5 — Ontology: SKOS taxonomy, vocabularies & domain rules
 
-- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): SKOS-first framing, BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework). Amended again 2026-09-14 to add `GET /api/vocabularies`, built and verified the same day.
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-16: requirements stated in the query and "fits which devices", for searches without a target device; built and verified the same day (GQ-09). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): SKOS-first framing, BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework). Amended again 2026-09-14 to add `GET /api/vocabularies`, built and verified the same day.
 - **Date:** 2026-09-13
 - **Related:** ADR-0003, ADR-0004, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0016, ADR-0017, ADR-0018; golden queries GQ-01, GQ-02, GQ-03, GQ-05, GQ-06, GQ-07; roadmap Phase 1 (ontology file), Phase 2 (stage)
 
@@ -167,6 +167,23 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 
    Reasons quote the rule definition and the values, e.g. *"The charger's plug must fit the laptop's charging port: charger has 5.5 mm barrel, Blackbird Aerobook 14 needs USB-C."*
 
+### Without a target device (amended 2026-09-16, Phase 5)
+
+Most shoppers don't pick a device first. Without one, every product a rule applies to used to be `Unknown`, so Stage 5 flagged nothing and Stages 6–7 often answered "insufficient evidence". Two additions make the rules useful anyway:
+
+**A. Requirements stated in the query.** In step 1, `QueryRequirementExtractor` turns what the shopper typed into requirements, for the rules whose accessory type is a wanted concept (or broader or narrower than one):
+- **Value concepts** the label matcher already found ("USB-C", "Type-C", "NVMe", "DDR5", "Brakk 18V") become `accessorySpec = notation` for each check whose `ex:valueScheme` is that concept's scheme: "USB-C" → `connector = usb-c`.
+- **A number with a unit** ("65W", "65 W") becomes a requirement on the check whose accessory spec carries that unit (`wattageW`), with the check's own operator: `wattageW ≥ 65`. Numbers inside a matched value label ("Brakk 18V") are not reused.
+- Value phrases that no relevant rule uses are listed in the trace as unused.
+
+In step 5, with no target device and at least one requirement, each candidate is checked against the requirements with the same operators and concept comparison. The requirement stands in for the device's value, and the reason says so: *"✗ The charger's plug must fit the laptop's charging port. Voltline 45W Barrel Charger has 5.5mm barrel; you asked for USB-C."* A check with no stated value stays `Unknown` (a 45W USB-C charger for "USB-C charger" isn't confirmed: no one said how much power is needed). `compatibility.source` is `query`.
+
+**B. Which devices it fits.** With no target device, every product a rule applies to also gets `compatibility.fits`: for each device type its rules name, the catalog devices it is `Compatible` with, found by running the normal device evaluation against every device (`DeviceFitFinder`): *"Fits 6 of 13 laptops"*. It never changes the status or the order.
+
+**Precedence.** A target device always decides (`source: device`), and B is not computed. Stated requirements are still extracted and shown in the trace; any that contradict the device ("45W" for a laptop that needs 65W) are listed as conflicts, not applied. With neither a device nor a stated value, products are `Unknown` as before (`source: none`), with B's list.
+
+**Evidence (Stages 6–7).** The stated requirements are named where the device would be, and each product's fits list is added to its block, so a no-device answer can recommend against what was asked ([ADR-0016](0016-rag-grounding-and-citations.md)).
+
 **Ordering, with flagged items kept:** unflagged items first, then `OutOfConcept`, then `Incompatible`. Within each group items keep their fused rank. **Nothing is silently removed.**
 - `options.applyConstraints` switches off both demotions and the rule checks. `signals.conceptMatch` is still reported, so the presenter can show the classification before turning it on.
 - An item that is both `OutOfConcept` and `Incompatible` goes in the `Incompatible` group.
@@ -242,6 +259,11 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
 - One domain model serves many jobs: navigation, query understanding, validation and explanation.
 - **Filters are data too.** When the category tree and the allowed spec values come from the ontology, a value added to a vocabulary appears in the filters, the validation tests and the rule checks at once, with no UI or C# change.
 - Similarity is a guess, and a rule is knowledge. Keep demoted results and their reasons visible.
+
+**For the talk (added Phase 5, the no-device amendment):**
+- **The knowledge is in the rules, not in the device.** "65W USB-C charger" (GQ-09) flags the barrel and 45W chargers with no device picked: the stated values stand in for the device's specs in the same checks. GQ-07's Spanish query gets it too, because it says "USB-C".
+- **"18V battery" states nothing checkable**, and that's correct: the battery rule compares platforms, not volts. The trace lists "18V" as unused, which is GQ-05's lesson from the other side.
+- **"Fits 6 of 13 laptops" turns Unknown into something useful** without pretending to know the shopper's laptop.
 
 **For the talk (found while building, Phase 2):**
 - **"A device name is context, not intent."** People search the way they think: "charger for my Blackbird Aerobook 14". Stages 2–4 can't tell what you *want* from what you *own*. The device name is the most distinctive part of the query, so it wins: in Stage 3 the Aerobook itself ranks 2nd and a Blackbird laptop sleeve 5th, while the compatible Voltline charger is 7th (GQ-08). Stage 5 understands the query before retrieving: it recognises the device, removes it from the search text, uses it as the target device, and the compatible chargers come first.

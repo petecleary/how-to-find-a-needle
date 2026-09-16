@@ -284,7 +284,11 @@ export interface components {
         CompatibilityResult: {
             status: components["schemas"]["CompatibilityStatus"];
             reasons: string[];
+            source?: components["schemas"]["CompatibilitySource"];
+            fits?: null | components["schemas"]["DeviceFit"][];
         };
+        /** @enum {unknown} */
+        CompatibilitySource: "None" | "Device" | "Query";
         /** @enum {unknown} */
         CompatibilityStatus: "NotEvaluated" | "Compatible" | "Incompatible" | "Unknown";
         /** @enum {unknown} */
@@ -298,6 +302,13 @@ export interface components {
             brand: string;
             categories: string[];
         };
+        DeviceFit: {
+            deviceType: string;
+            deviceTypeLabel: string;
+            /** Format: int32 */
+            total: number;
+            devices: components["schemas"]["FittingDevice"][];
+        };
         ExplanationProduct: {
             productId: null | string;
         };
@@ -307,6 +318,10 @@ export interface components {
             nearMiss: components["schemas"]["ExplanationProduct"];
             ruleOfThumb: null | string;
             nextStep: null | string;
+        };
+        FittingDevice: {
+            id: string;
+            name: string;
         };
         GoldenQuery: {
             id: string;

@@ -28,6 +28,34 @@ export interface PipelineSearch {
 type Outcome =
     { key: string; response: SearchResponse; error: null } | { key: string; response: null; error: Error };
 
+/**
+ * Ranked stages (2–7) return every page of what they retrieved, joined into one response, so no flagged item is
+ * left on a page the screen never asks for. Hybrid fusion returns the union of the keyword and vector lists, so
+ * Stage 5 can hold more than one page of 50: for GQ-08 in the 300-product catalog, its flagged chargers rank
+ * 52nd to 67th. Stage 1 is left alone: its `totalResults` counts the whole filtered catalog, and it pages in SQL.
+ */
+async function searchEveryCandidate(
+    stage: SearchStage,
+    request: SearchRequest,
+    signal: AbortSignal,
+): Promise<SearchResponse> {
+    const first = await search(stage, request, signal);
+    if (stage === 'structured') {
+        return first;
+    }
+
+    const results = [...first.results];
+    for (let page = 2; results.length < first.totalResults; page++) {
+        const next = await search(stage, { ...request, page }, signal);
+        if (next.results.length === 0) {
+            break;
+        }
+        results.push(...next.results);
+    }
+
+    return { ...first, results };
+}
+
 export function usePipelineSearch(stage: SearchStage, request: SearchRequest): PipelineSearch {
     const [attempt, setAttempt] = useState(0);
     const [outcome, setOutcome] = useState<Outcome | null>(null);
@@ -48,7 +76,7 @@ export function usePipelineSearch(stage: SearchStage, request: SearchRequest): P
         const controller = new AbortController();
         const body = JSON.parse(requestJson) as SearchRequest;
 
-        search(stage, body, controller.signal).then(
+        searchEveryCandidate(stage, body, controller.signal).then(
             (response) => {
                 if (!controller.signal.aborted) {
                     setOutcome({ key, response, error: null });

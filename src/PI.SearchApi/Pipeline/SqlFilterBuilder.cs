@@ -13,7 +13,7 @@ namespace PI.SearchApi.Pipeline;
 //           parameters, and fragments come from a fixed list, so the dynamic SQL is still safe.
 // Failure:  Only understands attributes someone has already structured; it can't turn "something
 //           to charge my laptop" into a filter. That's what the later stages are for.
-// Decision: docs/adr/0007-structured-search.md
+// Decision: docs/decisions/0007-structured-search.md
 public sealed class SqlFilterBuilder(IOntology ontology)
 {
     /// <summary>Builds the filter SQL. An empty <see cref="SearchFilters"/> produces no conditions.</summary>

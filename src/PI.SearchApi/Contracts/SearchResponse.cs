@@ -17,7 +17,8 @@ public sealed record SearchResponse
 
     /// <summary>
     /// Stage 1: a real COUNT(*) over the filters. Ranked stages: the number of candidates
-    /// retrieved, which is bounded by candidateDepth — not a count of the whole catalog.
+    /// retrieved: at most candidateDepth per retriever, up to twice that once hybrid fusion joins the
+    /// keyword and vector lists — not a count of the whole catalog.
     /// </summary>
     public required int TotalResults { get; init; }
 

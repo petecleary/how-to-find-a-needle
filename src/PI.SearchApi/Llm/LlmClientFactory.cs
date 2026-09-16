@@ -16,7 +16,7 @@ namespace PI.SearchApi.Llm;
 //           keys, sampling, reasoning) is in this folder; RAG and pedagogy code sees only IChatClient.
 // Failure:  An abstraction can't hide behaviour: models still differ in fluency, formatting and speed, which
 //           is why the answers are validated after generation, whatever the provider.
-// Decision: docs/adr/0015-llm-hosting-and-client.md
+// Decision: docs/decisions/0015-llm-hosting-and-client.md
 public static class LlmClientFactory
 {
     /// <summary>

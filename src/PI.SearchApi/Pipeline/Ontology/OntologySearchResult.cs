@@ -9,4 +9,11 @@ public sealed record OntologySearchResult(
     StageResult Result,
     TargetDevice Device,
     QueryUnderstanding Understanding,
-    IReadOnlyList<CheckOutcome> Checks);
+    IReadOnlyList<CheckOutcome> Checks)
+{
+    /// <summary>
+    /// The requirements the query stated, when they were what the rules were checked against (no target device).
+    /// Stages 6–7 name them in the evidence where the device would be.
+    /// </summary>
+    public QueryRequirements Requirements { get; init; } = QueryRequirements.None;
+}

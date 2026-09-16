@@ -1,6 +1,6 @@
 /*
  * Theme tokens for the Pi & Mash look and feel.
- * Decision: docs/adr/0014-web-ui-architecture.md#visual-design · pictures: docs/design/README.md
+ * Decision: docs/decisions/0014-web-ui-architecture.md#visual-design · pictures: docs/design/README.md
  *
  * - Light theme on :root, dark theme on .dark (shadcn's convention). Components use the Tailwind
  *   names from @theme below (bg-search, text-compatible-ink), never raw hex.

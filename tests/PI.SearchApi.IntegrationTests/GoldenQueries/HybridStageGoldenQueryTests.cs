@@ -21,7 +21,7 @@ public sealed class HybridStageGoldenQueryTests(AppHostFixture fixture)
     [Fact]
     public async Task GQ02_Hybrid_KeepsTheVectorHitForPowerBrick()
     {
-        // Talk moment: keyword found nothing, but fusion keeps vector search's laptop chargers.
+        // Talk moment: keyword found nothing, so fusion keeps vector search's order: the charger, below the power banks.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
 
         await GoldenQueryRunner.RunAsync(fixture, "GQ-02", "hybrid");

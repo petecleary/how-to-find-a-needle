@@ -11,7 +11,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 //           under Telephony, not Power tools › Batteries, however many words it shares.
 // Failure:  Only as good as the categories products are filed under, and only when the query
 //           actually names a category the label matcher recognises.
-// Decision: docs/adr/0013-domain-ontology-and-compatibility.md
+// Decision: docs/decisions/0013-domain-ontology-and-compatibility.md
 public sealed class ConceptClassifier(IOntology ontology)
 {
     public ConceptClassification Classify(IReadOnlyList<string> categories, IReadOnlyList<string> matchedConcepts)

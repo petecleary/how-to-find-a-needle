@@ -27,10 +27,18 @@ public static class EvidenceFormatter
         return text[..(cut > 0 ? cut : MaxDescriptionLength)].TrimEnd(',', ';', ' ') + "…";
     }
 
-    public static string FormatTargetDevice(EvidenceSet evidence) =>
-        evidence.TargetDevice is { } device
-            ? FormatProduct(device)
-            : "None: the shopper hasn't said which device they own, so no product can be confirmed as compatible.";
+    public static string FormatTargetDevice(EvidenceSet evidence) => evidence switch
+    {
+        { TargetDevice: { } device } => FormatProduct(device),
+
+        // No device, but the question states what it needs: the verdicts below were checked against that.
+        { StatedRequirements.Count: > 0 } =>
+            "None: the shopper hasn't said which device they own. Their question asks for: "
+            + string.Join("; ", evidence.StatedRequirements)
+            + ". Each product's compatibility was checked against what they asked for; anything the question doesn't state can't be confirmed.",
+
+        _ => "None: the shopper hasn't said which device they own, so no product can be confirmed as compatible.",
+    };
 
     public static string FormatProducts(EvidenceSet evidence)
     {
@@ -82,6 +90,11 @@ public static class EvidenceFormatter
             {
                 text.Append(CultureInfo.InvariantCulture, $"\n  - {ReasonText(reason)}");
             }
+
+            foreach (var fit in item.Compatibility.Fits ?? [])
+            {
+                text.Append(CultureInfo.InvariantCulture, $"\n{FitText(fit)}");
+            }
         }
 
         if (item.Description is { } description)
@@ -90,6 +103,16 @@ public static class EvidenceFormatter
         }
 
         return text.ToString();
+    }
+
+    // "Fits 6 of 13 laptops in this catalog: Blackbird Aerobook 14, …": which of the shop's devices every rule passed for.
+    private static string FitText(DeviceFit fit)
+    {
+        var type = fit.DeviceTypeLabel.ToLowerInvariant();
+
+        return fit.Devices.Count == 0
+            ? $"Fits none of the {fit.Total} {type} in this catalog."
+            : $"Fits {fit.Devices.Count} of {fit.Total} {type} in this catalog: {string.Join(", ", fit.Devices.Select(d => d.Name))}.";
     }
 
     private static string StatusText(CompatibilityStatus status) => status switch

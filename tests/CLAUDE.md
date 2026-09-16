@@ -1,6 +1,6 @@
 # CLAUDE.md — tests
 
-Repo-wide rules are in the [root CLAUDE.md](../CLAUDE.md). Decisions: [ADR-0002](../docs/adr/0002-solution-structure-and-orchestration.md) (test projects), [ADR-0005](../docs/adr/0005-curated-dataset-and-golden-queries.md) (golden queries).
+Repo-wide rules are in the [root CLAUDE.md](../CLAUDE.md). Decisions: [ADR-0002](../docs/decisions/0002-solution-structure-and-orchestration.md) (test projects), [ADR-0005](../docs/decisions/0005-curated-dataset-and-golden-queries.md) (golden queries).
 
 **Tests are teaching material too.** The golden-query suite is the talk's argument expressed as passing tests: synonym miss → vector hit; keyword trap → hybrid fix; near miss → ontology flag with reason; Spanish query → chargers via ontology labels.
 

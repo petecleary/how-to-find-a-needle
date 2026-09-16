@@ -9,7 +9,7 @@ const statusClasses: Record<string, string> = {
     Proposed: 'bg-muted text-muted-foreground',
 };
 
-/** `/decisions`: every architecture decision record, read from docs/adr (ADR-0014 § Pages). */
+/** `/decisions`: every architecture decision record, read from docs/decisions (ADR-0014 § Pages). */
 export function DecisionsPage() {
     return (
         <div className="flex min-h-screen flex-col">

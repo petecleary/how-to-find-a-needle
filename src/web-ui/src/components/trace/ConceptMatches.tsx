@@ -4,7 +4,8 @@ import { cn } from '@/lib/utils';
 
 // ConceptMatches — how the query's words were matched to SKOS labels (preferred, alternative, and labels in
 // other languages), and which matched concepts the shopper wants versus the ones that only describe the
-// device they own. A wanted concept is expanded and used to classify; a context concept is not.
+// device they own. A wanted concept is expanded and used to classify; a context concept is not. Values a rule
+// compares ("USB-C", "65W") become requirements, checked when there is no target device.
 
 export interface ConceptMatchesProps {
     details: UnderstandDetails;
@@ -91,7 +92,52 @@ export function ConceptMatches({ details }: ConceptMatchesProps) {
                     <p className="font-mono">{details.remainingText || '—'}</p>
                 </TraceSection>
             </div>
+
+            {details.requirements.length > 0 || details.unusedValuePhrases.length > 0 ? (
+                <StatedRequirements details={details} />
+            ) : null}
         </div>
+    );
+}
+
+const operatorWords: Record<string, string> = { equals: '=', greaterOrEqual: '≥', lessOrEqual: '≤', in: '∈' };
+
+function StatedRequirements({ details }: { details: UnderstandDetails }) {
+    return (
+        <TraceSection title={`Requirements stated in the query · ${details.requirements.length}`}>
+            {details.requirements.length === 0 ? null : (
+                <>
+                    <p className="text-sm text-muted-foreground">
+                        {details.requirementsApplied
+                            ? 'No target device, so the rules check every candidate against these.'
+                            : 'A target device was given: its specs decide, and these are only shown.'}
+                    </p>
+                    <ul className="flex flex-col gap-0.5">
+                        {details.requirements.map((requirement) => (
+                            <li key={`${requirement.accessorySpec}-${requirement.value}`}>
+                                <b>“{requirement.phrase}”</b> →{' '}
+                                <span className="font-mono">
+                                    {requirement.accessorySpec}{' '}
+                                    {operatorWords[requirement.operator] ?? requirement.operator}{' '}
+                                    {requirement.value}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
+            {details.requirementConflicts.map((conflict) => (
+                <p key={conflict} className="text-unknown-ink">
+                    {conflict}
+                </p>
+            ))}
+            {details.unusedValuePhrases.length === 0 ? null : (
+                <p className="text-sm text-muted-foreground">
+                    No rule for what you asked for compares:{' '}
+                    {details.unusedValuePhrases.map((p) => `“${p}”`).join(', ')}
+                </p>
+            )}
+        </TraceSection>
     );
 }
 

@@ -23,7 +23,7 @@ jobs:
         run: dotnet test tests/PI.SearchApi.Tests -c Release --no-build
 
   # The web UI's checks need no API: its types are generated into src/api/schema.d.ts and committed, and its
-  # tests use captured responses. They do read files outside src/web-ui (docs/adr, the API's golden-queries.json),
+  # tests use captured responses. They do read files outside src/web-ui (docs/decisions, the API's golden-queries.json),
   # so the whole repository is checked out.
   web-ui:
     runs-on: ubuntu-latest

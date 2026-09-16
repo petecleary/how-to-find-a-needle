@@ -3,6 +3,9 @@
     <Project Path="src/PI.AppHost/PI.AppHost.csproj" />
     <Project Path="src/PI.SearchApi/PI.SearchApi.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/PI.CatalogGenerator/PI.CatalogGenerator.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PI.SearchApi.Tests/PI.SearchApi.Tests.csproj" />
     <Project Path="tests/PI.SearchApi.IntegrationTests/PI.SearchApi.IntegrationTests.csproj" />
