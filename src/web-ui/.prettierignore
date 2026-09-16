@@ -1,0 +1,5 @@
+dist
+package-lock.json
+src/api/schema.d.ts
+src/assets/fonts
+CLAUDE.md

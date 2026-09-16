@@ -4,7 +4,7 @@ using VDS.RDF.Query;
 
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6 knowledge — Domain ontology loader (ADR-0013)
+// Stage 5 knowledge — Domain ontology loader (ADR-0013)
 //
 // What:     Loads domain-ontology.ttl (SKOS taxonomy, multilingual labels, value vocabularies
 //           and class-level compatibility rules) into an in-memory RDF graph, and answers
@@ -14,7 +14,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 // Failure:  No OWL reasoning and no instance data: subsumption is skos:broader* only, and the
 //           ontology knows product *types*, never individual products. That boundary is on
 //           purpose; past it you're building a knowledge graph.
-// Decision: docs/adr/0013-domain-ontology-and-compatibility.md
+// Decision: docs/decisions/0013-domain-ontology-and-compatibility.md
 public sealed class DomainOntology : IOntology
 {
     private readonly Dictionary<string, OntologyConcept> _conceptsByNotation;
@@ -27,6 +27,8 @@ public sealed class DomainOntology : IOntology
     public IReadOnlyList<OntologyConcept> Concepts { get; }
 
     public IReadOnlyList<ConceptLabel> Labels { get; }
+
+    public IReadOnlyList<OntologyVocabulary> Vocabularies { get; }
 
     public IReadOnlyList<CompatibilityRule> Rules { get; }
 
@@ -48,6 +50,7 @@ public sealed class DomainOntology : IOntology
 
         _narrowerOrSelfByAncestor = LoadNarrowerOrSelf(graph, queriesDirectory);
         _vocabularyValuesByScheme = GroupVocabularyValues(Labels);
+        Vocabularies = LoadVocabularies(graph, queriesDirectory, Labels);
 
         RulesSparql = File.ReadAllText(Path.Combine(queriesDirectory, "rules.rq"));
         Rules = LoadRules(graph, RulesSparql);
@@ -219,6 +222,56 @@ public sealed class DomainOntology : IOntology
                     .GroupBy(l => l.ConceptNotation)
                     .Select(concept => new VocabularyValue(concept.Key, [.. concept.Select(l => l.Label)]))
                     .ToList());
+    }
+
+    private static List<OntologyVocabulary> LoadVocabularies(
+        IGraph graph, string queriesDirectory, IReadOnlyList<ConceptLabel> labels)
+    {
+        var results = RunQuery(graph, File.ReadAllText(Path.Combine(queriesDirectory, "vocabularies.rq")), "vocabularies.rq");
+
+        // Like taxonomy.rq, vocabularies.rq returns one row per (value, preferred label) pair, so a
+        // value with labels in two languages is two rows. Collect each scheme's name, then merge
+        // each value's labels by language.
+        var schemeLabels = new Dictionary<string, string>();
+        var prefLabelsByValue = new Dictionary<(string Scheme, string Notation), Dictionary<string, string>>();
+
+        foreach (var row in results)
+        {
+            var scheme = LiteralValue(row, "schemeNotation")!;
+            var notation = LiteralValue(row, "notation")!;
+            schemeLabels[scheme] = LiteralValue(row, "schemeLabel")!;
+
+            if (!prefLabelsByValue.TryGetValue((scheme, notation), out var prefLabels))
+            {
+                prefLabels = [];
+                prefLabelsByValue[(scheme, notation)] = prefLabels;
+            }
+
+            prefLabels[LiteralValue(row, "lang") ?? ""] = LiteralValue(row, "label")!;
+        }
+
+        // Synonyms come from labels.rq. Hidden labels (misspellings) help match a typed query;
+        // a filter never displays them, so they're left out.
+        var altLabelsByValue = labels
+            .Where(l => !l.IsTaxonomyConcept && l.Kind == LabelKind.Alternative)
+            .GroupBy(l => (Scheme: l.SchemeNotation!, Notation: l.ConceptNotation))
+            .ToDictionary(g => g.Key, g => g.Select(l => l.Label).ToList());
+
+        return
+        [
+            .. schemeLabels.Keys.Order(StringComparer.Ordinal).Select(scheme => new OntologyVocabulary(
+                scheme,
+                schemeLabels[scheme],
+                [
+                    .. prefLabelsByValue.Keys
+                        .Where(key => key.Scheme == scheme)
+                        .OrderBy(key => key.Notation, StringComparer.Ordinal)
+                        .Select(key => new OntologyVocabularyConcept(
+                            key.Notation,
+                            prefLabelsByValue[key],
+                            altLabelsByValue.GetValueOrDefault(key) ?? [])),
+                ])),
+        ];
     }
 
     private static List<CompatibilityRule> LoadRules(IGraph graph, string rulesSparql)

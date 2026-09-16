@@ -15,6 +15,10 @@ public sealed class VectorSearchEndpoint(IVectorSearch search) : Endpoint<Search
         AllowAnonymous();
         Validator<VectorSearchRequestValidator>();
         Summary(s => s.Summary = "Stage 3 — Vector search: Nomic embeddings + pgvector cosine distance");
+        // Document the validation error and the missing-model 503, so the UI's generated types describe them (ADR-0003).
+        Description(b => b
+            .Produces<ValidationProblem>(StatusCodes.Status400BadRequest, "application/problem+json")
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable));
     }
 
     public override async Task HandleAsync(SearchRequest req, CancellationToken ct)

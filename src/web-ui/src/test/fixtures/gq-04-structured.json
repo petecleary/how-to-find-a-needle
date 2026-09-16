@@ -1,0 +1,150 @@
+{
+  "stage": "structured",
+  "query": "",
+  "page": 1,
+  "pageSize": 50,
+  "totalResults": 6,
+  "executionTimeMs": 1.73,
+  "results": [
+    {
+      "id": "PROD-0030",
+      "name": "Brakk 18V Fast Charger",
+      "brand": "Brakk",
+      "categories": ["battery-chargers"],
+      "price": 24.99,
+      "specs": { "platform": "brakk-18v", "voltageV": 18 },
+      "score": null,
+      "signals": {
+        "structuredMatch": true,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": null,
+        "vectorDistance": null,
+        "fusedRank": null,
+        "conceptMatch": null
+      },
+      "compatibility": { "status": "NotEvaluated", "reasons": [] }
+    },
+    {
+      "id": "PROD-0010",
+      "name": "Brakk 18V LED Work Light (Body Only)",
+      "brand": "Brakk",
+      "categories": ["power-tool-accessories"],
+      "price": 29.99,
+      "specs": { "voltageV": 18 },
+      "score": null,
+      "signals": {
+        "structuredMatch": true,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": null,
+        "vectorDistance": null,
+        "fusedRank": null,
+        "conceptMatch": null
+      },
+      "compatibility": { "status": "NotEvaluated", "reasons": [] }
+    },
+    {
+      "id": "PROD-0027",
+      "name": "Brakk 18V 2.0Ah Battery",
+      "brand": "Brakk",
+      "categories": ["batteries"],
+      "price": 34.99,
+      "specs": { "platform": "brakk-18v", "voltageV": 18, "capacityAh": 2.0 },
+      "score": null,
+      "signals": {
+        "structuredMatch": true,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": null,
+        "vectorDistance": null,
+        "fusedRank": null,
+        "conceptMatch": null
+      },
+      "compatibility": { "status": "NotEvaluated", "reasons": [] }
+    },
+    {
+      "id": "PROD-0026",
+      "name": "Brakk 18V 4.0Ah Battery",
+      "brand": "Brakk",
+      "categories": ["batteries"],
+      "price": 49.99,
+      "specs": { "platform": "brakk-18v", "voltageV": 18, "capacityAh": 4.0 },
+      "score": null,
+      "signals": {
+        "structuredMatch": true,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": null,
+        "vectorDistance": null,
+        "fusedRank": null,
+        "conceptMatch": null
+      },
+      "compatibility": { "status": "NotEvaluated", "reasons": [] }
+    },
+    {
+      "id": "PROD-0008",
+      "name": "Brakk 18V Impact Driver (Body Only)",
+      "brand": "Brakk",
+      "categories": ["drills"],
+      "price": 79.99,
+      "specs": { "voltageV": 18, "batteryPlatform": "brakk-18v" },
+      "score": null,
+      "signals": {
+        "structuredMatch": true,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": null,
+        "vectorDistance": null,
+        "fusedRank": null,
+        "conceptMatch": null
+      },
+      "compatibility": { "status": "NotEvaluated", "reasons": [] }
+    },
+    {
+      "id": "PROD-0006",
+      "name": "Brakk 18V Combi Drill (Body Only)",
+      "brand": "Brakk",
+      "categories": ["drills"],
+      "price": 89.99,
+      "specs": { "voltageV": 18, "batteryPlatform": "brakk-18v" },
+      "score": null,
+      "signals": {
+        "structuredMatch": true,
+        "keywordRank": null,
+        "keywordScore": null,
+        "vectorRank": null,
+        "vectorDistance": null,
+        "fusedRank": null,
+        "conceptMatch": null
+      },
+      "compatibility": { "status": "NotEvaluated", "reasons": [] }
+    }
+  ],
+  "debugTrace": {
+    "steps": [
+      {
+        "stage": "structured",
+        "title": "Parameterised SQL filters",
+        "durationMs": 1.71,
+        "sql": "SELECT id, name, brand, categories, price, specs::text AS specs\nFROM products\nWHERE lower(brand) = lower(@brand)\n  AND price <= @maxPrice\n  AND specs @> @specs::jsonb\nORDER BY price, id\nLIMIT @limit OFFSET @offset;",
+        "parameters": {
+          "brand": "Brakk",
+          "maxPrice": 100.0,
+          "specs": "{\"voltageV\":18}",
+          "limit": 50,
+          "offset": 0
+        },
+        "details": {
+          "rowCount": 6,
+          "totalCount": 6,
+          "countSql": "SELECT COUNT(*)\nFROM products\nWHERE lower(brand) = lower(@brand)\n  AND price <= @maxPrice\n  AND specs @> @specs::jsonb;"
+        },
+        "notes": [
+          "Structured search can't understand 'something to charge my laptop'. It only matches the attributes you give it.",
+          "There is no relevance score: results are ordered by price, then ID."
+        ]
+      }
+    ]
+  }
+}

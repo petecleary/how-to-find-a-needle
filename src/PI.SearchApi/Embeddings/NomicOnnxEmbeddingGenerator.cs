@@ -16,7 +16,7 @@ namespace PI.SearchApi.Embeddings;
 //           code rather than an API call.
 // Failure:  Each step is a place bugs hide: a wrong tokenizer, a missing prefix or pooling over
 //           padding all still produce plausible-looking numbers. Only a golden query notices.
-// Decision: docs/adr/0009-local-embeddings-onnx-runtime.md
+// Decision: docs/decisions/0009-local-embeddings-onnx-runtime.md
 public sealed class NomicOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
     public const string ModelId = "nomic-embed-text-v1.5-int8";

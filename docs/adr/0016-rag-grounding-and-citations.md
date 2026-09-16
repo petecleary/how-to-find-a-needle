@@ -1,12 +1,12 @@
-# ADR-0016: Stage 7 — RAG: streamed, grounded summary with citations
+# ADR-0016: Stage 6 — RAG: streamed, grounded summary with citations
 
-- **Status:** Proposed
-- **Date:** 2026-09-13
+- **Status:** Accepted (Phase 4, 2026-09-16): built and verified, in the API and the UI. Across 210 bake-off requests no citation ever fell outside the evidence set.
+- **Date:** 2026-09-13 (amended 2026-09-15 while building Phase 4 step 2: evidence for unchecked and out-of-concept items, descriptions read with one query, `invalidCitations` in `final`, errors before the first event)
 - **Related:** ADR-0003, ADR-0004, ADR-0013, ADR-0014, ADR-0015, ADR-0017; golden queries GQ-01, GQ-05, GQ-06; roadmap Phase 4
 
 ## Context
 
-After Stage 6 we have relevant candidates, their concept matches *and* domain rule checks with reasons. Stage 7 lets an LLM answer the user's question in natural language, **using only that evidence**, and cite it.
+After Stage 5 we have relevant candidates, their concept matches *and* domain rule checks with reasons. Stage 6 lets an LLM answer the user's question in natural language, **using only that evidence**, and cite it.
 
 Without grounding, an LLM will happily recommend the 45W barrel charger, or invent a product. Grounding and citations make the answer checkable, and the UI can link each claim back to a product card.
 
@@ -18,10 +18,10 @@ Retrieval takes milliseconds; generation takes seconds. Users shouldn't wait for
 
 | Request | Returns |
 |---|---|
-| `POST /api/search/rag` | The normal JSON `SearchResponse`: the Stage 6 pipeline's results and trace, with an `evidence` trace step listing the product IDs the summary will use. Renders immediately |
+| `POST /api/search/rag` | The normal JSON `SearchResponse`: the Stage 5 pipeline's results and trace, with an `evidence` trace step listing the product IDs the summary will use. Renders immediately |
 | `POST /api/search/rag/answer` | The summary as **Server-Sent Events**, or as one JSON object when `Accept: application/json` (tests, Scalar) |
 
-The UI sends both at once with the same body ([ADR-0014](0014-web-ui-architecture.md)). The answer endpoint is **stateless**: it re-runs the Stage 6 pipeline with the same request and builds the same evidence set, because retrieval is deterministic.
+The UI sends both at once with the same body ([ADR-0014](0014-web-ui-architecture.md)). The answer endpoint is **stateless**: it re-runs the Stage 5 pipeline with the same request and builds the same evidence set, because retrieval is deterministic.
 
 ### Evidence set (`IAnswerGenerator`)
 
@@ -30,9 +30,14 @@ The UI sends both at once with the same body ([ADR-0014](0014-web-ui-architectur
   - Up to **5 Compatible** products (by rank).
   - Up to **3 Incompatible** products **with their reasons**, so the model can warn about them.
   - Up to **2 Unknown** products.
+  - With no target device, the requirements the query states ("65W", "USB-C") are named where the device would be, and each product's block says which catalog devices it fits (amended 2026-09-16, [ADR-0013](0013-domain-ontology-and-compatibility.md)).
+  - Up to **5 not-checked** products (`NotEvaluated`: constraints are off, or no rule applies to them), so a query with no rules still has evidence to answer from.
+  - **Out-of-concept products are left out** (the phone battery for "cordless drill battery", DDR4 memory for "power adapter"): they aren't what the shopper asked for, and Stage 5 has already said so. Queries with no wanted concept keep every item.
+  - Items keep Stage 5's order; each records its rank and *why it was included*.
 - **Each item** is rendered as a compact, labelled block: `[PROD-0012] Voltline 65W USB-C GaN Charger — £49.99 — connector: USB-C, 65W — Compatibility: Compatible (connector USB-C matches; 65W ≥ 65W)`.
-- Descriptions are truncated to about 300 characters, and reviews are excluded (to save tokens and reduce noise).
-- The matched concepts and the domain rules that fired are included once, with their `skos:definition` text, so the answer explains constraints in the domain's own words ([ADR-0013](0013-domain-ontology-and-compatibility.md)).
+- Descriptions are truncated to about 300 characters, and reviews are excluded (to save tokens and reduce noise). Stage 5 doesn't carry descriptions, so the evidence step reads them for the chosen products with one parameterised query (`WHERE id = ANY(@ids)`), shown in its trace.
+- Stage 5's service exposes what the evidence needs besides the ranked candidates (the target device, the matched concepts and the rule checks) as a typed result, rather than the evidence builder reading them back out of trace dictionaries.
+- The matched concepts and the domain rules that fired are included once, with their `skos:definition` text, so the answer explains constraints in the domain's own words. Each concept also carries its English `prefLabel` and `altLabel`s (never `hiddenLabel` misspellings), which Stage 7 uses to choose words for its audience ([ADR-0013](0013-domain-ontology-and-compatibility.md), [ADR-0017](0017-pedagogy-engine.md)).
 
 ### Prompt (versioned files in `assets/prompts/rag-system.md` and `rag-user.md`)
 
@@ -57,13 +62,15 @@ event: delta
 data: {"section":"answer","text":"The Voltline 65W USB-C charger [PROD-0012] "}
 
 event: final
-data: {"section":"answer","markdown":"…full text…","citations":["PROD-0012","PROD-0014"],"insufficientEvidence":false,"warnings":[]}
+data: {"section":"answer","markdown":"…full text…","citations":["PROD-0012","PROD-0014"],"invalidCitations":[],"insufficientEvidence":false,"warnings":[]}
 
 event: done
 data: {"timeToFirstTokenMs":640,"totalMs":5210,"trace":[…]}
 ```
 
-- Failures send `event: error` with a ProblemDetails body (e.g. `503` "Is Ollama running?"). The results request is unaffected.
+- `invalidCitations` lists the cited IDs that weren't in the evidence, so the UI can mark exactly those chips without parsing warning text.
+- `done.trace` holds the answer's own steps (prompt, generation, validation). The evidence step is already in the results response's trace, so the UI shows it once.
+- Failures send `event: error` with a ProblemDetails body (e.g. `503` "Is Ollama running?"). The results request is unaffected. In practice this is what an unavailable LLM looks like on the stream, because `meta` is sent as soon as retrieval finishes, before the model is called: the response is `200 text/event-stream` carrying `meta` and then `error` (verified 2026-09-16). A plain `503` ProblemDetails response happens when nothing has been streamed at all: JSON mode, or a failure before `meta`.
 - Closing the connection cancels generation; the request's `CancellationToken` flows into `IChatClient`.
 - The endpoint disables response buffering and compression, so chunks reach the browser as they're produced.
 

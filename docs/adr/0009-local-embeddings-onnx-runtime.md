@@ -2,11 +2,11 @@
 
 - **Status:** Proposed
 - **Date:** 2026-09-13
-- **Related:** ADR-0006, ADR-0010, ADR-0011, ADR-0012, ADR-0013, ADR-0015; roadmap Phase 2 (Nomic), Phase 5 (OpenAI)
+- **Related:** ADR-0006, ADR-0010, ADR-0011, ADR-0013, ADR-0015; roadmap Phase 2 (Nomic), Phase 5 (OpenAI)
 
 ## Context
 
-Stages 3, 4 and 6 need dense text embeddings, for products (at seeding) and for queries (at every search). Two audiences have different needs:
+Stages 3, 4 and 5 need dense text embeddings, for products (at seeding) and for queries (at every search). Two audiences have different needs:
 
 - **The presenter** runs everything locally on an Apple-silicon Mac with 64 GB of memory. The demo must work **offline**, and the talk should show how an embedding model actually works: tokenizer, network, pooling, normalisation.
 - **Learners** may not want to download ONNX models, but may have an OpenAI key.
@@ -42,7 +42,7 @@ Configuration (`appsettings.json`; secrets via `dotnet user-secrets`):
 
 ### Committed product embedding files
 
-- **Location:** `assets/data/embeddings/{provider}.jsonl`, i.e. `nomic.jsonl`, then `openai.jsonl` when built (and `bge-m3.jsonl` if Stage 5 is built, [ADR-0012](0012-bge-m3-dense-and-sparse.md)).
+- **Location:** `assets/data/embeddings/{provider}.jsonl`, i.e. `nomic.jsonl`, then `openai.jsonl` when built.
 - **Format:** one line per product, with the vector as little-endian float32, base64-encoded. That's about 1 MB per file at 500 products, and the metadata stays readable.
 
 ```json

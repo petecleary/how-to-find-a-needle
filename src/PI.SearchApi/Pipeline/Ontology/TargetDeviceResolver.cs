@@ -7,7 +7,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 /// <c>context.targetProductId</c> if given, otherwise the longest device name found in the query, otherwise none.
 /// </summary>
 /// <remarks>
-/// "A device name is context, not intent." Knowing where the query names the device lets Stage 6 remove
+/// "A device name is context, not intent." Knowing where the query names the device lets Stage 5 remove
 /// those words from what keyword and vector search receive, and use the device for rule checks instead.
 /// </remarks>
 public sealed class TargetDeviceResolver(ProductLookup products)

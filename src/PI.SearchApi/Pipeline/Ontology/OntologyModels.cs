@@ -26,7 +26,7 @@ public enum LabelKind
 }
 
 /// <summary>
-/// One label for one concept, in one language. Stage 6's label matcher reads every label, in every
+/// One label for one concept, in one language. Stage 5's label matcher reads every label, in every
 /// language, from the ontology — so "cargador" finds Chargers without a line of Spanish-aware code.
 /// </summary>
 /// <param name="SchemeNotation">Null for taxonomy concepts; the vocabulary scheme (e.g. "connectors") otherwise.</param>
@@ -47,6 +47,24 @@ public sealed record ConceptLabel(
 /// is a known notation or a known label ("Type-C" as well as "usb-c").
 /// </summary>
 public sealed record VocabularyValue(string Notation, IReadOnlyList<string> Labels);
+
+/// <summary>
+/// A value vocabulary: a small SKOS concept scheme listing the allowed values of one kind of
+/// constrained spec, e.g. "connectors" (usb-c, barrel-5.5mm). Shaped for display, unlike
+/// <see cref="VocabularyValue"/>, which flattens labels for matching.
+/// </summary>
+/// <param name="Label">The scheme's English preferred label, e.g. "Connectors".</param>
+public sealed record OntologyVocabulary(
+    string Notation,
+    string Label,
+    IReadOnlyList<OntologyVocabularyConcept> Concepts);
+
+/// <summary>One value in a vocabulary, e.g. "usb-c", with its display names and synonyms.</summary>
+/// <param name="AltLabels">skos:altLabel synonyms ("Type-C"). Hidden labels are left out: they're for matching, not display.</param>
+public sealed record OntologyVocabularyConcept(
+    string Notation,
+    IReadOnlyDictionary<string, string> PrefLabels,
+    IReadOnlyList<string> AltLabels);
 
 /// <summary>
 /// One check inside a compatibility rule: compare an accessory's spec against a device's

@@ -1,6 +1,6 @@
 # CLAUDE.md — How to Find a Needle
 
-The supporting repo for the talk **"How to Find a Needle"**: a search pipeline built on one dataset, one stage at a time (structured → keyword → vector → hybrid → BGE-M3 → ontology → RAG → pedagogy).
+The supporting repo for the talk **"How to Find a Needle"**: a search pipeline built on one dataset, one stage at a time (structured → keyword → vector → hybrid → ontology → RAG → pedagogy).
 
 - **The code is teaching material.** Learners clone it and read it alongside the talk. Write every file as if a developer new to search will study it.
 - **One finished codebase** on `main`. Stages are features in one solution, not branches, tags or commits for learners to step through.
@@ -24,10 +24,10 @@ Area-specific standards (loaded when you work in that folder):
 
 ## Build order and scope
 
-- Follow the roadmap order: Data → Search APIs (stages 1–4, 6) → Frontend → AI stages (7–8) → Finish & publish.
+- Follow the roadmap order: Data → Search APIs (stages 1–5) → Frontend → AI stages (6–7) → Finish & publish.
 - When time is short, cut from the bottom of the Must / Should / Could table in the roadmap.
-- **Stage 5 BGE-M3 is optional and always built last**, after every other phase.
-- Working ADRs live in `docs/adr/` on the `build` branch. Public, learner-facing ADRs are written after the build is complete.
+- **Build only the seven stages.** BGE-M3, chunking, re-ranking, OWL/SHACL/knowledge graphs and RAG evaluation are *discussed* in the talk's going-further step, not built. Agent protocols (MCP, A2A, AG-UI) are out of scope entirely. Don't add code for a discussed topic without an ADR change ([ADR-0018](docs/decisions/0018-scope-and-going-further.md)).
+- Working ADRs, `architecture.md` and `roadmap.md` live in `docs/adr/` on the `build` branch. The public, learner-facing ADRs are in `docs/decisions/` (same numbers and file names); code comments, content and the UI link to those. Keep both in step when a decision changes.
 - Don't add a package, service or framework the ADRs don't mention. If one is needed, propose an ADR change.
 
 ## Commands
@@ -58,7 +58,7 @@ The API is not supported standalone; always start it through `PI.AppHost`.
 - **Clarity over cleverness.** Use named steps and intermediate variables when a dense LINQ chain or one-liner would hide the idea being taught.
 - **Be honest in naming.** Postgres FTS is "BM25-style", never "BM25". Similarity is not compatibility. A score means what the trace says it means.
 - **Never hide rejected items.** Flagged or incompatible candidates stay visible, with reasons. Show warnings; don't hide failures.
-- **The trace is a feature.** Every stage populates `debugTrace` with the exact parameterised SQL, its parameters and the stage-specific details ([ADR-0003](docs/adr/0003-search-api-contract-and-debug-trace.md)).
+- **The trace is a feature.** Every stage populates `debugTrace` with the exact parameterised SQL, its parameters and the stage-specific details ([ADR-0003](docs/decisions/0003-search-api-contract-and-debug-trace.md)).
 - **No hidden magic.** No ORM, no caching, no global state library, no retries that hide failures. Visible behaviour beats convenience; the "Alternatives considered" tables in the ADRs explain each case.
 - **Same contract for every stage.** POST, same request, same response, so the UI can switch stages with the same query.
 - **Retrieve deep, page late.** Retrieve, fuse and evaluate over `candidateDepth`; page once, in the endpoint.
@@ -80,7 +80,7 @@ Readers are working developers who know C#, TypeScript and web APIs but are **ne
 //           comparing their incompatible raw scores; only ranks are fused.
 // Failure:  Still has no idea what "compatible" means: a near miss that both
 //           retrievers like ranks near the top.
-// Decision: docs/adr/0011-hybrid-search-rrf.md
+// Decision: docs/decisions/0011-hybrid-search-rrf.md
 ```
 
 **2. Inline comments explain *why*, and teach the concept at that line.**
@@ -118,8 +118,8 @@ Use these names consistently in code, API, UI, content and tests.
 
 | Term | Meaning / form |
 |---|---|
-| Stage slugs | `structured`, `keyword`, `vector`, `hybrid`, `bge-m3`, `ontology`, `rag`, `pedagogy` |
-| Stage | One numbered technique in the talk (Stage 1–8) with its own endpoint |
+| Stage slugs | `structured`, `keyword`, `vector`, `hybrid`, `ontology`, `rag`, `pedagogy` |
+| Stage | One numbered technique in the talk (Stage 1–7) with its own endpoint |
 | Candidate | A retrieved product with a score and per-technique signals |
 | `StageResult` | Candidates plus the trace steps that produced them |
 | Trace step | One entry in `debugTrace.steps` |
@@ -130,16 +130,18 @@ Use these names consistently in code, API, UI, content and tests.
 | Near miss | Semantically similar but incompatible |
 | Compatibility status | `NotEvaluated`, `Compatible`, `Incompatible`, `Unknown` |
 | Concept match | `InConcept`, `OutOfConcept`, `NoConcept` |
-| Evidence set | The bounded candidates given to the LLM in Stages 7–8 |
+| Evidence set | The bounded candidates given to the LLM in Stages 6–7 |
 | Audience | `novice`, `enthusiast`, `expert` |
+| Baseline explanation | Stage 7 with `options.applyPedagogy: false`: same facts and audience, plain prompt, no pedagogical structure |
+| Going further | A topic the talk discusses but doesn't build ([ADR-0018](docs/decisions/0018-scope-and-going-further.md)) |
 
 ## Data rules
 
-- **Catalog and ontology are separate.** Product records live in `assets/data/products.json`. The domain model (taxonomy, synonyms, value vocabularies, class-level rules) lives in `assets/data/domain-ontology.ttl` and **never names a product** ([ADR-0013](docs/adr/0013-domain-ontology-and-compatibility.md)).
+- **Catalog and ontology are separate.** Product records live in `assets/data/products.json`. The domain model (taxonomy, synonyms, value vocabularies, class-level rules) lives in `assets/data/domain-ontology.ttl` and **never names a product** ([ADR-0013](docs/decisions/0013-domain-ontology-and-compatibility.md)).
 - Categories and vocabulary-backed spec values use ontology notations; validation tests enforce it.
 - Committed embeddings (`assets/data/embeddings/*.jsonl`) are regenerated only with `Embeddings:Rebuild = true`. Never hand-edit them.
 - Prompts live in `assets/prompts/*.md`, not in C# string literals. SPARQL lives in `assets/data/queries/*.rq`.
-- If a golden query doesn't produce its moment, change product **wording**, not the algorithm ([ADR-0005](docs/adr/0005-curated-dataset-and-golden-queries.md)).
+- If a golden query doesn't produce its moment, change product **wording**, not the algorithm ([ADR-0005](docs/decisions/0005-curated-dataset-and-golden-queries.md)).
 
 ## Git and secrets
 

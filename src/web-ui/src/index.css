@@ -1,0 +1,262 @@
+/*
+ * Theme tokens for the Pi & Mash look and feel.
+ * Decision: docs/decisions/0014-web-ui-architecture.md#visual-design · pictures: docs/design/README.md
+ *
+ * - Light theme on :root, dark theme on .dark (shadcn's convention). Components use the Tailwind
+ *   names from @theme below (bg-search, text-compatible-ink), never raw hex.
+ * - The three brand colours are the talk's triad. Each has a fill, an ink (for coloured text,
+ *   darker in light, lighter in dark) and a tint (a quiet background).
+ * - Status colours are separate from brand colours: Incompatible is red, never orange, so a
+ *   warning never reads as "Pedagogy".
+ */
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+/* presentation:hidden removes a control that a projector audience doesn't need (PresentationProvider). */
+@custom-variant presentation (&:where(.presentation, .presentation *));
+
+/*
+ * Self-hosted fonts (SIL Open Font License 1.1; each folder holds its OFL.txt), so the talk
+ * works with no internet at the venue. Only the Latin subset and the weights the design uses
+ * are shipped; a missing glyph (Σ, ≥) falls back to the next font in the stack.
+ */
+@font-face {
+    font-family: 'Dosis';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./assets/fonts/dosis/dosis-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Dosis';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('./assets/fonts/dosis/dosis-latin-800-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./assets/fonts/atkinson-hyperlegible/atkinson-hyperlegible-latin-400-normal.woff2')
+        format('woff2');
+}
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./assets/fonts/atkinson-hyperlegible/atkinson-hyperlegible-latin-400-italic.woff2')
+        format('woff2');
+}
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./assets/fonts/atkinson-hyperlegible/atkinson-hyperlegible-latin-700-normal.woff2')
+        format('woff2');
+}
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: italic;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./assets/fonts/atkinson-hyperlegible/atkinson-hyperlegible-latin-700-italic.woff2')
+        format('woff2');
+}
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./assets/fonts/jetbrains-mono/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./assets/fonts/jetbrains-mono/jetbrains-mono-latin-700-normal.woff2') format('woff2');
+}
+
+:root {
+    --radius: 18px;
+
+    /* Neutrals (slightly green-toned, like the logo) */
+    --background: #f6f7f5;
+    --foreground: #15191e;
+    --card: #ffffff;
+    --card-foreground: #15191e;
+    --popover: #ffffff;
+    --popover-foreground: #15191e;
+    --muted: #eef1ee;
+    --muted-foreground: #58616b;
+    --secondary: #eef1ee;
+    --secondary-foreground: #15191e;
+    --accent: #eef1ee;
+    --accent-foreground: #15191e;
+    --border: #dfe3df;
+    --input: #dfe3df;
+    --code: #f0f2ef;
+
+    /* Triad: Search (Stages 1–4) is purple, the only fill that takes white text */
+    --search: #4f46e5;
+    --search-ink: #4338ca;
+    --search-tint: #ebeafc;
+    --on-search: #ffffff;
+
+    /* Triad: Ontology (Stage 5) is green, also the primary-action colour */
+    --ontology: #10b981;
+    --ontology-ink: #047857;
+    --ontology-tint: #e2f5ed;
+    --on-ontology: #101a17;
+
+    /* Triad: Pedagogy (Stages 6–7) is orange */
+    --pedagogy: #ff7a59;
+    --pedagogy-ink: #c2410c;
+    --pedagogy-tint: #ffede6;
+    --on-pedagogy: #101a17;
+
+    /* Compatibility status (not brand colours) */
+    --compatible-ink: #047857;
+    --compatible-tint: #e2f5ed;
+    --incompatible-ink: #b91c1c;
+    --incompatible-tint: #fdeaea;
+    --unknown-ink: #92400e;
+    --unknown-tint: #fdf3dc;
+
+    /* shadcn roles mapped onto the brand */
+    --primary: var(--ontology);
+    --primary-foreground: var(--on-ontology);
+    --destructive: #b91c1c;
+    --ring: #047857;
+}
+
+.dark {
+    --background: #101317;
+    --foreground: #eef1ee;
+    --card: #181c22;
+    --card-foreground: #eef1ee;
+    --popover: #181c22;
+    --popover-foreground: #eef1ee;
+    --muted: #20252d;
+    --muted-foreground: #9ca5af;
+    --secondary: #20252d;
+    --secondary-foreground: #eef1ee;
+    --accent: #20252d;
+    --accent-foreground: #eef1ee;
+    --border: #2c323b;
+    --input: #2c323b;
+    --code: #13171c;
+
+    /* Purple is lightened on dark so it still reads against the background, but no further than white text
+       on it allows: #6961ef gives 4.61:1 (contrast.test.ts); the first choice, #6d66f0, gave 4.37:1. */
+    --search: #6961ef;
+    --search-ink: #a9a4fb;
+    --search-tint: #211e44;
+
+    --ontology-ink: #34d399;
+    --ontology-tint: #0e2b23;
+
+    --pedagogy-ink: #ffa184;
+    --pedagogy-tint: #39211a;
+
+    --compatible-ink: #34d399;
+    --compatible-tint: #0e2b23;
+    --incompatible-ink: #f87171;
+    --incompatible-tint: #3a1b1d;
+    --unknown-ink: #fbbf24;
+    --unknown-tint: #392d11;
+
+    --destructive: #f87171;
+    --ring: #34d399;
+}
+
+@theme inline {
+    --font-sans: 'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+    /* Dosis is for the logo wordmark and the talk title only */
+    --font-brand: 'Dosis', 'Trebuchet MS', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+    --radius-sm: calc(var(--radius) - 8px);
+    --radius-md: calc(var(--radius) - 6px);
+    --radius-lg: calc(var(--radius) - 2px);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-card: var(--radius);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-code: var(--code);
+
+    --color-search: var(--search);
+    --color-search-ink: var(--search-ink);
+    --color-search-tint: var(--search-tint);
+    --color-on-search: var(--on-search);
+    --color-ontology: var(--ontology);
+    --color-ontology-ink: var(--ontology-ink);
+    --color-ontology-tint: var(--ontology-tint);
+    --color-on-ontology: var(--on-ontology);
+    --color-pedagogy: var(--pedagogy);
+    --color-pedagogy-ink: var(--pedagogy-ink);
+    --color-pedagogy-tint: var(--pedagogy-tint);
+    --color-on-pedagogy: var(--on-pedagogy);
+
+    --color-compatible-ink: var(--compatible-ink);
+    --color-compatible-tint: var(--compatible-tint);
+    --color-incompatible-ink: var(--incompatible-ink);
+    --color-incompatible-tint: var(--incompatible-tint);
+    --color-unknown-ink: var(--unknown-ink);
+    --color-unknown-tint: var(--unknown-tint);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    html {
+        color-scheme: light;
+    }
+    html.dark {
+        color-scheme: dark;
+    }
+    body {
+        @apply bg-background font-sans text-foreground antialiased;
+    }
+    /* JetBrains Mono's ligatures draw SQL's <= as ≤ and -> as an arrow. The trace must show the exact text
+       that ran (ADR-0003), so monospaced text shows every character as typed. */
+    .font-mono,
+    code,
+    pre {
+        font-variant-ligatures: none;
+    }
+    /* Presentation mode (ADR-0014): everything 12.5% larger for the back of the room. Zoom scales the whole page,
+       pixel sizes included, so the layout keeps its proportions; popovers scale with it. */
+    html.presentation {
+        zoom: 1.125;
+    }
+    /* A visible focus ring in both themes: the talk must be keyboard-operable */
+    :focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
+}

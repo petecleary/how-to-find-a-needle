@@ -4,20 +4,21 @@ using PI.SearchApi.Pipeline.Hybrid;
 
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6 — Ontology: SKOS concepts, expansion and domain rules
+// Stage 5 — Ontology: SKOS concepts, expansion and domain rules
 //
 // What:     Understands the query first — which device the shopper owns, which categories they
 //           want — then expands the wanted concepts into synonyms and narrower concepts, re-runs
 //           hybrid search with that better input, classifies each candidate (in or out of concept)
-//           and checks class-level rules against the target device. Flagged items move down,
-//           never out.
+//           and checks class-level rules against the target device — or, with no device, against the
+//           requirements the query states ("65W USB-C"), listing which catalog devices each product
+//           fits. Flagged items move down, never out.
 // Strength: Answers "how is it related and constrained?": a device name becomes context instead
 //           of search text, recall improves through synonyms, precision through classification,
 //           and correctness through rules with reasons.
 // Failure:  Knows only what the ontology and catalog state. Unlisted synonyms, partial device names
 //           ("my Aerobook"), unmodelled product types or rules beyond equals/≥/≤/in are invisible
 //           to it — and it still needs retrieval to find the candidates in the first place.
-// Decision: docs/adr/0013-domain-ontology-and-compatibility.md
+// Decision: docs/decisions/0013-domain-ontology-and-compatibility.md
 public sealed class OntologySearch(
     IOntology ontology,
     LabelMatcher labelMatcher,
@@ -25,11 +26,17 @@ public sealed class OntologySearch(
     IHybridSearch hybridSearch,
     ConceptClassifier classifier,
     TargetDeviceResolver deviceResolver,
-    CompatibilityEvaluator evaluator) : IOntologySearch
+    CompatibilityEvaluator evaluator,
+    QueryRequirementExtractor requirementExtractor,
+    DeviceFitFinder fitFinder,
+    ProductLookup products) : IOntologySearch
 {
-    public async Task<StageResult> SearchAsync(SearchRequest request, CancellationToken ct)
+    public async Task<StageResult> SearchAsync(SearchRequest request, CancellationToken ct) =>
+        (await SearchWithContextAsync(request, ct)).Result;
+
+    public async Task<OntologySearchResult> SearchWithContextAsync(SearchRequest request, CancellationToken ct)
     {
-        using var activity = PipelineTelemetry.Source.StartActivity("Stage 6: ontology search");
+        using var activity = PipelineTelemetry.Source.StartActivity("Stage 5: ontology search");
         var options = request.Options;
 
         // 1. Understand: resolve the device first, so its name is claimed before label matching,
@@ -38,7 +45,14 @@ public sealed class OntologySearch(
         var device = await deviceResolver.ResolveAsync(request, TextNormaliser.Tokenise(request.Query), ct);
         var understanding = labelMatcher.Understand(request.Query, device.Mention);
         understanding = understanding with { ContextConcepts = ContextConceptsFor(understanding, device.Product) };
-        var understandStep = UnderstandStep(understanding, device, PipelineTelemetry.ElapsedMs(start));
+
+        //    What the query itself asks for ("65W USB-C charger"), for when there is no device to check against.
+        //    With a device, it's still shown, and any requirement the device contradicts is reported.
+        var requirements = requirementExtractor.Extract(understanding);
+        var conflicts = device.Product is { } owned && requirements.Any
+            ? evaluator.ConflictsWithDevice(requirements.Requirements, owned)
+            : [];
+        var understandStep = UnderstandStep(understanding, device, requirements, conflicts, PipelineTelemetry.ElapsedMs(start));
 
         // 2. Expand (optional). Also runs when the query only needs its device name removed.
         start = Stopwatch.GetTimestamp();
@@ -58,17 +72,28 @@ public sealed class OntologySearch(
             c => classifier.Classify(c.Product.Categories, wantedConcepts));
         var classifyStep = ClassifyStep(options, understanding, retrieved.Candidates, classifications, PipelineTelemetry.ElapsedMs(start));
 
-        // 5. Constrain (optional), using the device resolved in step 1
+        // 5. Constrain (optional): against the device resolved in step 1; without one, against the query's
+        //    requirements; and without a device, also list the catalog devices each product fits.
         start = Stopwatch.GetTimestamp();
         var targetId = device.Product?.Id;
         var evaluations = options.ApplyConstraints
-            ? retrieved.Candidates.ToDictionary(c => c.Product.Id, c => evaluator.Evaluate(c.Product, device.Product))
+            ? retrieved.Candidates.ToDictionary(c => c.Product.Id, c => Evaluate(c.Product, device.Product, requirements))
+            : [];
+
+        IReadOnlyList<ProductSummary> catalogDevices = options.ApplyConstraints && device.Product is null
+            ? await products.GetDevicesAsync(ct)
             : [];
 
         var evaluated = retrieved.Candidates.Select(candidate =>
         {
             var id = candidate.Product.Id;
             var compatibility = evaluations.TryGetValue(id, out var evaluation) ? evaluation.Result : CompatibilityResult.NotEvaluated;
+
+            // "Fits 6 of 13 laptops": context only, so it never changes the status or the order.
+            if (catalogDevices.Count > 0 && fitFinder.FitsFor(candidate.Product, catalogDevices) is { } fits)
+            {
+                compatibility = compatibility with { Fits = fits };
+            }
 
             if (options.ApplyConstraints && id == targetId)
             {
@@ -90,10 +115,23 @@ public sealed class OntologySearch(
             ? evaluated.OrderBy(c => FlagGroup(c, targetId)).ToList()
             : evaluated;
 
-        var constrainStep = ConstrainStep(options, device, evaluations, ordered, targetId, PipelineTelemetry.ElapsedMs(start));
+        var constrainStep = ConstrainStep(options, device, requirements, evaluations, ordered, targetId, PipelineTelemetry.ElapsedMs(start));
 
-        return new StageResult(ordered, [understandStep, expandStep, .. retrieved.Trace, classifyStep, constrainStep]);
+        return new OntologySearchResult(
+            new StageResult(ordered, [understandStep, expandStep, .. retrieved.Trace, classifyStep, constrainStep]),
+            device,
+            understanding,
+            [.. evaluations.Values.SelectMany(e => e.Checks)])
+        {
+            Requirements = device.Product is null ? requirements : QueryRequirements.None,
+        };
     }
+
+    // The device decides when there is one; otherwise stated requirements do; otherwise the rules can't be decided.
+    private CompatibilityEvaluation Evaluate(ProductSummary candidate, ProductSummary? device, QueryRequirements requirements) =>
+        device is null && requirements.Any
+            ? evaluator.EvaluateAgainstRequirements(candidate, requirements.Requirements)
+            : evaluator.Evaluate(candidate, device);
 
     // A matched device-type concept that the target device belongs to describes what the shopper owns:
     // "laptop" in "power adapter for my laptop" when the device is a laptop.
@@ -109,7 +147,12 @@ public sealed class OntologySearch(
         : candidate.Signals.ConceptMatch == ConceptMatch.OutOfConcept || candidate.Product.Id == targetId ? 1
         : 0;
 
-    private static TraceStep UnderstandStep(QueryUnderstanding understanding, TargetDevice device, double durationMs)
+    private static TraceStep UnderstandStep(
+        QueryUnderstanding understanding,
+        TargetDevice device,
+        QueryRequirements requirements,
+        IReadOnlyList<string> conflicts,
+        double durationMs)
     {
         var notes = new List<string>
         {
@@ -130,6 +173,13 @@ public sealed class OntologySearch(
         notes.Add(understanding.WantedConcepts.Count == 0
             ? "No wanted category was recognised, so there is nothing to expand or classify against."
             : "Value concepts (such as a connector) are shown, but only wanted categories are expanded and used for classification.");
+
+        if (requirements.Any)
+        {
+            notes.Add(device.Product is null
+                ? "Values and quantities the rules compare (a connector, a wattage) are requirements: with no target device, candidates are checked against them."
+                : "The query states requirements, but a target device was given: its specs decide, and the requirements are only shown.");
+        }
 
         return new TraceStep
         {
@@ -158,6 +208,17 @@ public sealed class OntologySearch(
                 ["wantedConcepts"] = understanding.WantedConcepts,
                 ["contextConcepts"] = understanding.ContextConcepts,
                 ["remainingText"] = understanding.RemainingText,
+                ["requirements"] = requirements.Requirements.Select(r => new
+                {
+                    phrase = r.Phrase,
+                    accessorySpec = r.AccessorySpec,
+                    @operator = r.Operator,
+                    value = r.Value,
+                    scheme = r.ValueSchemeNotation,
+                }).ToList(),
+                ["requirementsApplied"] = requirements.Any && device.Product is null,
+                ["unusedValuePhrases"] = requirements.UnusedPhrases,
+                ["requirementConflicts"] = conflicts,
             },
             Notes = notes,
         };
@@ -222,6 +283,7 @@ public sealed class OntologySearch(
     private TraceStep ConstrainStep(
         SearchOptions options,
         TargetDevice device,
+        QueryRequirements requirements,
         Dictionary<string, CompatibilityEvaluation> evaluations,
         IReadOnlyList<Candidate> ordered,
         string? targetId,
@@ -240,6 +302,7 @@ public sealed class OntologySearch(
 
             details["targetDevice"] = device.Product is { } p ? new { p.Id, p.Name, p.Categories } : null;
             details["targetDeviceMethod"] = device.Method;
+            details["checkedAgainst"] = device.Product is not null ? "device" : requirements.Any ? "query" : "none";
             details["rulesSparql"] = ontology.RulesSparql;
             details["rulesApplied"] = checks.Select(c => c.Rule).Distinct().ToList();
             details["checks"] = checks.Select(c => new
@@ -252,6 +315,7 @@ public sealed class OntologySearch(
                 @operator = c.Operator,
                 deviceSpec = c.DeviceSpec,
                 deviceValue = c.DeviceValue,
+                source = c.Source.ToString(),
                 result = c.Result.ToString(),
             }).ToList();
             details["flagged"] = ordered
@@ -268,20 +332,39 @@ public sealed class OntologySearch(
                 })
                 .ToList();
             details["finalOrder"] = ordered.Select(c => c.Product.Id).ToList();
+            details["fits"] = ordered
+                .Where(c => c.Compatibility.Fits is not null)
+                .Select(c => new
+                {
+                    id = c.Product.Id,
+                    fits = c.Compatibility.Fits!.Select(f => new { deviceType = f.DeviceType, fitting = f.Devices.Count, total = f.Total }).ToList(),
+                })
+                .ToList();
 
             notes.Add("Rules are data from domain-ontology.ttl, found with rules.rq. The evaluator runs their checks and never names a rule.");
             notes.Add("Order: unflagged first, then OutOfConcept and the target device itself, then Incompatible; each group keeps its fused order. Nothing is removed.");
 
+            if (device.Product is null && requirements.Any)
+            {
+                notes.Add("No target device: each check ran against what the query asked for. A check the query says nothing about stays Unknown.");
+            }
+            else if (device.Product is null)
+            {
+                notes.Add("No target device and no stated requirement, so any product a rule applies to is Unknown rather than Compatible.");
+            }
+
             if (device.Product is null)
             {
-                notes.Add("No target device, so any product a rule applies to is Unknown rather than Compatible.");
+                notes.Add("\"Fits\" runs the same rules against every catalog device of the type they name. It's context: it never changes a status or the order.");
             }
         }
 
         return new TraceStep
         {
             Stage = "ontology",
-            Title = "Constrain: domain rules vs the target device",
+            Title = device.Product is null && requirements.Any
+                ? "Constrain: domain rules vs what the query asked for"
+                : "Constrain: domain rules vs the target device",
             DurationMs = durationMs,
             Details = details,
             Notes = notes,

@@ -1,5 +1,5 @@
-# Builds the solution (warnings are errors) and runs the fast unit tests on every push (ADR-0002).
-# Integration tests need Docker and downloaded models, so they run locally or on demand.
+# Builds the solution (warnings are errors) and runs the fast unit tests on every push, and checks the web UI
+# (ADR-0002). Integration tests need Docker and downloaded models, so they run locally or on demand.
 name: CI
 
 on:
@@ -21,3 +21,38 @@ jobs:
 
       - name: Unit tests
         run: dotnet test tests/PI.SearchApi.Tests -c Release --no-build
+
+  # The web UI's checks need no API: its types are generated into src/api/schema.d.ts and committed, and its
+  # tests use captured responses. They do read files outside src/web-ui (docs/decisions, the API's golden-queries.json),
+  # so the whole repository is checked out.
+  web-ui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web-ui
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: src/web-ui/.nvmrc
+          cache: npm
+          cache-dependency-path: src/web-ui/package-lock.json
+
+      - name: Install (exactly the lockfile)
+        run: npm ci
+
+      - name: Formatting
+        run: npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build

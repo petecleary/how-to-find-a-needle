@@ -16,7 +16,7 @@ namespace PI.SearchApi.Data;
 // Failure:  Seeding is synchronous and blocks app.Run() until it finishes — simple and
 //           predictable for a demo, but a much larger catalog would need a background job
 //           instead (see "Alternatives considered" in the decision below).
-// Decision: docs/adr/0006-database-schema-and-seeding.md
+// Decision: docs/decisions/0006-database-schema-and-seeding.md
 public sealed class DatabaseSeeder(
     NpgsqlDataSource dataSource,
     ISearchEmbedder embedder,
@@ -72,10 +72,8 @@ public sealed class DatabaseSeeder(
             -- no longer describe this row, so null them out; Phase 2's embedding step then
             -- re-embeds only what actually changed. A price or spec edit alone leaves the hash
             -- (and so the vectors) untouched.
-            embedding_dense      = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_dense END,
-            embedding_model      = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_model END,
-            embedding_bge_dense  = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_bge_dense END,
-            embedding_bge_sparse = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_bge_sparse END
+            embedding_dense = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_dense END,
+            embedding_model = CASE WHEN products.content_hash IS DISTINCT FROM EXCLUDED.content_hash THEN NULL ELSE products.embedding_model END
         WHERE products.name         IS DISTINCT FROM EXCLUDED.name
            OR products.brand        IS DISTINCT FROM EXCLUDED.brand
            OR products.categories   IS DISTINCT FROM EXCLUDED.categories

@@ -2,7 +2,7 @@ namespace PI.SearchApi.Contracts;
 
 /// <summary>
 /// The one response every search stage returns (ADR-0003), so the UI can switch stages without
-/// special cases. It never contains LLM text; Stages 7–8 stream that from their answer endpoints.
+/// special cases. It never contains LLM text; Stages 6–7 stream that from their answer endpoints.
 /// </summary>
 public sealed record SearchResponse
 {
@@ -17,7 +17,8 @@ public sealed record SearchResponse
 
     /// <summary>
     /// Stage 1: a real COUNT(*) over the filters. Ranked stages: the number of candidates
-    /// retrieved, which is bounded by candidateDepth — not a count of the whole catalog.
+    /// retrieved: at most candidateDepth per retriever, up to twice that once hybrid fusion joins the
+    /// keyword and vector lists — not a count of the whole catalog.
     /// </summary>
     public required int TotalResults { get; init; }
 

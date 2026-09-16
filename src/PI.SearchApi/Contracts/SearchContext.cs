@@ -4,7 +4,7 @@ namespace PI.SearchApi.Contracts;
 public sealed record SearchContext
 {
     /// <summary>
-    /// The target device: a product ID the shopper owns (e.g. "PROD-0001"). Stage 6 checks
+    /// The target device: a product ID the shopper owns (e.g. "PROD-0001"). Stage 5 checks
     /// candidates against it with the ontology's compatibility rules (ADR-0013).
     /// </summary>
     public string? TargetProductId { get; init; }

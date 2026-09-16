@@ -7,7 +7,7 @@ namespace PI.SearchApi.Pipeline.Keyword;
 /// </summary>
 /// <remarks>
 /// Plain Stage 2 uses <c>websearch_to_tsquery</c>, which accepts natural input and never throws on
-/// user syntax. It can't express "any of these phrases, AND the rest", so Stage 6's expanded query is
+/// user syntax. It can't express "any of these phrases, AND the rest", so Stage 5's expanded query is
 /// assembled instead: <c>(phraseto_tsquery(@g0t0) || phraseto_tsquery(@g0t1)) &amp;&amp; websearch_to_tsquery(@rest)</c>.
 /// <c>||</c> is tsquery OR, <c>&amp;&amp;</c> is tsquery AND, and phraseto_tsquery keeps multi-word
 /// labels like "power brick" together as a phrase.

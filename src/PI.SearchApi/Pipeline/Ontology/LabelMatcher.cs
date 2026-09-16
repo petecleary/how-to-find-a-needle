@@ -1,6 +1,6 @@
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6, step 1 — Understand: match query phrases to SKOS labels
+// Stage 5, step 1 — Understand: match query phrases to SKOS labels
 //
 // What:     Looks up every 1–3 word phrase of the query in an index of every ontology label
 //           (preferred, alternative and hidden; every language). Longest phrases claim their
@@ -11,7 +11,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 // Failure:  Purely lexical. "brick" alone won't match "power brick", and an unlisted synonym
 //           matches nothing. Entity recognition is the next step up; an LLM is the black box
 //           this talk argues against for this job.
-// Decision: docs/adr/0013-domain-ontology-and-compatibility.md
+// Decision: docs/decisions/0013-domain-ontology-and-compatibility.md
 public sealed class LabelMatcher
 {
     /// <summary>ADR-0013: phrases of 1–3 words.</summary>
@@ -82,7 +82,7 @@ public sealed record LabelMatch(string Phrase, int TokenStart, int TokenCount, I
         [.. Labels.Where(l => l.IsTaxonomyConcept).Select(l => l.ConceptNotation).Distinct()];
 }
 
-/// <summary>What Stage 6 understood about a query: what the shopper wants, and what is only context.</summary>
+/// <summary>What Stage 5 understood about a query: what the shopper wants, and what is only context.</summary>
 public sealed record QueryUnderstanding(string Query, IReadOnlyList<Token> Tokens, IReadOnlyList<LabelMatch> Matches)
 {
     /// <summary>The tokens that name the target device, if the query names it.</summary>

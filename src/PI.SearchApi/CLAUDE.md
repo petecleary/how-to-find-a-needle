@@ -1,6 +1,6 @@
 # CLAUDE.md — PI.SearchApi (C# / API)
 
-Repo-wide rules (teaching principles, commenting standard, vocabulary) are in the [root CLAUDE.md](../../CLAUDE.md). Decisions: [ADR-0002](../../docs/adr/0002-solution-structure-and-orchestration.md) (structure), [ADR-0003](../../docs/adr/0003-search-api-contract-and-debug-trace.md) (contract and trace), [ADR-0004](../../docs/adr/0004-pipeline-composition.md) (pipeline).
+Repo-wide rules (teaching principles, commenting standard, vocabulary) are in the [root CLAUDE.md](../../CLAUDE.md). Decisions: [ADR-0002](../../docs/decisions/0002-solution-structure-and-orchestration.md) (structure), [ADR-0003](../../docs/decisions/0003-search-api-contract-and-debug-trace.md) (contract and trace), [ADR-0004](../../docs/decisions/0004-pipeline-composition.md) (pipeline).
 
 ## Layout and responsibilities
 
@@ -10,8 +10,9 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 | `Extensions.cs` | Aspire service defaults (kept in-project; no ServiceDefaults project) |
 | `Contracts/` | `SearchRequest`, `SearchResponse`, `ProductResult`, `DebugTrace`: shared by every stage |
 | `Pipeline/` | Shared types (`Candidate`, `StageResult`, `TraceStep`, `SqlFilterBuilder`) |
-| `Pipeline/{Technique}/` | One technique service + interface: `Structured/ Keyword/ Vector/ Fusion/ BgeM3/ Ontology/ Rag/ Pedagogy/` |
-| `Embeddings/` | `ISearchEmbedder`, `NomicOnnxEmbeddingGenerator` (and BGE-M3 if built) |
+| `Pipeline/{Technique}/` | One technique service + interface: `Structured/ Keyword/ Vector/ Fusion/ Ontology/ Rag/ Pedagogy/` |
+| `Embeddings/` | `ISearchEmbedder`, `NomicOnnxEmbeddingGenerator` |
+| `Llm/` | `LlmOptions`, `LlmClientFactory` (the only provider-specific code), `LlmChatOptions`, `LlmStreaming`, `LlmUnavailableException`, warm-up |
 | `Endpoints/Search/{Stage}/` | Thin FastEndpoints endpoint + validator |
 | `Endpoints/Demo/` | Golden queries, devices, taxonomy |
 | `Data/` | `init.sql` runner, catalog loader, `DatabaseSeeder` |
@@ -20,7 +21,7 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 ## Endpoints (FastEndpoints, REPR)
 
 - **Thin:** validate → call **one** top-level pipeline service → page once → map to `SearchResponse`. No SQL, ranking or rule logic in an endpoint.
-- Search is **POST** with the shared contract. Stages 7–8 also have `/answer` (SSE, or JSON when `Accept: application/json`).
+- Search is **POST** with the shared contract. Stages 6–7 also have `/answer` (SSE, or JSON when `Accept: application/json`).
 - One FluentValidation validator per endpoint, in the same folder. Limits are in ADR-0003 (e.g. `pageSize` 1–50, `candidateDepth` 10–200).
 - Errors are ProblemDetails. Missing models or an unreachable LLM return **503** with fix-it guidance in `detail`, never a stack trace.
 - Every stage starts an OpenTelemetry `Activity`, so the Aspire dashboard shows the same pipeline as the trace.
@@ -79,7 +80,7 @@ namespace PI.SearchApi.Pipeline.Keyword;
 // Strength: Fast and exact; great for names, model numbers and specific terms.
 // Failure:  Matches words, not meaning: misses synonyms ("power brick" vs "adapter")
 //           and is fooled by shared words ("cordless" phone vs drill battery).
-// Decision: docs/adr/0008-keyword-search-bm25-style.md
+// Decision: docs/decisions/0008-keyword-search-bm25-style.md
 public sealed class KeywordSearch(NpgsqlDataSource dataSource) : IKeywordSearch
 {
     // Explain each clause that teaches something: weights A/B, why ts_rank_cd, why LIMIT is candidateDepth.
@@ -99,10 +100,10 @@ public sealed class KeywordSearch(NpgsqlDataSource dataSource) : IKeywordSearch
 
 Composed stages call earlier services and **append** their own trace step after the steps they received.
 
-## LLM code (Stages 7–8)
+## LLM code (Stages 6–7)
 
-- Depend on `IChatClient` only. All provider differences live in `LlmClientFactory` ([ADR-0015](../../docs/adr/0015-llm-hosting-and-client.md)).
+- Depend on `IChatClient` only. All provider differences live in `LlmClientFactory` ([ADR-0015](../../docs/decisions/0015-llm-hosting-and-client.md)).
 - Sampling is provider-specific: `Temperature = 0.1` for Ollama/OpenAI; **never send `temperature` to Anthropic**.
 - No retries; 60 s timeout; output-token cap for a short summary.
-- Stream with `GetStreamingResponseAsync` as `meta` / `delta` / `final` / `done` / `error` events. Validate citations, sentinels and headings after completion ([ADR-0016](../../docs/adr/0016-rag-grounding-and-citations.md), [ADR-0017](../../docs/adr/0017-pedagogy-engine.md)).
+- Stream with `GetStreamingResponseAsync` as `meta` / `delta` / `final` / `done` / `error` events. Validate citations, sentinels and headings after completion ([ADR-0016](../../docs/decisions/0016-rag-grounding-and-citations.md), [ADR-0017](../../docs/decisions/0017-pedagogy-engine.md)).
 - Prompts are loaded from `assets/prompts/*.md`, and the trace records prompts, raw output and timings. **Never put an API key in the trace or logs.**

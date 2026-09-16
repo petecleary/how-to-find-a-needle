@@ -30,7 +30,7 @@
   {
     "id": "GQ-02",
     "title": "The synonym miss",
-    "moment": "Nobody's catalog says \"power brick\": keyword search finds nothing useful, vector search finds the laptop chargers, and Stage 6 synonym expansion rescues the keyword side.",
+    "moment": "Nobody's catalog says \"power brick\": keyword search finds nothing useful. Vector search finds power products, but ranks power banks above the laptop chargers (\"brick\" sits close to \"bank\"). Stage 5 synonym expansion rescues the keyword side and puts a charger first.",
     "request": {
       "query": "power brick for laptop"
     },
@@ -40,10 +40,10 @@
         { "productId": "PROD-0011", "absentFromTop": 10 }
       ],
       "vector": [
-        { "productId": "PROD-0012", "rank": { "max": 5 } }
+        { "productId": "PROD-0012", "rank": { "max": 10 } }
       ],
       "hybrid": [
-        { "productId": "PROD-0012", "rank": { "max": 5 } }
+        { "productId": "PROD-0012", "rank": { "max": 10 } }
       ],
       "ontology": [
         { "productId": "PROD-0012", "conceptMatch": "InConcept", "rank": { "max": 3 }, "keywordRank": { "max": 10 } }
@@ -53,7 +53,7 @@
   {
     "id": "GQ-03",
     "title": "The keyword trap",
-    "moment": "Keyword search ranks a cordless phone battery first because it shares the words; vector search puts the drill battery first; hybrid lifts the drill battery above the trap but can't push it out of the top 3; the ontology marks the phone battery OutOfConcept.",
+    "moment": "Keyword search ranks a cordless phone battery first because it shares the words; vector search puts the drill battery first; hybrid lifts the drill battery above the trap, which stays close behind; the ontology marks the phone battery OutOfConcept.",
     "request": {
       "query": "cordless drill battery"
     },
@@ -144,7 +144,7 @@
   {
     "id": "GQ-07",
     "title": "Beyond English",
-    "moment": "A Spanish query shares no words with the English catalog; Stage 6 matches the Spanish ontology label \"cargador\" to Chargers and expands to English terms, so the right chargers appear.",
+    "moment": "A Spanish query shares no words with the English catalog; Stage 5 matches the Spanish ontology label \"cargador\" to Chargers and expands to English terms, so the right chargers appear.",
     "request": {
       "query": "cargador USB-C para portátil"
     },
@@ -153,14 +153,15 @@
         { "productId": "PROD-0012", "absentFromTop": 10 }
       ],
       "ontology": [
-        { "productId": "PROD-0012", "conceptMatch": "InConcept", "rank": { "max": 5 } }
+        { "productId": "PROD-0012", "conceptMatch": "InConcept", "rank": { "max": 5 } },
+        { "productId": "PROD-0014", "compatibility": "Incompatible" }
       ]
     }
   },
   {
     "id": "GQ-08",
     "title": "The device name trap",
-    "moment": "Shoppers name the device they own. Vector search treats \"Blackbird Aerobook 14\" as what's wanted, so the laptop itself and a Blackbird sleeve outrank the chargers; Stage 6 recognises the device name, uses it as the target device instead of search text, and puts the compatible chargers first.",
+    "moment": "Shoppers name the device they own. Vector search treats \"Blackbird Aerobook 14\" as what's wanted, so the laptop itself and a Blackbird sleeve outrank the chargers; Stage 5 recognises the device name, uses it as the target device instead of search text, and puts the compatible chargers first.",
     "request": {
       "query": "charger for my Blackbird Aerobook 14"
     },
@@ -179,6 +180,21 @@
         { "productId": "PROD-0014", "compatibility": "Incompatible" },
         { "productId": "PROD-0015", "compatibility": "Incompatible" },
         { "productId": "PROD-0001", "absentFromTop": 5 }
+      ]
+    }
+  },
+  {
+    "id": "GQ-09",
+    "title": "No device, still checked",
+    "moment": "The shopper hasn't picked a device, but the query states what it needs. Stage 5 reads \"USB-C\" and \"65W\" as requirements, checks every charger against them with the same rules, flags the barrel and 45W chargers with reasons, and says which catalog laptops each charger fits.",
+    "request": {
+      "query": "65W USB-C charger"
+    },
+    "expectations": {
+      "ontology": [
+        { "productId": "PROD-0012", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0014", "compatibility": "Incompatible" },
+        { "productId": "PROD-0016", "compatibility": "Incompatible" }
       ]
     }
   }

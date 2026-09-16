@@ -12,11 +12,11 @@ namespace PI.SearchApi.Pipeline.Keyword;
 // Strength: Fast and exact; great for names, model numbers and specific terms.
 // Failure:  Matches words, not meaning: misses synonyms ("power brick" vs "adapter")
 //           and is fooled by shared words ("cordless" phone vs drill battery).
-// Decision: docs/adr/0008-keyword-search-bm25-style.md
+// Decision: docs/decisions/0008-keyword-search-bm25-style.md
 public sealed partial class KeywordSearch(NpgsqlDataSource dataSource, SqlFilterBuilder filterBuilder) : IKeywordSearch
 {
     // {tsquery} is websearch_to_tsquery('english', @query) AS q — a function call, which FROM accepts
-    // directly — or, for Stage 6's expanded expression, (SELECT … AS q) AS expanded: FROM can't take a
+    // directly — or, for Stage 5's expanded expression, (SELECT … AS q) AS expanded: FROM can't take a
     // bare expression like (a || b) && c, but it can take a one-row subquery that computes it.
     //   search_vector @@ q  — the match: true when the document satisfies the tsquery. Every term must
     //                         match (AND), which is exactly why a synonym the catalog never uses misses.
@@ -106,7 +106,7 @@ public sealed partial class KeywordSearch(NpgsqlDataSource dataSource, SqlFilter
             "ts_rank_cd is not true BM25 — no IDF (rare words don't count for more) and no term-frequency saturation. Hence \"BM25-style\".",
             "Every term in the tsquery must match (AND), so a single word the catalog never uses — a synonym — returns nothing.",
             "The English stemmer reduces words to lexemes ('batteries' → 'batteri') and drops stop words ('for', 'my').",
-            $"totalResults counts the candidates retrieved (at most candidateDepth = {request.Options.CandidateDepth}), not the whole catalog.",
+            $"Keyword search retrieves at most candidateDepth = {request.Options.CandidateDepth} candidates; totalResults counts what was retrieved, not the whole catalog.",
         };
 
         if (candidates.Count == 0)

@@ -18,9 +18,9 @@ public sealed class VectorStageGoldenQueryTests(AppHostFixture fixture)
     }
 
     [Fact]
-    public async Task GQ02_Vector_FindsLaptopChargersForPowerBrick()
+    public async Task GQ02_Vector_FindsTheChargerButRanksPowerBanksAbove()
     {
-        // Talk moment: the synonym miss is rescued by meaning — "power brick" lands near "laptop power adapter".
+        // Talk moment: meaning finds the charger that keyword search missed, but "power brick" lands nearer "power bank".
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
 
         await GoldenQueryRunner.RunAsync(fixture, "GQ-02", "vector");

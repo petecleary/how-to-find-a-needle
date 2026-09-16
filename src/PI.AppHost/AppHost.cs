@@ -28,4 +28,11 @@ var searchApi = builder.AddProject<global::Projects.PI_SearchApi>("searchapi")
         url.DisplayText = "Search API (Scalar)";
     });
 
+// The web UI is the talk (ADR-0014). Aspire runs the Vite dev server and passes it the Search API's
+// address; Vite proxies /api to it, so the browser only talks to one origin and no CORS is needed.
+builder.AddViteApp("web-ui", "../web-ui")
+    .WithReference(searchApi)
+    .WaitFor(searchApi)
+    .WithExternalHttpEndpoints();
+
 builder.Build().Run();

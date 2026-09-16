@@ -2,7 +2,7 @@ using PI.SearchApi.Pipeline.Keyword;
 
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6, step 2 — Expand: synonyms and narrower concepts
+// Stage 5, step 2 — Expand: synonyms and narrower concepts
 //
 // What:     For each phrase that named a wanted category, gathers that concept's labels and the
 //           labels of every concept beneath it (capped at 10 terms per concept). Keyword search gets
@@ -12,7 +12,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 //           "AC adapter" and "laptop chargers", because the ontology lists them as the same thing.
 // Failure:  Expansion only knows what someone wrote down. Too many terms dilutes precision, which
 //           is why the term list is capped and the classify step follows.
-// Decision: docs/adr/0013-domain-ontology-and-compatibility.md
+// Decision: docs/decisions/0013-domain-ontology-and-compatibility.md
 public sealed class QueryExpander(IOntology ontology)
 {
     /// <summary>ADR-0013: at most 10 terms per matched concept.</summary>
@@ -93,7 +93,7 @@ public sealed class QueryExpander(IOntology ontology)
         new[] { notation }.Concat(ontology.NarrowerOrSelf(notation).Where(n => n != notation).Order(StringComparer.Ordinal));
 }
 
-/// <summary>Stage 6's rewritten query for both retrievers, plus what was expanded (for the trace).</summary>
+/// <summary>Stage 5's rewritten query for both retrievers, plus what was expanded (for the trace).</summary>
 public sealed record QueryExpansion(IReadOnlyList<ExpandedPhrase> Phrases, KeywordExpansion Keyword, string EmbeddingText);
 
 /// <summary>One matched phrase and the terms it expanded to.</summary>

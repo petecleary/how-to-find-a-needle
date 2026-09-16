@@ -1,6 +1,6 @@
 namespace PI.SearchApi.Contracts;
 
-/// <summary>How a candidate's categories relate to the concepts Stage 6 found in the query (ADR-0013).</summary>
+/// <summary>How a candidate's categories relate to the concepts Stage 5 found in the query (ADR-0013).</summary>
 public enum ConceptMatch
 {
     /// <summary>One of its categories is a matched concept, or narrower than one.</summary>

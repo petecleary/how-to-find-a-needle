@@ -8,12 +8,12 @@ namespace PI.SearchApi.Pipeline;
 //
 // What:     Turns a request's filters into WHERE fragments and parameters. Every stage that
 //           queries products uses this builder, so "brand = Brakk" means the same thing in
-//           Stage 1 as it does under Stage 3's vector ordering or Stage 6's rule checks.
+//           Stage 1 as it does under Stage 3's vector ordering or Stage 5's rule checks.
 // Strength: Filters narrow first and exactly; ranking only orders what's left. Values are always
 //           parameters, and fragments come from a fixed list, so the dynamic SQL is still safe.
 // Failure:  Only understands attributes someone has already structured; it can't turn "something
 //           to charge my laptop" into a filter. That's what the later stages are for.
-// Decision: docs/adr/0007-structured-search.md
+// Decision: docs/decisions/0007-structured-search.md
 public sealed class SqlFilterBuilder(IOntology ontology)
 {
     /// <summary>Builds the filter SQL. An empty <see cref="SearchFilters"/> produces no conditions.</summary>

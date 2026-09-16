@@ -12,7 +12,7 @@ public interface IVectorSearch
     /// applied in the same SQL statement.
     /// </summary>
     /// <param name="embeddingText">
-    /// Stage 6's expanded text (the query plus concept labels); null embeds <c>request.Query</c> as typed.
+    /// Stage 5's expanded text (the query plus concept labels); null embeds <c>request.Query</c> as typed.
     /// </param>
     Task<StageResult> SearchAsync(SearchRequest request, string? embeddingText, CancellationToken ct);
 }

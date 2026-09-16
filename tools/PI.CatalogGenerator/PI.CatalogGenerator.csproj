@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Grows products.json from the hand-curated core to 300 products (ADR-0005).
+       Run it from the repository root; the command is in Program.cs -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>PI.CatalogGenerator</AssemblyName>
+    <RootNamespace>PI.CatalogGenerator</RootNamespace>
+  </PropertyGroup>
+
+</Project>

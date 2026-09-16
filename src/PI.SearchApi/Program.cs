@@ -1,15 +1,19 @@
 using System.Text.Json.Serialization;
 using FastEndpoints;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using PI.SearchApi.Data;
 using PI.SearchApi.Embeddings;
 using PI.SearchApi.Endpoints;
+using PI.SearchApi.Llm;
 using PI.SearchApi.Pipeline;
 using PI.SearchApi.Pipeline.Fusion;
 using PI.SearchApi.Pipeline.Hybrid;
 using PI.SearchApi.Pipeline.Keyword;
 using PI.SearchApi.Pipeline.Ontology;
+using PI.SearchApi.Pipeline.Pedagogy;
+using PI.SearchApi.Pipeline.Rag;
 using PI.SearchApi.Pipeline.Structured;
 using PI.SearchApi.Pipeline.Vector;
 using Scalar.AspNetCore;
@@ -33,14 +37,14 @@ builder.Services.ConfigureHttpJsonOptions(o =>
     o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     o.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
 });
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => options.AddOperationTransformer<FastEndpointsSummaryTransformer>());
 
 var dataDirectory = Path.Combine(AppContext.BaseDirectory, "assets", "data");
 
 // --- Data (ADR-0006) --------------------------------------------------------
 // Aspire injects the connection string by name; the API is not supported standalone
 // (root CLAUDE.md), so a missing connection string means "run this via PI.AppHost".
-// UseVector() registers the Npgsql <-> pgvector type mappings (Vector, SparseVector).
+// UseVector() registers the Npgsql <-> pgvector type mappings (Vector).
 builder.AddNpgsqlDataSource("pi-teach-db-search", configureDataSourceBuilder: b => b.UseVector());
 builder.Services.AddSingleton<DatabaseSeeder>();
 
@@ -73,14 +77,41 @@ builder.Services.AddTransient<IVectorSearch, VectorSearch>();
 builder.Services.AddSingleton<IRankFusion, ReciprocalRankFusion>();
 builder.Services.AddTransient<IHybridSearch, HybridSearch>();
 
-// --- Stage 6: Ontology — concepts, expansion and domain rules (ADR-0013) ------
+// --- Stage 5: Ontology — concepts, expansion and domain rules (ADR-0013) ------
 // The matcher indexes every label once, and the other steps only read the ontology: singletons.
 builder.Services.AddSingleton<LabelMatcher>();
 builder.Services.AddSingleton<QueryExpander>();
 builder.Services.AddSingleton<ConceptClassifier>();
 builder.Services.AddSingleton<CompatibilityEvaluator>();
+builder.Services.AddSingleton<QueryRequirementExtractor>();
+builder.Services.AddSingleton<DeviceFitFinder>();
 builder.Services.AddTransient<TargetDeviceResolver>();
 builder.Services.AddTransient<IOntologySearch, OntologySearch>();
+
+// --- LLM for Stages 6–7 (ADR-0015) --------------------------------------------
+// One IChatClient, built from the Llm settings (appsettings.json + the user-secret API key). It's a singleton
+// created on first use: a misconfigured or stopped LLM turns into a 503 on the AI stages, never a failed startup.
+builder.Services.Configure<LlmOptions>(builder.Configuration.GetSection(LlmOptions.SectionName));
+builder.Services.AddSingleton<IChatClient>(services => LlmClientFactory.Create(
+    services.GetRequiredService<IOptions<LlmOptions>>().Value,
+    services.GetRequiredService<ILoggerFactory>(),
+    builder.Environment.IsDevelopment()));
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHostedService<LlmWarmUpService>();
+}
+
+// --- Stage 6: RAG — evidence set, streamed grounded answer, validation (ADR-0016) ------
+// Prompts are markdown files read once. The evidence builder only reads the ontology: a singleton.
+builder.Services.AddSingleton(new PromptLibrary(Path.Combine(AppContext.BaseDirectory, "assets", "prompts")));
+builder.Services.AddSingleton<EvidenceSetBuilder>();
+builder.Services.AddTransient<IRagSearch, RagSearch>();
+builder.Services.AddTransient<IAnswerGenerator, AnswerGenerator>();
+
+// --- Stage 7: Pedagogy — the answer, then an audience-aware explanation or the baseline (ADR-0017) ---
+// Reuses Stage 6's retrieval and answer; adds the prompt builder (reads prompt files only: a singleton) and the engine.
+builder.Services.AddSingleton<PedagogyPromptBuilder>();
+builder.Services.AddTransient<IPedagogyEngine, PedagogyEngine>();
 
 var app = builder.Build();
 

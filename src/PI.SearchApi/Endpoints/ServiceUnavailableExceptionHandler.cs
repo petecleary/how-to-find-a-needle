@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using PI.SearchApi.Embeddings;
+using PI.SearchApi.Llm;
 
 namespace PI.SearchApi.Endpoints;
 
 /// <summary>
 /// Turns "a dependency isn't available" into an RFC 9457 ProblemDetails <c>503</c>, with the fix in
-/// <c>detail</c> (ADR-0003). Every other exception falls through to the default handler.
+/// <c>detail</c> (ADR-0003): a missing embedding model, or an LLM that isn't running or configured (ADR-0015).
+/// Every other exception falls through to the default handler.
 /// </summary>
 public sealed class ServiceUnavailableExceptionHandler(
     IProblemDetailsService problemDetails,
@@ -14,7 +16,14 @@ public sealed class ServiceUnavailableExceptionHandler(
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        if (exception is not EmbeddingModelUnavailableException)
+        var title = exception switch
+        {
+            EmbeddingModelUnavailableException => "Embedding model unavailable",
+            LlmUnavailableException => "LLM unavailable",
+            _ => null,
+        };
+
+        if (title is null)
         {
             return false;
         }
@@ -30,7 +39,7 @@ public sealed class ServiceUnavailableExceptionHandler(
             ProblemDetails = new ProblemDetails
             {
                 Status = StatusCodes.Status503ServiceUnavailable,
-                Title = "Embedding model unavailable",
+                Title = title,
                 Detail = exception.Message,
             },
         });

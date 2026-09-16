@@ -2,7 +2,7 @@ using PI.SearchApi.Contracts;
 
 namespace PI.SearchApi.Pipeline.Ontology;
 
-// Stage 6, step 4 — Classify: in or out of concept
+// Stage 5, step 4 — Classify: in or out of concept
 //
 // What:     A candidate is InConcept if any of its categories is a concept the query named, or
 //           narrower than one (skos:broader*). Otherwise it's OutOfConcept. If the query named
@@ -11,7 +11,7 @@ namespace PI.SearchApi.Pipeline.Ontology;
 //           under Telephony, not Power tools › Batteries, however many words it shares.
 // Failure:  Only as good as the categories products are filed under, and only when the query
 //           actually names a category the label matcher recognises.
-// Decision: docs/adr/0013-domain-ontology-and-compatibility.md
+// Decision: docs/decisions/0013-domain-ontology-and-compatibility.md
 public sealed class ConceptClassifier(IOntology ontology)
 {
     public ConceptClassification Classify(IReadOnlyList<string> categories, IReadOnlyList<string> matchedConcepts)

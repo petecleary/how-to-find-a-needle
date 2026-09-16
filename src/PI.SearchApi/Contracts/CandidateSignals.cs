@@ -19,15 +19,9 @@ public sealed record CandidateSignals
     /// <summary>Cosine distance: 0 means identical direction, 2 means opposite.</summary>
     public double? VectorDistance { get; init; }
 
-    /// <summary>Stage 5 (optional, built last).</summary>
-    public int? BgeDenseRank { get; init; }
-
-    /// <summary>Stage 5 (optional, built last).</summary>
-    public int? BgeSparseRank { get; init; }
-
     /// <summary>Rank after Reciprocal Rank Fusion.</summary>
     public int? FusedRank { get; init; }
 
-    /// <summary>Stage 6: how the product relates to the concepts found in the query.</summary>
+    /// <summary>Stage 5: how the product relates to the concepts found in the query.</summary>
     public ConceptMatch? ConceptMatch { get; init; }
 }

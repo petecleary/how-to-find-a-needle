@@ -16,7 +16,7 @@ public sealed class DemoEndpointTests(AppHostFixture fixture)
 
         var queries = await client.GetFromJsonAsync<JsonArray>("/api/demo/queries", TestContext.Current.CancellationToken);
 
-        Assert.Equal(8, queries!.Count);
+        Assert.Equal(9, queries!.Count);
         Assert.Equal("GQ-01", queries[0]!["id"]!.GetValue<string>());
     }
 
@@ -44,6 +44,31 @@ public sealed class DemoEndpointTests(AppHostFixture fixture)
         var chargers = power["narrower"]!.AsArray().Single(n => n!["notation"]!.GetValue<string>() == "chargers")!;
         Assert.Equal("Cargadores", chargers["labels"]!["es"]!.GetValue<string>());
         Assert.Contains("power brick", chargers["altLabels"]!.AsArray().Select(l => l!.GetValue<string>()));
+    }
+
+    [Fact]
+    public async Task Vocabularies_ReturnsConnectorsWithSpecKeysAndSynonyms()
+    {
+        using var client = fixture.CreateSearchApiClient();
+
+        var vocabularies = await client.GetFromJsonAsync<JsonArray>("/api/vocabularies", TestContext.Current.CancellationToken);
+
+        var connectors = vocabularies!.Single(v => v!["notation"]!.GetValue<string>() == "connectors")!;
+        Assert.Equal(new[] { "chargingPort", "connector" }, connectors["specs"]!.AsArray().Select(s => s!.GetValue<string>()));
+        var usbC = connectors["values"]!.AsArray().Single(v => v!["notation"]!.GetValue<string>() == "usb-c")!;
+        Assert.Contains("Type-C", usbC["altLabels"]!.AsArray().Select(l => l!.GetValue<string>()));
+    }
+
+    [Fact]
+    public async Task Brands_ReturnsEachCatalogueBrandOnceInOrder()
+    {
+        using var client = fixture.CreateSearchApiClient();
+
+        var brands = (await client.GetFromJsonAsync<List<string>>("/api/brands", TestContext.Current.CancellationToken))!;
+
+        Assert.Contains("Brakk", brands); // GQ-04 filters on it
+        Assert.Contains("Voltline", brands);
+        Assert.Equal(brands.Distinct().Order(StringComparer.Ordinal), brands);
     }
 
     [Fact]

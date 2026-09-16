@@ -12,7 +12,7 @@ namespace PI.SearchApi.Pipeline.Fusion;
 // Failure:  Ignores *how much* better one result is than the next — a near tie and a
 //           landslide fuse the same way. And it improves relevance, not correctness: an
 //           incompatible charger both retrievers like still ranks near the top.
-// Decision: docs/adr/0011-hybrid-search-rrf.md
+// Decision: docs/decisions/0011-hybrid-search-rrf.md
 public sealed class ReciprocalRankFusion : IRankFusion
 {
     public IReadOnlyList<FusedItem> Fuse(IReadOnlyList<RankedList> lists, int k)

@@ -130,4 +130,74 @@ public sealed class CompatibilityEvaluatorTests
     {
         Assert.Equal(CompatibilityStatus.NotEvaluated, Evaluator.Evaluate(Product("X", "Speaker", "audio", "{}"), device: null).Result.Status);
     }
+
+    [Fact]
+    public void Evaluate_WithTargetDevice_SourceIsDevice()
+    {
+        var charger = Product("C7", "Charger", "laptop-chargers", """{ "connector": "usb-c", "wattageW": 65 }""");
+
+        Assert.Equal(CompatibilitySource.Device, Evaluator.Evaluate(charger, Aerobook).Result.Source);
+    }
+
+    // --- Requirements stated in the query (no target device) ---------------------------------------------------
+
+    private static readonly QueryRequirement UsbC = new("connector", "equals", JsonSerializer.SerializeToElement("usb-c"), "USB-C", "connectors");
+    private static readonly QueryRequirement AtLeast65W = new("wattageW", "greaterOrEqual", JsonSerializer.SerializeToElement(65), "65W", null);
+
+    [Fact]
+    public void EvaluateAgainstRequirements_BarrelChargerForUsbC_IsIncompatibleAndSaysWhatWasAskedFor()
+    {
+        var charger = Product("PROD-0014", "Voltline 45W Barrel Charger", "laptop-chargers", """{ "connector": "barrel-5.5mm", "wattageW": 45 }""");
+
+        var evaluation = Evaluator.EvaluateAgainstRequirements(charger, [UsbC, AtLeast65W]);
+
+        Assert.Equal(CompatibilityStatus.Incompatible, evaluation.Result.Status);
+        Assert.Equal(CompatibilitySource.Query, evaluation.Result.Source);
+        Assert.Contains(evaluation.Result.Reasons, r => r.Contains("has 5.5mm barrel; you asked for USB-C."));
+        Assert.Contains(evaluation.Result.Reasons, r => r.Contains("has 45W; you asked for at least 65W."));
+        Assert.All(evaluation.Checks, c => Assert.Equal(CompatibilitySource.Query, c.Source));
+    }
+
+    [Theory]
+    [InlineData(65, CompatibilityStatus.Compatible)]
+    [InlineData(100, CompatibilityStatus.Compatible)]
+    [InlineData(60, CompatibilityStatus.Incompatible)]
+    public void EvaluateAgainstRequirements_StatedWattage_IsAMinimum(int wattage, CompatibilityStatus expected)
+    {
+        // "65W" stands in for the laptop's minChargerWattageW, so the rule's ≥ applies: a 100W charger meets it.
+        var charger = Product("C8", "Charger", "laptop-chargers", $$"""{ "connector": "usb-c", "wattageW": {{wattage}} }""");
+
+        Assert.Equal(expected, Evaluator.EvaluateAgainstRequirements(charger, [UsbC, AtLeast65W]).Result.Status);
+    }
+
+    [Fact]
+    public void EvaluateAgainstRequirements_OnlyConnectorStated_IsUnknownButShowsWhatPassed()
+    {
+        // No one said how much power is needed, so a USB-C charger can't be confirmed; the passed check is still shown.
+        var charger = Product("C9", "45W USB-C Charger", "laptop-chargers", """{ "connector": "usb-c", "wattageW": 45 }""");
+
+        var evaluation = Evaluator.EvaluateAgainstRequirements(charger, [UsbC]);
+
+        Assert.Equal(CompatibilityStatus.Unknown, evaluation.Result.Status);
+        Assert.Contains(evaluation.Result.Reasons, r => r.StartsWith("✓", StringComparison.Ordinal) && r.Contains("you asked for USB-C"));
+        Assert.Contains(evaluation.Result.Reasons, r => r.StartsWith("?", StringComparison.Ordinal) && r.Contains("No target device"));
+    }
+
+    [Fact]
+    public void EvaluateAgainstRequirements_ProductWithNoRules_IsNotEvaluated()
+    {
+        var sleeve = Product("PROD-0037", "Laptop Sleeve", "bags", "{}");
+
+        Assert.Equal(CompatibilityStatus.NotEvaluated, Evaluator.EvaluateAgainstRequirements(sleeve, [UsbC]).Result.Status);
+    }
+
+    [Fact]
+    public void ConflictsWithDevice_TooFewWattsForTheLaptop_IsReported()
+    {
+        var fortyFive = AtLeast65W with { Value = JsonSerializer.SerializeToElement(45), Phrase = "45W" };
+
+        var conflict = Assert.Single(Evaluator.ConflictsWithDevice([UsbC, fortyFive], Aerobook));
+
+        Assert.Equal("You asked for at least 45W, but Blackbird Aerobook 14 needs at least 65W. The target device decides.", conflict);
+    }
 }
