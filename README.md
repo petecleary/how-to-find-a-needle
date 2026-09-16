@@ -39,7 +39,8 @@ The talk is deliberately practical and experimental: the same dataset is used th
 - **Local embeddings** — [Nomic](https://www.nomic.ai/) Embed Text v1.5 runs via ONNX Runtime, no external API calls required.
 - **RDF/Turtle ontology** — a SKOS taxonomy of product categories, multilingual synonyms and class-level compatibility rules (e.g. "a laptop charger's connector must match the laptop's charging port"). It describes product *types*, never individual products.
 - **.NET Aspire AppHost** ([src/PI.AppHost](src/PI.AppHost)) to orchestrate the API, database, and dependencies locally.
-- A fictional frontend (to be added) so the audience can see the pipeline progress from simple filtering → BM25-style keyword → vector → hybrid → ontology → RAG → pedagogy.
+- **An LLM for Stages 6–7** through `Microsoft.Extensions.AI`'s `IChatClient`: a local [Ollama](https://ollama.com/) by default, or Claude with your own API key. Answers stream in, cite the products they use, and are checked when complete.
+- **A React web UI** ([src/web-ui](src/web-ui)) that is the talk itself (no slides): the audience sees the same query go through simple filtering → BM25-style keyword → vector → hybrid → ontology → RAG → pedagogy, with the trace behind every result.
 
 ## Dataset
 
@@ -51,7 +52,9 @@ The demo uses a single hand-curated, synthetic electronics catalog throughout �
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - [Docker](https://www.docker.com/) (for the Postgres + pgvector container)
 - [.NET Aspire CLI](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling)
+- [Node.js](https://nodejs.org/) 24 LTS, for the web UI (the version is pinned in `src/web-ui/.nvmrc`)
 - [Hugging Face CLI](https://huggingface.co/docs/huggingface_hub/guides/cli), to download the local embedding model
+- For Stages 6–7: [Ollama](https://ollama.com/), or an Anthropic API key
 
 **Download the embedding model**
 
@@ -59,13 +62,31 @@ Vector, hybrid and ontology search (Stages 3, 4 and 5) embed queries with Nomic 
 
 Without the model, structured and keyword search (Stages 1–2) still work, and the other stages return `503 Service Unavailable` with the same instructions.
 
+**Set up the LLM (Stages 6–7)**
+
+RAG and pedagogy (Stages 6 and 7) need an LLM. The settings are the `Llm` section of [src/PI.SearchApi/appsettings.json](src/PI.SearchApi/appsettings.json). The default is a local Ollama:
+
+```sh
+ollama pull qwen3.6:35b
+```
+
+A 35B model needs plenty of memory (the presenter's laptop has 64 GB). On lighter hardware, pull a smaller model and set `Llm:Model` to its name; smaller models follow the prompts less reliably, and the Answer tab shows the resulting warnings.
+
+To use Claude instead, store your key in user secrets (never in a file; hosted calls cost money), then set `"Provider": "anthropic"` and `"Model": "claude-sonnet-5"` in `appsettings.json`:
+
+```sh
+dotnet user-secrets set "Llm:ApiKey" "<your Anthropic API key>" --project src/PI.SearchApi
+```
+
+The API builds its LLM client once, so restart `aspire run` after changing these settings. Without an LLM, Stages 6–7 still return their results, the Answer tab shows a `503` saying what to fix, and Stages 1–5 are unaffected.
+
 **Run everything**
 
 ```sh
 aspire run
 ```
 
-(or press F5 in VS Code / Visual Studio on the "Aspire: Launch default AppHost" configuration). This starts Postgres and the API. On first run, watch the `searchapi` resource's logs in the Aspire dashboard for:
+(or press F5 in VS Code / Visual Studio on the "Aspire: Launch default AppHost" configuration). This starts Postgres, the API and the web UI; open the `web-ui` resource's URL from the Aspire dashboard to see the talk and the demo. On first run, watch the `searchapi` resource's logs in the Aspire dashboard for:
 
 ```
 Seeded 60 products (60 inserted, 0 updated, 0 deleted)
@@ -85,8 +106,10 @@ Open **Search API (Scalar)** from the `searchapi` resource in the dashboard. Eve
 | 3 Vector | `POST /api/search/vector` |
 | 4 Hybrid | `POST /api/search/hybrid` |
 | 5 Ontology | `POST /api/search/ontology` |
+| 6 RAG | `POST /api/search/rag`, and `POST /api/search/rag/answer` for the streamed answer |
+| 7 Pedagogy | `POST /api/search/pedagogy`, and `POST /api/search/pedagogy/answer` for the answer and its explanation |
 
-Try the talk's opening example on each stage:
+The answer endpoints stream Server-Sent Events; send `Accept: application/json` to get the whole answer as one JSON object instead. Try the talk's opening example on each stage:
 
 ```json
 { "query": "power adapter for my laptop", "context": { "targetProductId": "PROD-0001" } }
@@ -99,9 +122,19 @@ Try the talk's opening example on each stage:
 ```sh
 dotnet test tests/PI.SearchApi.Tests              # fast, no Docker
 dotnet test tests/PI.SearchApi.IntegrationTests    # needs Docker running
+
+cd src/web-ui
+npm ci
+npm run typecheck && npm run lint && npm test && npm run build
 ```
 
-The integration tests run the golden queries against each stage. Vector, hybrid and ontology tests skip, with a message, if the Nomic model isn't downloaded.
+The integration tests run the golden queries against each stage. Vector, hybrid and ontology tests skip, with a message, if the Nomic model isn't downloaded; the Stage 6–7 tests skip if the LLM isn't available. They check answers structurally (what was cited, whether the explanation's structure holds), never their wording.
+
+The model bake-off, which compares local models for Stages 6–7, is opt-in because it runs for a long time. It writes a report to `tests/PI.SearchApi.IntegrationTests/TestResults/`:
+
+```sh
+PI_BAKEOFF_MODELS=qwen3.6:35b,gemma4:31b dotnet test tests/PI.SearchApi.IntegrationTests --filter ModelBakeOff
+```
 
 **After editing products.json**
 
@@ -127,4 +160,4 @@ The next `aspire run` rebuilds the schema and re-seeds the catalog from scratch.
 
 ## Status
 
-This repo is built incrementally alongside the talk, following the phases in [docs/adr/roadmap.md](docs/adr/roadmap.md). Expect each stage (structured → keyword → semantic → hybrid → ontology → LLM/RAG → pedagogy) to land as a corresponding feature/endpoint in [src/PI.SearchApi](src/PI.SearchApi).
+This repo is built alongside the talk, following the phases in [docs/adr/roadmap.md](docs/adr/roadmap.md). All seven stages (structured → keyword → vector → hybrid → ontology → RAG → pedagogy) are built, in the API and the web UI; what remains is finishing and publishing.

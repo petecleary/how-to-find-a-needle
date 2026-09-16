@@ -42,7 +42,7 @@ public static class AnswerApiClient
 
         Assert.Equal("text/event-stream", response.Content.Headers.ContentType?.MediaType);
 
-        var events = new List<(string, string)>();
+        var events = new List<(string Name, string Data)>();
         string? name = null;
         var data = new StringBuilder();
 
@@ -64,6 +64,11 @@ public static class AnswerApiClient
                 data.Clear();
             }
         }
+
+        // `meta` is sent as soon as retrieval finishes, before the model is called, so an unavailable LLM arrives as an
+        // error event on a 200 stream rather than a 503 (ADR-0016). Either way the test skips instead of failing.
+        var error = events.FirstOrDefault(e => e.Name == "error").Data;
+        SkipIfLlmUnavailable(HttpStatusCode.ServiceUnavailable, error ?? "");
 
         return events;
     }

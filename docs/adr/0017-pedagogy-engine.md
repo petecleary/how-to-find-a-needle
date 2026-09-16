@@ -1,6 +1,6 @@
 # ADR-0017: Stage 7 — Pedagogy engine (streamed)
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 4, 2026-09-16): built and verified, in the API and the UI. The baseline toggle changes only the system prompt, and the structure checks held in 65 of 70 bake-off runs.
 - **Date:** 2026-09-13 (amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): renumbered from Stage 8; adds the baseline toggle and audience-aware labels. Amended 2026-09-14 by the ADR-0014 visual design: the audience picker sits in the stage options on the tab row. Amended 2026-09-15 while building Phase 4 step 3: one shared user message, audience guidance in its own file, audience-specific words offered identically to both prompts, Near miss limited to Incompatible products, tolerant heading parsing)
 - **Related:** ADR-0003, ADR-0013, ADR-0014, ADR-0015, ADR-0016, ADR-0018; golden queries GQ-01, GQ-05, GQ-06; roadmap Phase 4
 

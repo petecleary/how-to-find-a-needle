@@ -459,7 +459,9 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 
 **Order change:** the bake-off scores the real prompts and validators, so it moves after the Stage 7 API and the prompt review. `qwen3.6:35b` is the provisional default until then.
 
-**Second order change (Pete, 2026-09-15, at the step 3 checkpoint):** the Stages 6–7 UI comes before the prompt review and the bake-off, so Pete can review the prompts in the running app. Build order is now 1 → 2 → 3 → **5 → 6 → 7** (the stage explanations `rag.md` and `pedagogy.md` are brought forward from step 8, because the content tests require one per stage the API serves) → ✋ prompt review → **4** → 8 → 9. The step numbers below are kept, so references still work.
+**Second order change (Pete, 2026-09-15, at the step 3 checkpoint):** the Stages 6–7 UI comes before the prompt review and the bake-off, so Pete can review the prompts in the running app. Build order is now 1 → 2 → 3 → **5 → 6 → 7** (the stage explanations `rag.md` and `pedagogy.md` are brought forward from step 8, because the content tests require one per stage the API serves) → **4** → 8 → 9. The step numbers below are kept, so references still work.
+
+**Third change (Pete, 2026-09-15):** the prompt review is no longer a Phase 4 checkpoint. Functionality first; the prompts, the Stage 6–7 content and all other copy are reviewed together at the end, in [Phase 5 step 8](#phase-5--finish--publish), where Pete goes through the finished app as tutor and learner. The bake-off runs on the current prompts and gets a short re-run if they change then.
 
 **Build order.** Every step ends with `dotnet build` at 0 warnings, unit tests, integration tests (LLM tests skip cleanly without an LLM), and the UI checks once UI files change.
 
@@ -497,8 +499,8 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - `POST /api/search/pedagogy` + `/answer` streaming the `answer` section, then the `explanation` section.
    - Two prompts: `pedagogy-system.md` (principles, fixed markdown headings, audience sections with label choice) and `pedagogy-baseline.md` (a fair, plain prompt with the same grounding rules), selected by `options.applyPedagogy`.
    - Heading parser; validator (Decision Compatible, Near miss Incompatible, concept-label heuristic), skipped for the baseline apart from citations; parsed structure in `final` (`null` for the baseline); per-section timings and the prompt used in the trace; tests.
-   - ✋ **Checkpoint with Pete:** review `pedagogy-baseline.md` (fair, not a straw man) and `pedagogy-system.md` with GQ-01 novice off and on side by side; freeze the prompts before the bake-off.
-   - ✅ **Built 2026-09-15** (awaiting the checkpoint). `dotnet build` 0 warnings; unit tests **246 pass (31 new)**; integration tests **45 pass** (2 new, live against Ollama). ADR-0017 amended first. Built:
+   - ➡️ **Prompt review moved to Phase 5 step 8** (Pete, 2026-09-15): `pedagogy-baseline.md` (fair, not a straw man) and `pedagogy-system.md`, reviewed with the rest of the content once everything works.
+   - ✅ **Built 2026-09-15.** `dotnet build` 0 warnings; unit tests **246 pass (31 new)**; integration tests **45 pass** (2 new, live against Ollama). ADR-0017 amended first. Built:
      - `Pipeline/Pedagogy/`: `PedagogyEngine` (the Stage 6 answer section, then the explanation), `PedagogyPromptBuilder`, `ExplanationHeadingParser`, `ExplanationValidator`, and records `PedagogyPrompt`, `ExplanationSection`, `ExplanationValidation`.
      - Prompts: `pedagogy-system.md`, `pedagogy-baseline.md`, `pedagogy-audiences.md` (one section per audience) and `pedagogy-user.md`. The user message is shared: the toggle changes only the system prompt, which a unit test asserts.
      - Contracts: `AnswerFinal.structure` (`ExplanationStructure`, `ExplanationProduct`); `EvidenceRule.SpecTerms` for the expert's words.
@@ -519,6 +521,18 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
      - The near-miss choice varies between runs (PROD-0016 or 0015): both are valid. The bake-off will show how often each structure rule holds over 10 runs.
 4. **Model bake-off** (0015)
    - Opt-in `BakeOff/ModelBakeOffTests` (`PI_BAKEOFF_MODELS`): the 7 golden queries with a query, 10 runs each, Stage 6 and Stage 7 (pedagogy on and off) in JSON mode. Record structure, citation warnings, sentinel, time to first token and totals in ADR-0015; choose the Ollama default.
+   - ✅ **Harness built 2026-09-15.** `BakeOff/ModelBakeOffTests` and `BakeOffCollection` (never runs alongside the shared AppHost fixture, which uses the same data volume). For each model it starts its own AppHost with `Llm__Model` set on the `searchapi` resource, sends one untimed warm-up request, then runs every scenario `PI_BAKEOFF_RUNS` times (10 by default). It scores what the API's validators report (invalid citations, warnings, the explanation's non-heuristic structure checks, the sentinel) plus first-token and total times, and writes `TestResults/model-bake-off-{time}.md` (git-ignored), with a table per query and the most common warnings.
+   - **Smoke run** (`qwen3.6:35b`, 1 run, 2 minutes) found two validator faults, now fixed with unit tests; unit tests **248 pass**:
+     - **The target device counted as a choice.** "For your laptop [PROD-0001], get …" made Decision "cite 2 products". Decision and Near miss now ignore citations of the target device.
+     - **No device, no rule words.** Without a target device no rule is checked, so the evidence had no rules and the concept heuristic flagged "Voltage vs. Platform". It now also reads the products' compatibility reasons, which quote the rules.
+     - Worth noting for ADR-0015: Stage 7's answer reaches its first token faster than Stage 6's (about 40 ms against 600 ms), probably because Ollama reuses the cached prompt Stage 6 just sent. And without a target device (GQ-02, GQ-03, GQ-07) the answer can start with `INSUFFICIENT_EVIDENCE`: 3 of 7 queries in the smoke run.
+   - ✅ **Done 2026-09-16. Default: `qwen3.6:35b`** (decided by Pete once gemma's speed was clear). Full results in [ADR-0015](0015-llm-hosting-and-client.md) § Bake-off results: 210 requests, none failed, **no invalid citations at all**, structure checks 65/70, Stage 6 median 2.3 s, Stage 7 median 5.4 s, first token 43–73 ms. Every acceptance criterion for the AI stages is met by this model.
+     - **`gemma4:31b` was abandoned mid-run.** It generates ~22 tokens/second on this laptop (a dense 31B model runs every weight per token), so a request took ~15 s and Stage 7 ~30 s, twice the talk's budget; holding both models also pushed the 64 GB machine into swap. Its half of the run was stopped after three hours.
+     - **The report is now written after each model**, not at the end: stopping gemma lost qwen's completed results the first time.
+     - **macOS throttling, not the model:** with the display asleep the run took three hours of wall-clock for ~20 minutes of model time, roughly one call every 30 s, even under `caffeinate -i`. Use `caffeinate -dimsu`. The report's timings are the API's own, so they are unaffected.
+     - **Two faults the bake-off exposed, both fixed with unit tests:** with no target device the evidence carried no rules at all (the applicable rules are now named from the ontology), and a concept named after a product's own spec ("Capacity (Ah)", "Form Factor") was flagged as "not from the ontology" (spec names now count as grounded).
+     - **30 of 210 answers began with `INSUFFICIENT_EVIDENCE`:** exactly the three golden queries with no target device (GQ-02, GQ-03, GQ-07), where no rule can be checked. Correct behaviour, and a talk moment: the answer says what it can't confirm.
+   - Done alongside: README "Getting started" (Node, LLM set-up with Ollama or Anthropic, the web UI under `aspire run`, the Stage 6–7 endpoints, UI checks, the bake-off command); `architecture.md` (the `Llm/` folder, the six prompt files, `useAnswerStream`, `answerEvents.ts`, `BakeOff/`, and LLM settings living on the API, not the AppHost); `src/PI.SearchApi/CLAUDE.md` layout table; the Answer panel shows long waits in seconds ("6.2 s") via `formatDuration`.
 5. **UI plumbing** (0014)
    - `gen:api`; `answerEvents.ts`; a pure incremental SSE parser; `useAnswerStream` (fetch + parser, in parallel with the results request, `AbortController`); Stages 6–7 selectable.
 6. **Answer tab and stage options** (0014, [design](../design/screens/stage-7-answer.png))
@@ -538,22 +552,43 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 8. **Content, talk mode and glossary**
    - Stage explanations for `rag` and `pedagogy`; talk steps `stage-rag`, `stage-pedagogy-baseline`, `stage-pedagogy`, `stage-pedagogy-audience`; glossary entries; content-integrity tests for Stages 1–7.
 9. **Acceptance run and ADR status**
+   - ✅ **Live run 2026-09-16, through the Vite proxy** (`qwen3.6:35b`, GQ-01 "power adapter for my laptop" with the Aerobook as the target device):
+     | Request | First token | Total | Result |
+     |---|---|---|---|
+     | `/api/search/rag` (results) | — | **213 ms** | 50 results, no LLM call |
+     | Stage 6 answer | 966 ms (model loading) | 3.4 s | 7 citations, none invalid, no warnings |
+     | Stage 7 novice, baseline | 38 ms | 5.9 s | 7 citations, none invalid, no warnings |
+     | Stage 7 novice, pedagogy | 67 ms | 5.8 s | Decision PROD-0011, near miss PROD-0016, no warnings |
+     | Stage 7 expert, pedagogy | 71 ms | 5.8 s | Decision PROD-0011, near miss PROD-0015, no warnings |
+     - Results are ready in a fifth of a second, long before the first token; the first token lands in well under 1.5 s once the model is loaded, and Stage 7's two calls finish in under 6 s against the ~15 s budget. Switching audience changed the near miss it chose and the wording, not the decision.
+   - ✅ **Mid-stream cancellation cancels generation** (the check left open since Phase 3 step 2), proven in Ollama's request log through the Vite proxy: a completed Stage 7 request logs **two** calls (answer 3.0 s, explanation 3.4 s); aborting at the first delta logs **one and no second**, so the explanation call never starts; aborting right after the `meta` event logs **none at all**, with 30 s of slack for one to appear.
+   - ✅ **With no LLM reachable, everything else still works** (checked 2026-09-16 by starting the AppHost with `Llm__Endpoint=http://localhost:11999`, so Ollama itself was left running):
+     - All seven stages still return their results: Stage 1 60, keyword 4, the rest 50, with Stages 6–7 keeping their 9 trace steps including the evidence step.
+     - Both answer endpoints in JSON mode return **503 "LLM unavailable"** with the fix: *"Is Ollama running at http://localhost:11999? Start it with `ollama serve`, and make sure the model is pulled: `ollama pull qwen3.6:35b`. (Connection refused)"*.
+     - The event stream returns `200 text/event-stream` with `meta` (the evidence IDs) and then an `error` event carrying that ProblemDetails, because `meta` is sent before the model is called. ADR-0016 amended to say so.
+     - In the UI the Answer tab reads **failed**, shows the guidance, "The results are unaffected: they come from a separate request" and a Try again button, while Results still says **50 ready** and the evidence set is listed in full.
+   - ✅ **Talk mode walks Stages 1–7 by keyboard:** → visits **29 positions** in order, from the intro through the four new Stage 6–7 steps (RAG's four tabs, then the baseline, pedagogy and expert steps) to Going further and Summary, and ← returns through exactly the same positions in reverse. A Stage 7 step arrives with its preset applied (`stage-pedagogy-baseline`: novice, Apply pedagogy off).
    - The acceptance criteria below, live under `aspire run` (Ollama and Anthropic), including mid-stream cancellation through the Vite proxy (left open in Phase 3 step 2); README, `architecture.md` and `src/PI.SearchApi/CLAUDE.md` updated; ADRs 0015–0017 → Accepted.
 
 ### Acceptance criteria
-- GQ-01 in Stage 6 gives a grounded answer citing the compatible charger and warning about the near miss.
-- **GQ-01 in Stage 7, `novice`, pedagogy off:** a free-form explanation with no citation warnings, and a trace that shows the baseline prompt and "structure checks not applied".
-- **The same with pedagogy on:** all five headings, a Decision on the compatible charger, and connector + wattage explained with the near miss as a counter-example.
-- Switching audience visibly changes the explanation's wording (novice uses everyday labels; expert is spec-first) without changing the facts.
-- In Stages 6–7 the results list renders before any LLM text, and the summary's first token appears within ~1.5 s on the presenter laptop (local Ollama). Stage 7's answer and explanation complete in under ~15 s combined.
-- Switching stage mid-stream cancels generation (visible in Ollama/the trace).
-- With Ollama stopped, Stages 6–7 still show results, the Answer tab shows the 503 guidance, and Stages 1–5 are unaffected.
-- ADRs 0015–0017 → **Accepted**.
+- ✅ GQ-01 in Stage 6 gives a grounded answer citing the compatible charger and warning about the near miss: 7 citations, none invalid, no warnings; across the bake-off's 210 requests **no citation ever fell outside the evidence**.
+- ✅ **GQ-01 in Stage 7, `novice`, pedagogy off:** free-form, no citation warnings; `structure: null`, and the trace step reads "Validate: citations (structure checks not applied)".
+- ✅ **The same with pedagogy on:** all five headings, Decision on a compatible charger (PROD-0011), Connector and Wattage explained, and the near miss (PROD-0016, the 45W USB-C charger that "looks correct") as the counter-example.
+- ✅ Switching audience changes the wording, not the facts: novice gets plain words and an analogy, expert is spec-first (`wattageW ≥ minChargerWattageW`); the decision stayed PROD-0011.
+- ✅ Results render before any LLM text (**213 ms**, no LLM call, while the tab reads "50 ready"); first token **38–73 ms** warm, and Stage 7's answer plus explanation complete in **5.8 s** against the ~15 s budget. A cold model adds a few seconds to the first request: warm up before the talk.
+- ✅ Switching stage mid-stream cancels generation, proven in Ollama's request log: a completed Stage 7 request logs two calls, aborting at the first delta logs one and no second, and aborting at `meta` logs none at all.
+- ✅ With no LLM reachable, Stages 6–7 still show results and the evidence set, the Answer tab shows the 503 guidance and a Try again button, Stages 1–5 are unaffected, and the LLM integration tests skip with a message (41 pass, 5 skip, 0 fail).
+- ✅ ADRs 0016 and 0017 → **Accepted**. ADR-0015 → **Accepted for Ollama**; the Anthropic provider is built and unit-tested but has not been run live, for want of an API key.
+
+### Phase 4 status ✅ closed 2026-09-16
+
+- Steps 1–9 are built and verified: `dotnet build` 0 warnings, **250 unit tests**, **45 integration tests** (LLM tests skipping cleanly without an LLM), **267 UI tests**, plus UI typecheck, lint, Prettier and build.
+- ➡️ **Carried into Phase 5 step 8:** the live Anthropic check once a key is set; the prompt and content review; and a warm-up (or a longer Ollama `keep_alive`) before the talk, so the first answer isn't the cold one.
 
 ### Open questions
-- ❓ Default Ollama model (from the bake-off, step 4).
+- ✅ Default Ollama model: **`qwen3.6:35b`** (bake-off, 2026-09-16; `gemma4:31b` rejected on speed). See [ADR-0015](0015-llm-hosting-and-client.md) § Bake-off results.
 - ✅ Default hosted model for learners: Anthropic `claude-sonnet-5` (decided 2026-09-15). OpenAI's is set at publish time (Phase 5 step 7).
-- ❓ Wording of `pedagogy-baseline.md`: review it with Pete so the comparison is fair, not a straw man.
+- ➡️ Wording of `pedagogy-baseline.md` (fair, not a straw man): moved to Phase 5 step 8, with the other prompt questions.
 
 ---
 
@@ -571,6 +606,13 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 8. **Clean-up and sign-off (Pete, once the whole demo is complete)** (0014):
    - **Copy and talk review:** every piece of UI text Pete hasn't written yet. The talk steps (`content/talk.json`, `content/talk/*.md`: intro, the needle, each stage caption, Going further, summary), the stage explanations (`content/stages/*.md`), the glossary (`content/glossary.json`), the Home thesis (`content/home.md`), and short labels in components (filter hints, empty states, trace section titles).
    - **Speaker details** in `content/speaker.md`, with the photo and LinkedIn QR code in `content/images/`.
+   - **Prompt review** (moved from Phase 4 step 3, 2026-09-15), in `src/PI.SearchApi/assets/prompts/`, with GQ-01 on Stage 7 (novice off, novice on, expert) side by side in the Answer tab and the prompts in Under the hood:
+     - Is `pedagogy-baseline.md` a fair first prompt, not a straw man?
+     - `pedagogy-system.md`: add "plain text, no LaTeX"? The expert run wrote `$\ge$`, which the UI doesn't render.
+     - `pedagogy-system.md`: should Decision always choose one product ("if several fit, choose one and say why")? It sometimes names two.
+     - `rag-system.md`, `rag-user.md`, `pedagogy-audiences.md`, `pedagogy-user.md`: wording.
+     - If a prompt changes, re-run the bake-off for the default model (Phase 4 step 4) and the Stage 6–7 integration tests.
+   - **Stage 6–7 content drafted in Phase 4:** `content/stages/rag.md` and `pedagogy.md`; talk steps `stage-rag`, `stage-pedagogy-baseline`, `stage-pedagogy`, `stage-pedagogy-audience` and their captions; the AI-stage glossary entries; UI labels in the Answer tab and the Stage 6–7 trace views.
    - **Deferred:** the laptop-charger icon (`laptop-chargers` → `laptop` in the TTL; `plug` suggested).
    - **Checks carried over from Phase 3:** fonts load with the network disconnected; an ontology label edit appears in the filters after re-running the AppHost; the talk starts from Home by keyboard alone; the CI `web-ui` job is green on GitHub.
    - Then **ADR-0014 → Accepted**.

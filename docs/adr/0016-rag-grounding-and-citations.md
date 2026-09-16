@@ -1,6 +1,6 @@
 # ADR-0016: Stage 6 — RAG: streamed, grounded summary with citations
 
-- **Status:** Proposed
+- **Status:** Accepted (Phase 4, 2026-09-16): built and verified, in the API and the UI. Across 210 bake-off requests no citation ever fell outside the evidence set.
 - **Date:** 2026-09-13 (amended 2026-09-15 while building Phase 4 step 2: evidence for unchecked and out-of-concept items, descriptions read with one query, `invalidCitations` in `final`, errors before the first event)
 - **Related:** ADR-0003, ADR-0004, ADR-0013, ADR-0014, ADR-0015, ADR-0017; golden queries GQ-01, GQ-05, GQ-06; roadmap Phase 4
 
@@ -69,7 +69,7 @@ data: {"timeToFirstTokenMs":640,"totalMs":5210,"trace":[…]}
 
 - `invalidCitations` lists the cited IDs that weren't in the evidence, so the UI can mark exactly those chips without parsing warning text.
 - `done.trace` holds the answer's own steps (prompt, generation, validation). The evidence step is already in the results response's trace, so the UI shows it once.
-- Failures send `event: error` with a ProblemDetails body (e.g. `503` "Is Ollama running?"). The results request is unaffected. A failure **before the first event** (for example, no API key configured) is an ordinary `503` ProblemDetails response instead, because nothing has been streamed yet.
+- Failures send `event: error` with a ProblemDetails body (e.g. `503` "Is Ollama running?"). The results request is unaffected. In practice this is what an unavailable LLM looks like on the stream, because `meta` is sent as soon as retrieval finishes, before the model is called: the response is `200 text/event-stream` carrying `meta` and then `error` (verified 2026-09-16). A plain `503` ProblemDetails response happens when nothing has been streamed at all: JSON mode, or a failure before `meta`.
 - Closing the connection cancels generation; the request's `CancellationToken` flows into `IChatClient`.
 - The endpoint disables response buffering and compression, so chunks reach the browser as they're produced.
 

@@ -51,7 +51,7 @@ README.md
 docs/adr/                         # working ADRs, roadmap, this overview (build branch; public ADRs after the build)
 
 src/
-  PI.AppHost/                     # .NET Aspire: postgres (+pgvector), searchapi, web-ui, LLM settings
+  PI.AppHost/                     # .NET Aspire: postgres (+pgvector), searchapi, web-ui (LLM settings live on the API)
     AppHost.cs
 
   PI.SearchApi/                   # Web API (FastEndpoints, REPR)
@@ -60,7 +60,8 @@ src/
     Contracts/                    # SearchRequest, SearchResponse, ProductResult, DebugTrace
     Data/                         # DatabaseSeeder (schema, catalog upsert, embedding backfill), EmbeddingFile (jsonl)
     Embeddings/                   # ISearchEmbedder, NomicOnnxEmbeddingGenerator (ONNX Runtime)
-    Pipeline/                     # shared types (Candidate, StageResult, TraceStep, SqlFilterBuilder) + one technique per folder
+    Llm/                          # LlmOptions, LlmClientFactory (the one IChatClient), LlmChatOptions, LlmStreaming, warm-up
+    Pipeline/                     # shared types (Candidate, StageResult, TraceStep, SqlFilterBuilder, PromptLibrary) + one technique per folder
       Structured/  Keyword/  Vector/  Fusion/  Hybrid/  Ontology/  Rag/  Pedagogy/
     Endpoints/
       Search/{Stage}/             # thin endpoint + validator per stage
@@ -73,21 +74,21 @@ src/
         queries/*.rq              # SPARQL lookups: labels, taxonomy, vocabularies, narrower concepts, rules
         embeddings/               # nomic.jsonl, openai.jsonl: committed product vectors
         init.sql                  # idempotent schema + indexes
-      prompts/                    # rag-*.md, pedagogy-system.md, pedagogy-baseline.md
+      prompts/                    # rag-system.md, rag-user.md; pedagogy-system.md, pedagogy-baseline.md, pedagogy-audiences.md, pedagogy-user.md
       models/                     # downloaded ONNX models (gitignored; README committed)
         nomic/                    # model_int8.onnx, tokenizer.json
 
   web-ui/                         # React + Vite + TS + Tailwind + shadcn/ui; the talk itself (no slides)
     content/                      # speaker.md, talk.json + talk/*.md, stages/*.md, glossary.json
     src/
-      api/                        # schema.d.ts (openapi-typescript), client.ts
-      components/                 # SearchBar, PipelineStepper, StageTabs, ResultRow, trace renderers
-      hooks/usePipelineSearch.ts
+      api/                        # schema.d.ts (openapi-typescript), client.ts, answerEvents.ts (hand-typed SSE events)
+      components/                 # SearchBar, PipelineStepper, StageTabs, ResultRow, AnswerTab, trace renderers
+      hooks/                      # usePipelineSearch.ts, useAnswerStream.ts (in parallel: results never wait for the LLM)
       App.tsx
 
 tests/
-  PI.SearchApi.Tests/             # unit: RRF, pooling, rules, validators
-  PI.SearchApi.IntegrationTests/  # Aspire.Hosting.Testing: golden queries per stage
+  PI.SearchApi.Tests/             # unit: RRF, pooling, rules, validators, evidence, citations, headings
+  PI.SearchApi.IntegrationTests/  # Aspire.Hosting.Testing: golden queries per stage; BakeOff/ (opt-in model comparison)
 ```
 
 ### Technology stack
@@ -103,7 +104,7 @@ tests/
 | Ontology | dotNetRDF (in-memory), hand-written Turtle: standard SKOS (taxonomy, synonyms, language-tagged labels, value vocabularies) plus a small class-level rule vocabulary beyond SKOS; SPARQL lookups; no instance data | [0013](0013-domain-ontology-and-compatibility.md) |
 | LLM (stages 6–7) | `Microsoft.Extensions.AI` `IChatClient`, provider set in config: existing local **Ollama** (OpenAI-compatible `/v1`), **OpenAI**, or **Anthropic** (official `Anthropic` .NET SDK). No containers, **no LiteLLM** | [0015](0015-llm-hosting-and-client.md) |
 | Frontend | React + Vite + TypeScript, Tailwind, shadcn/ui, Lucide, React Router, react-markdown; `openapi-typescript` types; Vite proxy (no CORS). Home, talk mode, demo, glossary and ADR pages **replace slides** | [0014](0014-web-ui-architecture.md) |
-| Testing | xUnit unit tests + `Aspire.Hosting.Testing` golden-query integration tests; Vitest for the UI hook | [0002](0002-solution-structure-and-orchestration.md) |
+| Testing | xUnit unit tests + `Aspire.Hosting.Testing` golden-query integration tests (structural checks only for the LLM stages); Vitest for the UI's hooks, parsers, renderers and content | [0002](0002-solution-structure-and-orchestration.md) |
 | API docs | Scalar + `Microsoft.AspNetCore.OpenApi` | — |
 
 ---

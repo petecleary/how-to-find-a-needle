@@ -20,3 +20,11 @@ export function formatResultRange(firstRank: number, shownCount: number, totalRe
 export function formatMilliseconds(milliseconds: number): string {
     return `${milliseconds.toFixed(2)} ms`;
 }
+
+/**
+ * e.g. 56.3 → "56 ms", 6231 → "6.2 s": a wait as a person reads it, for LLM timings on the projector. The trace keeps
+ * `formatMilliseconds` for its exact values.
+ */
+export function formatDuration(milliseconds: number): string {
+    return milliseconds < 1000 ? `${Math.round(milliseconds)} ms` : `${(milliseconds / 1000).toFixed(1)} s`;
+}

@@ -96,6 +96,24 @@ public sealed class EvidenceSetBuilderTests
     }
 
     [Fact]
+    public void Build_NoCheckRan_NamesTheRulesThatStillApply()
+    {
+        // Bake-off finding (2026-09-15): with no target device nothing is checked, and the evidence carried no rules at
+        // all, so the answer had none of the domain's words for what it couldn't confirm.
+        var charger = new Candidate(
+            Product("PROD-0012", "Voltline 65W USB-C GaN Charger", ["laptop-chargers"]),
+            0.5, new CandidateSignals { ConceptMatch = ConceptMatch.InConcept },
+            new CompatibilityResult(CompatibilityStatus.Unknown, ["? No target device."]));
+
+        var evidence = Builder.Build([charger], null, ["chargers"], []);
+
+        var rule = Assert.Single(evidence.Rules);
+        Assert.Equal("chargers → laptops", rule.Name);
+        Assert.Contains("connector", rule.SpecTerms);
+        Assert.Contains(rule.Definitions, definition => definition.Contains("plug must fit"));
+    }
+
+    [Fact]
     public void Build_Rules_OnlyForProductsInTheEvidence()
     {
         List<Candidate> ranked = [Candidate("PROD-0012", CompatibilityStatus.Compatible)];

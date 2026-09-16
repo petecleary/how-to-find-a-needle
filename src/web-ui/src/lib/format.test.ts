@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatMilliseconds, formatPrice, formatResultRange } from './format';
+import { formatDuration, formatMilliseconds, formatPrice, formatResultRange } from './format';
 
 describe('formatResultRange', () => {
     it('shows which results are on the page, out of all that matched', () => {
@@ -19,5 +19,12 @@ describe('formatPrice', () => {
 describe('formatMilliseconds', () => {
     it('rounds to two decimal places', () => {
         expect(formatMilliseconds(19.968)).toBe('19.97 ms');
+    });
+});
+
+describe('formatDuration', () => {
+    it('shows whole milliseconds under a second, and seconds to one decimal place above', () => {
+        expect(formatDuration(56.3)).toBe('56 ms');
+        expect(formatDuration(6231)).toBe('6.2 s');
     });
 });

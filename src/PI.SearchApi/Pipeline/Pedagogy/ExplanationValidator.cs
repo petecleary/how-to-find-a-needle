@@ -89,7 +89,8 @@ public static partial class ExplanationValidator
             return (new ValidationCheck(name, false, "There is no Decision section to check."), []);
         }
 
-        var cited = CitationValidator.Extract(body);
+        // "for your laptop [PROD-0001]" cites the shopper's own device as context, not as a choice.
+        var cited = CitedExceptTargetDevice(body, evidence);
 
         if (answerFoundInsufficientEvidence)
         {
@@ -123,7 +124,7 @@ public static partial class ExplanationValidator
             return (new ValidationCheck(name, false, "There is no Near miss section to check."), []);
         }
 
-        var cited = CitationValidator.Extract(body);
+        var cited = CitedExceptTargetDevice(body, evidence);
         var hasIncompatibleEvidence = evidence.Items.Any(i => i.Role == EvidenceRole.Incompatible);
 
         if (!hasIncompatibleEvidence)
@@ -167,11 +168,19 @@ public static partial class ExplanationValidator
                 [.. unknown.Select(term => $"Heuristic: the concept \"{term}\" is not from the ontology (no matching label, rule or spec term).")]);
     }
 
+    private static List<string> CitedExceptTargetDevice(string body, EvidenceSet evidence) =>
+        [.. CitationValidator.Extract(body).Where(id => evidence.Find(id)?.Role != EvidenceRole.TargetDevice)];
+
     private static HashSet<string> OntologyWords(EvidenceSet evidence)
     {
+        // The products' compatibility reasons quote the rule definitions too. They matter when there is no target
+        // device: no check runs, so the evidence has no rules, but each Unknown reason still names the rule.
         var texts = evidence.Concepts.SelectMany(c => c.AltLabels.Append(c.PrefLabel))
             .Concat(evidence.Rules.SelectMany(r => r.Definitions))
-            .Concat(evidence.Rules.SelectMany(r => r.SpecTerms).Select(PedagogyPromptBuilder.HumaniseSpecTerm));
+            .Concat(evidence.Rules.SelectMany(r => r.SpecTerms).Select(PedagogyPromptBuilder.HumaniseSpecTerm))
+            .Concat(evidence.Items.SelectMany(i => i.Compatibility.Reasons))
+            // A product's own spec names (capacityAh, formFactor) are the catalogue's words, not invented ones.
+            .Concat(evidence.Items.SelectMany(i => i.Product.Specs.Keys).Select(PedagogyPromptBuilder.HumaniseSpecTerm));
 
         return [.. texts.SelectMany(Words)];
     }

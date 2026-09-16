@@ -40,9 +40,9 @@ An ADR amended in place by a later ADR names it in its status line ([ADR-0001](0
 | [0012](0012-bge-m3-dense-and-sparse.md) | BGE-M3 dense + sparse | Search | — | Rejected (by 0018) |
 | [0013](0013-domain-ontology-and-compatibility.md) | Stage 5 — Ontology: SKOS taxonomy, vocabularies & domain rules | Search | 1 (data), 2 (stage) | Accepted (amended by 0018) |
 | [0014](0014-web-ui-architecture.md) | Web UI: the talk, the demo & learning pages | Frontend | 3 | Proposed |
-| [0015](0015-llm-hosting-and-client.md) | LLM provider & client | AI | 4 | Proposed |
-| [0016](0016-rag-grounding-and-citations.md) | Stage 6 — RAG grounding & citations | AI | 4 | Proposed |
-| [0017](0017-pedagogy-engine.md) | Stage 7 — Pedagogy engine, with baseline toggle | AI | 4 | Proposed |
+| [0015](0015-llm-hosting-and-client.md) | LLM provider & client | AI | 4 | Accepted for Ollama (Anthropic built, live check pending a key; OpenAI in Phase 5) |
+| [0016](0016-rag-grounding-and-citations.md) | Stage 6 — RAG grounding & citations | AI | 4 | Accepted |
+| [0017](0017-pedagogy-engine.md) | Stage 7 — Pedagogy engine, with baseline toggle | AI | 4 | Accepted |
 | [0018](0018-scope-and-going-further.md) | Scope: seven stages, what the talk discusses, what it leaves out | Scope | 0–5 | Proposed |
 
 Testing and observability are cross-cutting. They are covered in [0002](0002-solution-structure-and-orchestration.md) (test projects, conventions) and [0003](0003-search-api-contract-and-debug-trace.md) (tracing, timings).

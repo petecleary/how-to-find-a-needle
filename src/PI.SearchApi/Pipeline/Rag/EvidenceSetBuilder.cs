@@ -71,8 +71,27 @@ public sealed class EvidenceSetBuilder(IOntology ontology)
                 [.. group.SelectMany(check => new[] { check.AccessorySpec, check.DeviceSpec }).Distinct()]))
             .ToList();
 
+        // No check ran (no target device, or constraints off), but the rules still apply to these products. Naming
+        // them from the ontology gives the answer the domain's own words for what it can't confirm.
+        if (rules.Count == 0)
+        {
+            rules = ApplicableRules(items);
+        }
+
         return new EvidenceSet(items, ConceptsFor(matchedConcepts), rules);
     }
+
+    private List<EvidenceRule> ApplicableRules(List<EvidenceItem> items) =>
+    [
+        .. ontology.Rules
+            .Where(rule => items.Any(item =>
+                item.Role != EvidenceRole.TargetDevice
+                && item.Product.Categories.Any(category => ontology.IsNarrowerOrSelf(category, rule.AccessoryTypeNotation))))
+            .Select(rule => new EvidenceRule(
+                $"{rule.AccessoryTypeNotation} → {rule.DeviceTypeNotation}",
+                [.. rule.Checks.Select(check => check.Definition)],
+                [.. rule.Checks.SelectMany(check => new[] { check.AccessorySpec, check.DeviceSpec }).Distinct()])),
+    ];
 
     private IReadOnlyList<EvidenceConcept> ConceptsFor(IReadOnlyList<string> matchedConcepts)
     {

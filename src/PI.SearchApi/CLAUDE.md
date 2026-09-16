@@ -12,6 +12,7 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 | `Pipeline/` | Shared types (`Candidate`, `StageResult`, `TraceStep`, `SqlFilterBuilder`) |
 | `Pipeline/{Technique}/` | One technique service + interface: `Structured/ Keyword/ Vector/ Fusion/ Ontology/ Rag/ Pedagogy/` |
 | `Embeddings/` | `ISearchEmbedder`, `NomicOnnxEmbeddingGenerator` |
+| `Llm/` | `LlmOptions`, `LlmClientFactory` (the only provider-specific code), `LlmChatOptions`, `LlmStreaming`, `LlmUnavailableException`, warm-up |
 | `Endpoints/Search/{Stage}/` | Thin FastEndpoints endpoint + validator |
 | `Endpoints/Demo/` | Golden queries, devices, taxonomy |
 | `Data/` | `init.sql` runner, catalog loader, `DatabaseSeeder` |

@@ -54,7 +54,7 @@ export const stageExplanationFiles: Readonly<Record<string, string>> = Object.fr
     Object.entries(stageFiles).map(([path, markdown]) => [path.replace(/^.*\/|\.md$/g, ''), markdown]),
 );
 
-/** The markdown for a stage, or `null` when it has no explanation yet (Stages 6–7 until Phase 4). */
+/** The markdown for a stage, or `null` when it has no explanation file (the content tests require one per stage). */
 export function stageExplanationMarkdown(stage: PipelineStage): string | null {
     return stageExplanationFiles[stage] ?? null;
 }

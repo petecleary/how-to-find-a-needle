@@ -7,7 +7,7 @@ import { Markdown } from '@/components/Markdown';
 import { StreamingBadge } from '@/components/StreamingBadge';
 import type { AnswerSectionState } from '@/hooks/useAnswerStream';
 import { linkCitations, withoutSentinel } from '@/lib/citations';
-import { formatMilliseconds } from '@/lib/format';
+import { formatDuration } from '@/lib/format';
 
 // AnswerPanel — Stage 6's grounded answer, as it streams (ADR-0016). The text appears before it is checked; the
 // citation verdict and any warnings arrive with the section's final event. The timings show why streaming matters:
@@ -37,8 +37,8 @@ export function AnswerPanel({
     const text = withoutSentinel(section.markdown);
 
     const timings = [
-        timeToFirstTokenMs === null ? null : `First token ${formatMilliseconds(timeToFirstTokenMs)}`,
-        totalMs === null ? null : `done in ${(totalMs / 1000).toFixed(1)} s`,
+        timeToFirstTokenMs === null ? null : `First token ${formatDuration(timeToFirstTokenMs)}`,
+        totalMs === null ? null : `done in ${formatDuration(totalMs)}`,
     ].filter((part) => part !== null);
 
     return (
