@@ -40,6 +40,7 @@ export function GlossaryTerm({ id, children }: GlossaryTermProps) {
             </HoverCardTrigger>
             <HoverCardContent
                 align="start"
+                sideOffset={2}
                 className="flex w-96 flex-col gap-1.5 rounded-card border-2 px-4 py-3"
             >
                 <p className="flex flex-wrap items-baseline gap-x-2">

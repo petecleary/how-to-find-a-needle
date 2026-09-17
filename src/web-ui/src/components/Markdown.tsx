@@ -112,7 +112,11 @@ const components: Components = {
         );
     },
     ul({ children }) {
-        return <ul className="flex list-disc flex-col gap-1 pl-5">{children}</ul>;
+        return (
+            <ul className="flex list-disc flex-col gap-1 pl-5 [&_li>em]:text-[1.15em] [&_li>strong]:text-[1.15em] [&>li+li]:mt-3">
+                {children}
+            </ul>
+        );
     },
     hr() {
         return <hr className="border-t-2" />;

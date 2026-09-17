@@ -1,5 +1,5 @@
 [
-  { "id": "intro", "kind": "intro", "title": "How to Find a Needle", "file": "talk/intro.md" },
+  { "id": "intro", "kind": "intro", "title": "Not every technique finds the needle", "file": "talk/intro.md" },
   { "id": "the-needle", "kind": "intro", "title": "The needle", "file": "talk/the-needle.md" },
   {
     "id": "stage-structured",

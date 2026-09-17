@@ -6,7 +6,7 @@ export interface Speaker {
     name: string;
     title: string;
     email: string;
-    linkedIn: string;
+    github: string;
     /** A resolved image URL, or `null` for the placeholder. */
     photoUrl: string | null;
     linkedInQrCodeUrl: string | null;
@@ -35,7 +35,7 @@ export function parseSpeaker(markdown: string, imageUrls: Readonly<Record<string
         name: fields.get('name') ?? '[Name]',
         title: fields.get('title') ?? '[Title]',
         email: fields.get('email') ?? '',
-        linkedIn: fields.get('linkedin') ?? '',
+        github: fields.get('github') ?? '',
         photoUrl: image('photo'),
         linkedInQrCodeUrl: image('linkedin qr code'),
         bio: bioLines.join('\n').trim(),

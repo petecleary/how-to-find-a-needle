@@ -1,7 +1,7 @@
 - **Name:** Pete Cleary
 - **Title:** Director of PI & Mash
 - **Email:** pete@piandmash.com
-- **LinkedIn:** www.linkedin.com/in/pete-cleary-8628084
+- **GitHub:** github.com/petecleary/how-to-find-a-needle
 - **Photo:**
 - **LinkedIn QR code:** assets/images/linkedin_qrcode.png
 

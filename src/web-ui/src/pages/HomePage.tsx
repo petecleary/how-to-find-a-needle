@@ -27,7 +27,7 @@ export function HomePage() {
     return (
         <div className="flex min-h-screen flex-col">
             <AppHeader wordmark="company" />
-            <main className="mx-auto grid w-full max-w-7xl flex-1 items-center gap-10 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_24rem]">
+            <main className="mx-auto grid w-full max-w-7xl flex-1 items-start gap-10 px-6 pt-20 pb-10 lg:grid-cols-[minmax(0,1fr)_24rem]">
                 <div className="flex flex-col gap-6">
                     <p className="text-sm font-bold tracking-wide text-ontology-ink uppercase">
                         A talk in {pipelineStages.length} stages
@@ -35,6 +35,9 @@ export function HomePage() {
                     <h1 className="font-brand text-6xl leading-[0.95] font-extrabold sm:text-8xl">
                         How to Find a Needle
                     </h1>
+                    <p className="max-w-2xl text-lg text-muted-foreground">
+                        A practical guide to modern search pipelines and how you can implement them today.
+                    </p>
                     <Markdown className="max-w-2xl text-2xl">{homeMarkdown}</Markdown>
 
                     <ol aria-label="The triad" className="flex flex-wrap items-center gap-x-4 gap-y-3">

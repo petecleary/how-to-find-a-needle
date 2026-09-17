@@ -249,10 +249,12 @@
     pre {
         font-variant-ligatures: none;
     }
-    /* Presentation mode (ADR-0014): everything 12.5% larger for the back of the room. Zoom scales the whole page,
-       pixel sizes included, so the layout keeps its proportions; popovers scale with it. */
+    /* Presentation mode (ADR-0014): everything 12.5% larger for the back of the room. A root font-size scales
+       every rem-based size the same way `zoom` would, but `zoom` desyncs getBoundingClientRect() (unzoomed)
+       from the rendered, zoomed layout, which throws off Radix popovers positioned from it (e.g. GlossaryTerm's
+       hover card). font-size has no such mismatch. */
     html.presentation {
-        zoom: 1.125;
+        font-size: 112.5%;
     }
     /* A visible focus ring in both themes: the talk must be keyboard-operable */
     :focus-visible {
