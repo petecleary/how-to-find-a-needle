@@ -11,7 +11,7 @@
 
 ## What to look for
 
-**GQ-01**: the results are ready before the answer's [first token](term:time-to-first-token). The answer recommends the USB-C chargers and warns about the barrel charger, citing each one. Click a citation chip to see the product the model was given.
+**GQ-03**: the results are ready before the answer's [first token](term:time-to-first-token). The answer recommends the USB-C chargers and warns about the barrel charger, citing each one. Click a citation chip to see the product the model was given.
 
 ## Strength
 

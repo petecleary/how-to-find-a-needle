@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Area:** Search
-- **Related:** [ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0004](0004-pipeline-composition.md), [ADR-0006](0006-database-schema-and-seeding.md); golden query GQ-04
+- **Related:** [ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0004](0004-pipeline-composition.md), [ADR-0006](0006-database-schema-and-seeding.md); golden query GQ-01
 
 ## Context
 
@@ -33,7 +33,7 @@ LIMIT @limit OFFSET @offset;
 
 ## Consequences
 
-- Stage 1 is the fastest and most precise stage, and the talk shows exactly that: GQ-04 (Brakk, 18V, under £100) returns exactly six products from a catalog of 300.
+- Stage 1 is the fastest and most precise stage, and the talk shows exactly that: GQ-01 (Brakk, 18V, under £100) returns exactly six products from a catalog of 300.
 - A request with no filters returns the whole catalog, paged. That is deliberate: structured search has no idea what "relevant" means.
 
 ## Alternatives considered

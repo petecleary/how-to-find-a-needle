@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-16: requirements stated in the query and "fits which devices", for searches without a target device; built and verified the same day (GQ-09). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): SKOS-first framing, BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework). Amended again 2026-09-14 to add `GET /api/vocabularies`, built and verified the same day.
 - **Date:** 2026-09-13
-- **Related:** ADR-0003, ADR-0004, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0016, ADR-0017, ADR-0018; golden queries GQ-01, GQ-02, GQ-03, GQ-05, GQ-06, GQ-07; roadmap Phase 1 (ontology file), Phase 2 (stage)
+- **Related:** ADR-0003, ADR-0004, ADR-0005, ADR-0007, ADR-0008, ADR-0011, ADR-0016, ADR-0017, ADR-0018; golden queries GQ-02, GQ-03, GQ-04, GQ-05, GQ-06, GQ-07; roadmap Phase 1 (ontology file), Phase 2 (stage)
 
 ## Context
 
@@ -158,7 +158,7 @@ Each step is its own trace step ([ADR-0003](0003-search-api-contract-and-debug-t
    - **Vector:** the query is embedded with the concepts' preferred labels appended: `"power brick for laptop (chargers, laptop chargers)"`.
 3. **Retrieve.** Keyword + Vector with the expansions, fused with RRF. This is the Stage 4 pipeline with better input ([ADR-0011](0011-hybrid-search-rrf.md)).
 4. **Classify.** A candidate is `InConcept` if any of its categories is a matched concept or narrower than one, and `OutOfConcept` otherwise. With no matched concept it is `NoConcept`.
-   - Example: the cordless *phone* battery is under *Telephony*, not *Power tools › Batteries*, so it is `OutOfConcept` (GQ-03).
+   - Example: the cordless *phone* battery is under *Telephony*, not *Power tools › Batteries*, so it is `OutOfConcept` (GQ-04).
 5. **Constrain** (`options.applyConstraints`, default on). Using the target device resolved in step 1, for each candidate find the rules for (candidate categories, device categories) and evaluate every check:
    - `Compatible`: all checks pass.
    - `Incompatible`: any check fails.
@@ -215,9 +215,9 @@ In step 5, with no target device and at least one requirement, each candidate is
   - Every device and accessory type has the specs its rules need.
 - **Integration:**
   - `GET /api/vocabularies` returns connectors with both spec keys and the "Type-C" synonym.
-  - GQ-01 and GQ-06: incompatible items flagged.
+  - GQ-03 and GQ-06: incompatible items flagged.
   - GQ-02: expansion rescues the keyword side.
-  - GQ-03: phone battery `OutOfConcept`.
+  - GQ-04: phone battery `OutOfConcept`.
   - GQ-05: platform mismatch flagged.
   - GQ-07: a Spanish label match ("cargador") expands to English charger terms and finds the right chargers.
 
@@ -268,7 +268,7 @@ In step 5, with no target device and at least one requirement, each candidate is
 **For the talk (found while building, Phase 2):**
 - **"A device name is context, not intent."** People search the way they think: "charger for my Blackbird Aerobook 14". Stages 2–4 can't tell what you *want* from what you *own*. The device name is the most distinctive part of the query, so it wins: in Stage 3 the Aerobook itself ranks 2nd and a Blackbird laptop sleeve 5th, while the compatible Voltline charger is 7th (GQ-08). Stage 5 understands the query before retrieving: it recognises the device, removes it from the search text, uses it as the target device, and the compatible chargers come first.
 - **Show the trace of GQ-08 in Stage 5.** Put `deviceMention: "Blackbird Aerobook 14"` next to `queryWithoutDevice: "charger for my"`. That one line is query understanding.
-- **"Laptop" can be context too.** In "power adapter for my laptop" (GQ-01) with an Aerobook as the target, "laptop" describes what you own. Treating it as a wanted category would put every laptop above the chargers.
+- **"Laptop" can be context too.** In "power adapter for my laptop" (GQ-03) with an Aerobook as the target, "laptop" describes what you own. Treating it as a wanted category would put every laptop above the chargers.
 - **Honest limits to mention.**
   - Device matching is exact: "my Aerobook" alone isn't found, and product names like "Brakk 18V Combi Drill (Body Only)" are rarely typed in full.
   - Fuzzy entity recognition (aliases, model numbers) is the next step. It could be more ontology or catalog data, such as product aliases, without an LLM.
@@ -277,4 +277,4 @@ In step 5, with no target device and at least one requirement, each candidate is
   - With the device-name trap fixed, GQ-08's third result was the Voltline 20W USB-C *phone* charger, unflagged. No rule said anything about a phone charger and a laptop.
   - Widening the rule to every *Charger* — one line of Turtle, no C# — flagged it: "must supply at least the power the laptop needs: 20W; needs at least 65W".
   - Lesson: state a rule at the most general concept it's true for. A shopper can plug any charger into a laptop.
-- **Why the other golden queries don't name the device:** GQ-01, GQ-05 and GQ-06 take the device from a "my device" picker (`targetProductId`), so each isolates one moment. GQ-08 exists to show the device-name trap on its own.
+- **Why the other golden queries don't name the device:** GQ-03, GQ-05 and GQ-06 take the device from a "my device" picker (`targetProductId`), so each isolates one moment. GQ-08 exists to show the device-name trap on its own.

@@ -47,7 +47,7 @@ public sealed class ExplanationHeadingParserTests
     [Fact]
     public void ToStructure_BoldWordsLaterInABullet_AreEmphasisNotConcepts()
     {
-        // Real qwen3.6:35b output for GQ-01, novice (2026-09-15): **USB-C** and **65W** emphasise values mid-sentence.
+        // Real qwen3.6:35b output for GQ-03, novice (2026-09-15): **USB-C** and **65W** emphasise values mid-sentence.
         const string markdown = """
             ## Concepts
             *   **Connector**: This is the plug shape. Your Blackbird Aerobook 14 uses a **USB-C** port.

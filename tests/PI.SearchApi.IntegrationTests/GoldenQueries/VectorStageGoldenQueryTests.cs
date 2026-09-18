@@ -6,12 +6,12 @@ namespace PI.SearchApi.IntegrationTests.GoldenQueries;
 public sealed class VectorStageGoldenQueryTests(AppHostFixture fixture)
 {
     [Fact]
-    public async Task GQ01_Vector_RanksTheIncompatibleBarrelChargerHighly()
+    public async Task GQ03_Vector_RanksTheIncompatibleBarrelChargerHighly()
     {
         // Talk moment: vector search ranks the 45W barrel charger highly — similarity ≠ compatibility.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
 
-        var response = await GoldenQueryRunner.RunAsync(fixture, "GQ-01", "vector");
+        var response = await GoldenQueryRunner.RunAsync(fixture, "GQ-03", "vector");
 
         Assert.Equal(["vector", "vector"], response.DebugTrace.Steps.Select(s => s.Stage));
         Assert.Contains("<=>", response.DebugTrace.Steps[1].Sql);
@@ -27,12 +27,12 @@ public sealed class VectorStageGoldenQueryTests(AppHostFixture fixture)
     }
 
     [Fact]
-    public async Task GQ03_Vector_PutsTheDrillBatteryAboveThePhoneBattery()
+    public async Task GQ04_Vector_PutsTheDrillBatteryAboveThePhoneBattery()
     {
         // Talk moment: a cordless phone battery shares the words but not the meaning of "cordless drill battery".
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
 
-        await GoldenQueryRunner.RunAsync(fixture, "GQ-03", "vector");
+        await GoldenQueryRunner.RunAsync(fixture, "GQ-04", "vector");
     }
 
     [Fact]

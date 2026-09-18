@@ -11,7 +11,7 @@ public sealed class EvidenceFormatterTests
     [Fact]
     public void FormatProduct_StartsWithTheCitableIdAndAGbpPrice()
     {
-        var item = Gq01Evidence().Find("PROD-0012")!;
+        var item = Gq03Evidence().Find("PROD-0012")!;
 
         var text = EvidenceFormatter.FormatProduct(item);
 
@@ -23,7 +23,7 @@ public sealed class EvidenceFormatterTests
     [Fact]
     public void FormatProduct_Reasons_UseWordsInsteadOfSymbols()
     {
-        var text = EvidenceFormatter.FormatProduct(Gq01Evidence().Find("PROD-0014")!);
+        var text = EvidenceFormatter.FormatProduct(Gq03Evidence().Find("PROD-0014")!);
 
         Assert.Contains("Compatibility: Incompatible — do not recommend", text);
         Assert.Contains("  - Failed: The charger's plug must fit", text);
@@ -33,7 +33,7 @@ public sealed class EvidenceFormatterTests
     [Fact]
     public void FormatProducts_LeavesOutTheTargetDevice()
     {
-        var evidence = Gq01Evidence();
+        var evidence = Gq03Evidence();
 
         Assert.DoesNotContain("[PROD-0001]", EvidenceFormatter.FormatProducts(evidence));
         Assert.StartsWith("[PROD-0001] Blackbird Aerobook 14", EvidenceFormatter.FormatTargetDevice(evidence));
@@ -53,7 +53,7 @@ public sealed class EvidenceFormatterTests
     [Fact]
     public void FormatProduct_Fits_ListsTheCatalogDevices()
     {
-        var item = Gq01Evidence().Find("PROD-0012")!;
+        var item = Gq03Evidence().Find("PROD-0012")!;
         item = item with
         {
             Compatibility = item.Compatibility with
@@ -77,11 +77,11 @@ public sealed class EvidenceFormatterTests
     }
 
     [Fact]
-    public void RenderUserPrompt_Gq01Evidence_FillsEverySectionWithNoPlaceholdersLeft()
+    public void RenderUserPrompt_Gq03Evidence_FillsEverySectionWithNoPlaceholdersLeft()
     {
         var prompts = new PromptLibrary(Path.Combine(AppContext.BaseDirectory, "assets", "prompts"));
 
-        var prompt = AnswerGenerator.RenderUserPrompt(prompts, "power adapter for my laptop", Gq01Evidence());
+        var prompt = AnswerGenerator.RenderUserPrompt(prompts, "power adapter for my laptop", Gq03Evidence());
 
         Assert.DoesNotContain("{{", prompt);
         Assert.Contains("## Question\n\npower adapter for my laptop", prompt);

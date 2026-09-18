@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Area:** Search
-- **Related:** [ADR-0004](0004-pipeline-composition.md), [ADR-0008](0008-keyword-search-bm25-style.md), [ADR-0010](0010-vector-search-pgvector.md), [ADR-0018](0018-scope-and-going-further.md); golden queries GQ-01, GQ-02, GQ-03
+- **Related:** [ADR-0004](0004-pipeline-composition.md), [ADR-0008](0008-keyword-search-bm25-style.md), [ADR-0010](0010-vector-search-pgvector.md), [ADR-0018](0018-scope-and-going-further.md); golden queries GQ-02, GQ-03, GQ-04
 
 ## Context
 
@@ -43,7 +43,7 @@ Hand-calculated examples; a product in only one list; an empty list; one list re
 
 - No score normalisation or calibration. The formula fits on a slide, and the trace shows real numbers.
 - RRF ignores *how much* better one result is than the next: close scores and far-apart scores fuse the same way.
-- **Hybrid search still ranks the incompatible charger 2nd for GQ-01.** Fusion improves relevance, **not** correctness. That sets up Stage 5.
+- **Hybrid search still ranks the incompatible charger 2nd for GQ-03.** Fusion improves relevance, **not** correctness. That sets up Stage 5.
 
 ## Alternatives considered
 
@@ -59,5 +59,5 @@ Hand-calculated examples; a product in only one list; an empty list; one list re
 - **Fuse ranks, not scores**, when the scores come from different universes.
 - Hybrid search is the pragmatic default for most production search today.
 - **Appearing in both lists matters more than being first in one.** 1st and 2nd place in one list differ by 1/61 − 1/62 = 0.00026; appearing in a second list at all adds at least 1/110 = 0.009.
-- **A strong keyword trap survives fusion (GQ-03).** For "cordless drill battery", keyword search ranks the phone battery 1st and vector search ranks it 10th: 1/(60+1) + 1/(60+10) = 0.03068. The drill battery, 4th in keyword and 2nd in vector, scores 1/(60+4) + 1/(60+2) = 0.03175. Hybrid search puts the right battery above the trap, but the trap stays 4th. Being at the top of *one* list is worth almost as much as doing well in both. Only the ontology knows it is a phone battery.
+- **A strong keyword trap survives fusion (GQ-04).** For "cordless drill battery", keyword search ranks the phone battery 1st and vector search ranks it 10th: 1/(60+1) + 1/(60+10) = 0.03068. The drill battery, 4th in keyword and 2nd in vector, scores 1/(60+4) + 1/(60+2) = 0.03175. Hybrid search puts the right battery above the trap, but the trap stays 4th. Being at the top of *one* list is worth almost as much as doing well in both. Only the ontology knows it is a phone battery.
 - **The margins are tiny.** In that same query, 3rd, 4th and 5th place score 0.03080, 0.03068 and 0.03054. RRF rankings can flip on a single rank change, which is why golden queries assert loose bounds rather than exact positions.

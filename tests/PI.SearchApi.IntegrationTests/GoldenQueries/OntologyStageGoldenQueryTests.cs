@@ -8,12 +8,12 @@ namespace PI.SearchApi.IntegrationTests.GoldenQueries;
 public sealed class OntologyStageGoldenQueryTests(AppHostFixture fixture)
 {
     [Fact]
-    public async Task GQ01_Ontology_FlagsNearMissWithReason()
+    public async Task GQ03_Ontology_FlagsNearMissWithReason()
     {
         // Talk moment: the 45W barrel charger is flagged Incompatible on connector and wattage — similarity ≠ compatibility.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
 
-        var response = await GoldenQueryRunner.RunAsync(fixture, "GQ-01", "ontology");
+        var response = await GoldenQueryRunner.RunAsync(fixture, "GQ-03", "ontology");
 
         var nearMiss = Assert.Single(response.Results, r => r.Id == "PROD-0014");
         Assert.Contains(nearMiss.Compatibility.Reasons, r => r.Contains("plug"));
@@ -30,12 +30,12 @@ public sealed class OntologyStageGoldenQueryTests(AppHostFixture fixture)
     }
 
     [Fact]
-    public async Task GQ03_Ontology_MarksThePhoneBatteryOutOfConcept()
+    public async Task GQ04_Ontology_MarksThePhoneBatteryOutOfConcept()
     {
         // Talk moment: the cordless phone battery is under Telephony, not Power tools › Batteries.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
 
-        await GoldenQueryRunner.RunAsync(fixture, "GQ-03", "ontology");
+        await GoldenQueryRunner.RunAsync(fixture, "GQ-04", "ontology");
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public sealed class OntologyStageGoldenQueryTests(AppHostFixture fixture)
         // The presenter's before/after: Stage 5 with both toggles off behaves like hybrid search on the typed query.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
 
-        var request = GoldenQueryCase.Load("GQ-01").Request;
+        var request = GoldenQueryCase.Load("GQ-03").Request;
         request["options"] = new JsonObject { ["expandSynonyms"] = false, ["applyConstraints"] = false };
 
         using var client = fixture.CreateSearchApiClient();

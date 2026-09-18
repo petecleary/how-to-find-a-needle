@@ -123,7 +123,7 @@ Use these names consistently in code, API, UI, content and tests.
 | Candidate | A retrieved product with a score and per-technique signals |
 | `StageResult` | Candidates plus the trace steps that produced them |
 | Trace step | One entry in `debugTrace.steps` |
-| Golden query | A talk moment with per-stage expectations, `GQ-01` … |
+| Golden query | A talk moment with per-stage expectations, `GQ-03` … |
 | Product ID | `PROD-0001` |
 | Concept / notation | A SKOS concept in the ontology / its string ID (e.g. `laptop-chargers`) |
 | Target device | The product the user owns (`context.targetProductId`) |

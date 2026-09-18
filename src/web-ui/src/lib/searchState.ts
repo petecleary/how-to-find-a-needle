@@ -2,7 +2,7 @@ import type { GoldenQuery, SearchRequest } from '@/api/client';
 import { pipelineStages, type PipelineStage } from './stageGroup';
 
 // Demo state lives in the URL (ADR-0014 § State and data flow), e.g.
-//   /demo?stage=ontology&tab=results&q=power+adapter+for+my+laptop&gq=GQ-01&device=PROD-0001
+//   /demo?stage=ontology&tab=results&q=power+adapter+for+my+laptop&gq=GQ-03&device=PROD-0001
 // The presenter can bookmark a moment, and the browser's back button undoes a change.
 // Only values that differ from the defaults are written, so a URL shows exactly what was changed.
 
@@ -32,7 +32,7 @@ export interface SearchState {
     stage: PipelineStage;
     tab: StageTab;
     query: string;
-    /** The golden query the inputs came from, if any (e.g. "GQ-01"). */
+    /** The golden query the inputs came from, if any (e.g. "GQ-03"). */
     goldenQueryId: string | null;
     /** The product the shopper owns: Stage 5 checks candidates against it. */
     targetProductId: string | null;
@@ -47,7 +47,7 @@ export interface SearchState {
 
 /**
  * Why 50, the API's maximum: Stage 5 keeps every flagged item but orders it after the out-of-concept
- * ones. At the default page size of 10, GQ-01's incompatible chargers wouldn't be on page 1, and the
+ * ones. At the default page size of 10, GQ-03's incompatible chargers wouldn't be on page 1, and the
  * near-miss moment would be invisible. Fusion can retrieve more than 50, so `usePipelineSearch` reads
  * the remaining pages too; switching tabs never refetches (ADR-0014).
  */

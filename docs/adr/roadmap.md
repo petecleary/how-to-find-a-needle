@@ -168,7 +168,7 @@ Not built at any priority: BGE-M3 and the other going-further topics ([ADR-0018]
 **Verified (2026-09-14):**
 - `dotnet build`: 0 warnings. Unit tests: 161 pass. Integration tests: **28 of 28** pass.
 - `/openapi/v1.json`: `CandidateSignals` has no BGE ranks; `SearchOptions.applyPedagogy` is a boolean.
-- GQ-01 on `/api/search/ontology` is unchanged: the compatible chargers rank first and the 45W barrel charger is still flagged Incompatible.
+- GQ-03 on `/api/search/ontology` is unchanged: the compatible chargers rank first and the 45W barrel charger is still flagged Incompatible.
 - The leftover grep over `src`, `tests` and `README.md` is clean.
 - **Found while verifying:** `/openapi/v1.json` has no operation summaries at all, so FastEndpoints' `Summary(...)` text (for example "Stage 5 — Ontology") doesn't reach Scalar or the generated UI types. This was already true before the rework. Look at it in Phase 3, when the UI types are generated. *(Fixed in Phase 3 step 3, 2026-09-15.)*
 
@@ -190,22 +190,22 @@ Build strictly in this order. Each step ends with its golden-query integration t
    - Integration test harness that runs golden-query expectations per stage.
    - **Verify OpenAPI output first:** FastEndpoints request and response schemas (including nested `filters`/`options` and enums) must appear correctly in `/openapi/v1.json` via `Microsoft.AspNetCore.OpenApi`. If they don't, switch to FastEndpoints' own OpenAPI support before building more endpoints, because the UI's generated types depend on it ([ADR-0014](0014-web-ui-architecture.md)).
 2. **Stage 1 — Structured** (0007)
-   - `POST /api/search/structured`; `categories &&` filter with narrower-concept expansion; JSONB `@>` spec filters; `COUNT(*)` total; SQL in trace. ✅ GQ-04.
+   - `POST /api/search/structured`; `categories &&` filter with narrower-concept expansion; JSONB `@>` spec filters; `COUNT(*)` total; SQL in trace. ✅ GQ-01.
 3. **Stage 2 — Keyword** (0008)
-   - `websearch_to_tsquery` + `ts_rank_cd`; parsed tsquery and matched lexemes in trace; "BM25-style" notes. ✅ GQ-02 (misses), GQ-03 (trap ranks high).
+   - `websearch_to_tsquery` + `ts_rank_cd`; parsed tsquery and matched lexemes in trace; "BM25-style" notes. ✅ GQ-02 (misses), GQ-04 (trap ranks high).
 4. **Embeddings** (0009, 0006)
    - `NomicOnnxEmbeddingGenerator : IEmbeddingGenerator` + `ISearchEmbedder` (tokenizer, prefixes, mean pooling, L2); verify the tokenizer file requirement and update the models README; unit tests for pooling and normalisation.
    - `Embeddings` config (`Provider`, `Rebuild`). The seeder loads `assets/data/embeddings/nomic.jsonl` when hashes match, embeds stale or missing products live, and `Rebuild: true` regenerates and overwrites the file. Commit `nomic.jsonl`; add the file-consistency unit test.
    - The OpenAI provider (`text-embedding-3-small`, `dimensions: 768`) is shaped for the same interface but **built and tested in Phase 5**.
 5. **Stage 3 — Vector** (0010)
-   - pgvector cosine; `SET LOCAL hnsw.ef_search`; distances in trace. ✅ GQ-02 (hit), GQ-01 (near miss ranks high).
+   - pgvector cosine; `SET LOCAL hnsw.ef_search`; distances in trace. ✅ GQ-02 (hit), GQ-03 (near miss ranks high).
    - ⚠️ If the embeddings don't produce the expected moments, iterate on product *wording* ([ADR-0005](0005-curated-dataset-and-golden-queries.md) workflow).
 6. **Stage 4 — Hybrid** (0011)
-   - Pure `ReciprocalRankFusion` with exhaustive unit tests; concurrent Keyword + Vector; per-item formula strings in trace. ✅ GQ-03 drill battery lifted above the keyword trap; GQ-01 near miss still present.
+   - Pure `ReciprocalRankFusion` with exhaustive unit tests; concurrent Keyword + Vector; per-item formula strings in trace. ✅ GQ-04 drill battery lifted above the keyword trap; GQ-03 near miss still present.
 7. **Stage 5 — Ontology** (0013)
    - `IOntologySearch`: understand (label matcher) → expand (keyword OR-groups + expanded embedding text) → Hybrid → classify (in/out of concept) → constrain (class-level rules vs target-device specs).
    - Toggles `expandSynonyms` / `applyConstraints`; flagged items kept with reasons; one trace step per step.
-   - Unit tests for label matching, expansion, the tsquery builder, classification and each rule operator. ✅ GQ-01, GQ-02 (keyword side rescued), GQ-03 (phone battery out of concept), GQ-05, GQ-06, GQ-07 (Spanish label → concept expansion).
+   - Unit tests for label matching, expansion, the tsquery builder, classification and each rule operator. ✅ GQ-03, GQ-02 (keyword side rescued), GQ-04 (phone battery out of concept), GQ-05, GQ-06, GQ-07 (Spanish label → concept expansion).
 
 ### Original acceptance criteria ✅
 - ✅ All 5 endpoints (stages 1–5) appear in Scalar and return the shared contract with a populated `debugTrace`.
@@ -235,17 +235,17 @@ Build strictly in this order. Each step ends with its golden-query integration t
 - **0013 (ontology data):** "Charger fits laptop" now applies to every `chargers` concept, not only `laptop-chargers`, so a 20W phone charger is Incompatible with a laptop instead of unflagged.
 - **0005:** GQ-08 "The device name trap" added. Talk notes are recorded in the Teaching notes of ADRs 0005, 0008, 0009, 0010, 0011 and 0013.
 - **0006 / 0008:** `reviews` added to `search_vector` at weight D, with an in-place migration in `init.sql`.
-- **0005 / 0011:** GQ-03's hybrid expectation changed from "phone battery not in the top 3" to "ranked below the drill battery". Under RRF, a keyword #1 stays in the top 3; removing it is Stage 5's job.
+- **0005 / 0011:** GQ-04's hybrid expectation changed from "phone battery not in the top 3" to "ranked below the drill battery". Under RRF, a keyword #1 stays in the top 3; removing it is Stage 5's job.
 
 **Golden-query checkpoint — resolved with Pete:**
 
 | Issue | Resolution |
 |---|---|
-| Vector GQ-01, hybrid GQ-01, vector GQ-05, vector GQ-06, ontology GQ-05: device and brand names in the query text pulled brand products above the accessories | Queries no longer name the device: GQ-01 "power adapter for my laptop", GQ-05 "18V battery", GQ-06 "SSD upgrade for my laptop"; the device comes from `targetProductId`. The device-name failure became GQ-08, and Stage 5 now treats a device name as context ([ADR-0005](0005-curated-dataset-and-golden-queries.md), [ADR-0013](0013-domain-ontology-and-compatibility.md)) |
-| Keyword GQ-03: phone battery ranked 5th, and wording fixes also moved it up in vector search | Reviews indexed at weight D (it becomes keyword #1); hybrid expectation corrected to match what RRF honestly does ([ADR-0011](0011-hybrid-search-rrf.md)) |
+| Vector GQ-03, hybrid GQ-03, vector GQ-05, vector GQ-06, ontology GQ-05: device and brand names in the query text pulled brand products above the accessories | Queries no longer name the device: GQ-03 "power adapter for my laptop", GQ-05 "18V battery", GQ-06 "SSD upgrade for my laptop"; the device comes from `targetProductId`. The device-name failure became GQ-08, and Stage 5 now treats a device name as context ([ADR-0005](0005-curated-dataset-and-golden-queries.md), [ADR-0013](0013-domain-ontology-and-compatibility.md)) |
+| Keyword GQ-04: phone battery ranked 5th, and wording fixes also moved it up in vector search | Reviews indexed at weight D (it becomes keyword #1); hybrid expectation corrected to match what RRF honestly does ([ADR-0011](0011-hybrid-search-rrf.md)) |
 
 ### Open questions
-- ✅ Keep `reviews` out of `search_vector`? No: indexed at the lowest weight (D). GQ-02 is unaffected; GQ-03's keyword trap depends on it (ADR-0006, ADR-0008).
+- ✅ Keep `reviews` out of `search_vector`? No: indexed at the lowest weight (D). GQ-02 is unaffected; GQ-04's keyword trap depends on it (ADR-0006, ADR-0008).
 - ✅ Language for GQ-07: Spanish ("cargador USB-C para portátil"). Passes in Stage 5.
 - ✅ Tokenizer file: `tokenizer.json` only (ADR-0009).
 - ✅ OpenAPI: FastEndpoints + `Microsoft.AspNetCore.OpenApi` is sufficient (ADR-0014).
@@ -305,7 +305,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
      - `src/lib/talkRoute.ts`: `talkPath(step, tab?)` and `parseTalkTab`. The routes themselves arrive with React Router in step 10.
      - `src/hooks/usePipelineSearch.ts`: keyed on the request's JSON, so an equal object doesn't re-search; aborts the in-flight search on every change; a late answer to an old search is never shown; `idle` when a stage that needs a query has none; `rerun()`.
      - **URL parameters:** `stage`, `tab`, `q`, `gq`, `device`, `brand`, `category` (repeated), `minPrice`, `maxPrice`, `spec.{key}`, `expandSynonyms`, `applyConstraints`, `audience`, `applyPedagogy`.
-     - **Checked against the live API:** the exact JSON `toSearchRequest` builds (asserted in the tests) was posted. GQ-01 on `/ontology` returns 50 of 50 with all 7 Incompatible items in the one response (PROD-0014 to 0016 among them); GQ-04 on `/structured` matches the numeric spec `voltageV: 18` (6 Brakk products ≤ £100); an empty query on `/keyword` is a 400, which is why the hook stays `idle`.
+     - **Checked against the live API:** the exact JSON `toSearchRequest` builds (asserted in the tests) was posted. GQ-03 on `/ontology` returns 50 of 50 with all 7 Incompatible items in the one response (PROD-0014 to 0016 among them); GQ-01 on `/structured` matches the numeric spec `voltageV: 18` (6 Brakk products ≤ £100); an empty query on `/keyword` is a 400, which is why the hook stays `idle`.
    - Findings:
      - **Spec values in the URL:** a URL carries text only, so numeric values are turned back into numbers. JSON containment matches 18 but not "18" (ADR-0007). Vocabulary values are notations (`usb-c`), never bare numbers, so nothing is converted by mistake.
      - **Test dependencies:** hook tests need a DOM renderer. `@testing-library/react` and `jsdom` were added as dev dependencies, jsdom only for files that opt in; recorded in ADR-0014 § Quality bar.
@@ -313,7 +313,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 5. **Stage screen shell** (0014 § Stage screen)
    - `AppHeader`, `SearchBar` (golden-query picker from `/api/demo/queries`, device picker from `/api/demo/devices`, Filters button with count), `PipelineStepper` (three triad groups, ARIA tablist), `StageTabs` (How it works · Results · Answer · Under the hood; Answer disabled before Stage 6; H / R / A / U), `StageOptions` on the tab row (Stage 5 toggles; the audience picker is added in Phase 4).
    - Loading, empty and 503 states for the tab content.
-   - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **55 pass (16 new)**. Checked in headless Chrome at 1280×720, light and dark, with GQ-01 on Stage 5 against the live API (Results and Under the hood). Built:
+   - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **55 pass (16 new)**. Checked in headless Chrome at 1280×720, light and dark, with GQ-03 on Stage 5 against the live API (Results and Under the hood). Built:
      - `/demo` (`DemoPage`), with React Router; every other path redirects to it until step 10 adds the pages. State comes from the URL (`useSearchState`); golden queries and devices load with `useApiData`.
      - `AppHeader` (logo, title, theme toggle), `SearchBar` (golden-query picker, query submitted on Enter, "I own" device picker, Filters button with the active count), `PipelineStepper` (tablist in three triad groups; ←/→/Home/End), `StageTabs` (Radix tablist; H / R / A / U from anywhere except while typing; Answer disabled before Stage 6), `StageOptions` (Stage 5 switches).
      - `SearchOutcome`: idle ("needs a query"), loading, and errors with the ProblemDetails title and `detail`, validation failures and **Try again**. An unreachable API asks whether `aspire run` is still running.
@@ -335,20 +335,20 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
      - **A vocabulary can back several spec keys.** Connectors are `connector` on chargers and `chargingPort` on laptops (from the rules, ADR-0013), and `specs` is JSON containment on one key. Each vocabulary filter matches one key at a time, with a small key picker when there is more than one. It teaches the point: the concept is shared, the field name isn't.
      - **One value per vocabulary.** Containment can't express "USB-C or barrel" on one key, so values are radio buttons, not the design's checkboxes.
      - **Ticking a parent category ticks its narrower concepts** (shown checked and disabled, "included by Chargers" for screen readers) and drops any narrower selection, because the API expands it anyway.
-     - **Other specs:** a spec with no vocabulary (GQ-04's `voltageV: 18`) is listed as a removable chip, showing `18` vs `"18"`, rather than hidden.
+     - **Other specs:** a spec with no vocabulary (GQ-01's `voltageV: 18`) is listed as a removable chip, showing `18` vs `"18"`, rather than hidden.
      - **Changing any input away from a golden query's preset** (query, device or filters) clears `gq`. Before this step only a query edit did.
      - ✅ **Brand is a dropdown** (decided with Pete at the step 7 checkpoint, 2026-09-15). It was a text box because no endpoint listed brands. ADR-0003 was amended to add `GET /api/brands` (`SELECT DISTINCT brand … ORDER BY brand`, from Postgres: brands are catalogue data, and the ontology never names a maker), with an integration test. The picker is single-choice: `filters.brand` stays one exact, case-insensitive brand, because a multi-select would change the request for every stage. A brand in the URL that the catalogue lacks is kept as an option, so the applied filter is always the one shown.
 7. **Results tab** (0014, 0003, 0013)
    - `ResultRow` with `SignalBadges` (keyword rank, vector rank, RRF), `CompatibilityBadge`, `ConceptBadge`, category icon from the taxonomy.
    - Stages 1–4: one list. Stage 5: in concept · out of concept (collapsed) · Flagged column of `FlaggedCard` (every check with has / needs values; "#n before rules" from `signals.fusedRank`).
-   - Vitest: Stage 5 grouping, with GQ-01's response as a fixture.
-   - ✅ **Built 2026-09-15** (awaiting the checkpoint below). Typecheck, lint, build and Prettier pass; Vitest **95 pass (18 new)**. `dotnet` untouched. Checked in headless Chrome at 1280×720 with GQ-01 on Hybrid and Stage 5 against the live API. Built:
+   - Vitest: Stage 5 grouping, with GQ-03's response as a fixture.
+   - ✅ **Built 2026-09-15** (awaiting the checkpoint below). Typecheck, lint, build and Prettier pass; Vitest **95 pass (18 new)**. `dotnet` untouched. Checked in headless Chrome at 1280×720 with GQ-03 on Hybrid and Stage 5 against the live API. Built:
      - `ResultsTab`, `ResultRow`, `SignalBadges`, `CompatibilityBadge`, `ConceptBadge`, `CategoryIcon`, `FlaggedCard`, `ConceptGroupedResults`.
      - Pure helpers: `lib/signals.ts` (which signals each stage shows, and what its score means), `lib/resultGroups.ts` (splits Stage 5's order where the groups change; never re-ranks), `lib/traceDetails.ts` (reads the Constrain step's `checks` and the Classify step's `wantedConcepts` with runtime checks), `lib/taxonomy.ts` (`findConcept` moved here from `filters.ts`; labels and icons).
-     - Fixture: `src/test/fixtures/gq-01-ontology.json`, a real response (`resolveJsonModule` turned on for it). Step 8's renderer tests can add GQ-02 to GQ-08 beside it.
+     - Fixture: `src/test/fixtures/gq-03-ontology.json`, a real response (`resolveJsonModule` turned on for it). Step 8's renderer tests can add GQ-02 to GQ-08 beside it.
      - **Signals by stage:** Structured none (no score, ordered by price then ID); Keyword `KW` ts_rank_cd; Vector `SIM` cosine similarity; Hybrid `KW #n · VEC #n · RRF`, with `–` for a retriever that missed. Each badge has a hover and screen-reader description. The summary line says what `score` means on that stage.
      - **Stage 5, rules on:** in concept, then out of concept (first 4 shown, "Show 36 more"; the target device's reason is shown on its row), then the Flagged column: one card per Incompatible item with every check (`connector has 5.5mm barrel · needs USB-C`, the definition on hover) and "#2 before rules" from `signals.fusedRank`. **Stage 5, rules off:** one list with concept badges and Hybrid's signals.
-     - GQ-01 now flags **7**, not the design's 3: the four other near-miss chargers plus two DDR4 modules the memory rule catches from the 50 retrieved.
+     - GQ-03 now flags **7**, not the design's 3: the four other near-miss chargers plus two DDR4 modules the memory rule catches from the 50 retrieved.
    - Findings:
      - **Icons load by name** with `DynamicIcon` from `lucide-react/dynamic` (no new package), so a TTL icon edit needs no UI change. Cost: the build emits one small chunk per Lucide icon (1,829 files, 7.9 MB in `dist`, of which the app loads only what it uses) and the main bundle grows from 450 kB to 599 kB (the icon name list). Acceptable for a local teaching app; the alternative is a hand-kept map of the ~20 names the TTL uses.
      - ⏸ **The chargers show a laptop icon.** The TTL gives `laptop-chargers` the icon `laptop`, and a row uses its first category's icon (ADR-0014). Suggest `plug` in the TTL, a data change; not made. Deferred by Pete at the checkpoint (2026-09-15), to review later.
@@ -357,13 +357,13 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 8. **Under the hood tab** (0014, 0003)
    - `TraceFlow` (one chip per trace step, coloured by the step's stage) and the selected step's renderer: `SqlBlock` (SQL + parameters), `TsQueryView`, `EmbeddingView`, `DistanceTable`, `RrfTable`, `ConceptMatches`, `ExpansionView`, `ClassificationTable`, `RuleChecks`, JSON fallback.
    - Vitest: renderer selection by `details` keys; every Stage 1–5 trace step for GQ-01 to GQ-08 gets a purpose-built renderer (no fallback).
-   - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **104 pass (9 new)**. `dotnet` untouched. Checked in headless Chrome against the live API: GQ-01 on Stage 5 (Constrain) and Hybrid (RRF), GQ-02 on Keyword (no matches), GQ-04 on Structured (SQL). Built:
+   - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **104 pass (9 new)**. `dotnet` untouched. Checked in headless Chrome against the live API: GQ-03 on Stage 5 (Constrain) and Hybrid (RRF), GQ-02 on Keyword (no matches), GQ-01 on Structured (SQL). Built:
      - `UnderTheHoodTab`: `TraceFlow` (a Radix tablist of step chips, coloured by each step's own stage, ←/→ between them) and `TraceStepView` (title, stage, duration, the step's view, its SQL and parameters, its notes). It opens on the last step, where the stage's own technique runs.
      - Renderers in `src/components/trace/`: `SqlBlock` (Stage 1 also shows row counts and the count query), `TsQueryView`, `EmbeddingView`, `DistanceTable`, `RrfTable` (with "The rules say" on Stage 5), `ConceptMatches`, `ExpansionView`, `ClassificationTable`, `RuleChecks` (checks grouped by product, and the rules.rq SPARQL), `JsonFallback`. Long lists show 10 rows (6 products for checks) with "Show N more" (`useShowMore`).
      - `lib/traceStepKind.ts` picks the view from the `details` keys, never the title. `lib/traceDetails.ts` has one typed reader per kind, checking every field at runtime; RRF rows are split from the API's own formula strings, not recomputed.
-     - **Coverage test:** `src/test/fixtures/golden-query-trace-steps.json` lists all 129 trace steps (stage, title, SQL or not, `details` keys) from GQ-01 to GQ-08 on Stages 1–5, plus GQ-01 on Stage 5 with each switch off, captured from the running API. Every step maps to its expected view; none falls back to JSON. `gq-04-structured.json` was added for the SQL view test.
+     - **Coverage test:** `src/test/fixtures/golden-query-trace-steps.json` lists all 129 trace steps (stage, title, SQL or not, `details` keys) from GQ-01 to GQ-08 on Stages 1–5, plus GQ-03 on Stage 5 with each switch off, captured from the running API. Every step maps to its expected view; none falls back to JSON. `gq-01-structured.json` was added for the SQL view test.
    - Findings:
-     - **GQ-04 returns 400 on Stages 2–5** (no query), so its only trace is Stage 1's. Expected: it is the structured-filter moment.
+     - **GQ-01 returns 400 on Stages 2–5** (no query), so its only trace is Stage 1's. Expected: it is the structured-filter moment.
      - **Edge shapes handled:** Expand with synonyms off sends `phrases: null`; Constrain with rules off writes only `applyConstraints`; with no target device, `checks` is empty and the method says why; Keyword can match nothing (GQ-02, GQ-07).
      - **Ligatures lied in the SQL.** JetBrains Mono drew `<=` as `≤` and `->` as an arrow, so the SQL shown wasn't character for character what ran. Ligatures are now off for all monospaced text (`index.css`).
      - The selected step isn't in the URL (local state), so a bookmark opens on the last step. Talk mode (step 10) can add it if a talk step needs to open on, say, RRF.
@@ -372,7 +372,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - Inline `[term](term:id)` links with hover cards that also open on focus; `glossary.json`.
    - Vitest content-integrity tests (step files, golden-query IDs, `term:` links, one explanation per stage, valid `tabs` values).
    - ✅ **Done 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **135 pass (29 new)**. `dotnet` untouched. Checked in headless Chrome at 1280×720 against the design screen (Stage 5) and on Stage 2. Built:
-     - **Content:** `content/stages/{structured,keyword,vector,hybrid,ontology}.md` with the seven fixed headings. Every claim was checked against the ADRs and the live API (e.g. GQ-01's barrel charger is #2 in Hybrid and fails two checks; GQ-02 has no keyword matches; 1/(60+1) + 1/(60+2) = 0.03252). Stage 5 leads with SKOS and presents the rules as the step beyond it.
+     - **Content:** `content/stages/{structured,keyword,vector,hybrid,ontology}.md` with the seven fixed headings. Every claim was checked against the ADRs and the live API (e.g. GQ-03's barrel charger is #2 in Hybrid and fails two checks; GQ-02 has no keyword matches; 1/(60+1) + 1/(60+2) = 0.03252). Stage 5 leads with SKOS and presents the rules as the step beyond it.
      - **`content/glossary.json`:** 44 entries in 8 topics, including every term ADR-0014 lists and the going-further terms (each marked "Discussed in the talk, not built").
      - **`react-markdown` 10.1 + `remark-gfm` 4.0** (named in ADR-0014). `Markdown` renders content with two link schemes of our own: `[RRF](term:rrf)` → `GlossaryTerm` (Radix hover card, opens on focus too) and `[ADR-0011 · …](adr:0011-hybrid-search-rrf)` → `/decisions/…`. `urlTransform` keeps those schemes; everything else goes through react-markdown's default, and raw HTML isn't rendered.
      - `StageExplanation` (three columns, as the design) and `HowItWorksTab`. `lib/content.ts` loads the files at build time with `import.meta.glob`, splits them at the fixed headings and finds `term:`, `adr:` and `GQ-nn` references.
@@ -389,7 +389,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
     - ✅ **Built 2026-09-15.** Typecheck, lint, build and Prettier pass; Vitest **164 pass (29 new)**. `dotnet` untouched. Checked in headless Chrome at 1280×720 against the live API: Home, the talk intro, Stage 5 in talk mode (Results), Going further, Glossary, Decisions and ADR-0014. Built:
       - **Routes** `/`, `/talk` (→ first step), `/talk/:step/:tab?`, `/demo`, `/glossary`, `/decisions`, `/decisions/:id`; anything else → `/`. `AppHeader` has page navigation (Talk · Demo · Glossary · Decisions) and, in talk mode, the position ("Stage 5 of 7").
       - **Home:** Dosis title, thesis from `content/home.md`, the triad, *Start the talk* and *Explore the demo*, and `SpeakerCard` from `content/speaker.md` (`- **Key:** value` lines, bio below). Every field is a placeholder; photo and QR code images go in `content/images/`.
-      - **Talk mode:** `content/talk.json` has nine steps: intro, "the needle" (GQ-01 as the thread), Stages 1–5 (GQ-04, GQ-02, GQ-01, GQ-03, GQ-01), Going further (the ADR-0018 table) and Summary. Stage steps reuse the demo's screen (`StageScreen`, extracted from `DemoPage`) with the step's golden query and options, a one-line `TalkCaption` above the tabs, and the filter drawer. Presenter changes last until the step changes. ←/→ and Page Up/Down (clickers) walk tabs then steps (`useTalkKeys`); a focused stepper or tab list keeps its own arrows. `TalkControls` gives Previous/Next buttons and "Step 7 of 9 · Results (2 of 3)".
+      - **Talk mode:** `content/talk.json` has nine steps: intro, "the needle" (GQ-03 as the thread), Stages 1–5 (GQ-01, GQ-02, GQ-03, GQ-04, GQ-03), Going further (the ADR-0018 table) and Summary. Stage steps reuse the demo's screen (`StageScreen`, extracted from `DemoPage`) with the step's golden query and options, a one-line `TalkCaption` above the tabs, and the filter drawer. Presenter changes last until the step changes. ←/→ and Page Up/Down (clickers) walk tabs then steps (`useTalkKeys`); a focused stepper or tab list keeps its own arrows. `TalkControls` gives Previous/Next buttons and "Step 7 of 9 · Results (2 of 3)".
       - **Glossary:** searchable, grouped by topic, `#id` anchors, see-also and ADR links. **Decisions:** index with status; each ADR rendered with links to other ADRs rewritten to their pages (anchors kept) and links to other repository files shown as text. `Markdown` gained heading ids (GitHub-style `slugify`), tables, code blocks and quotes. The reading pages are lazy-loaded.
       - Pure, tested: `lib/talk.ts` (step tabs, next/previous position, preset state), `lib/decisions.ts`, `lib/speaker.ts`, `lib/glossarySearch.ts`, `lib/slug.ts`; `lib/keyboard.ts` shares the typing check with `StageTabs`.
       - **Content integrity:** talk step ids unique and kinds known; every step file exists; Stages 1–5 in order, each with a golden query the API serves; `tabs` valid and available; Going further then Summary last; every `term:`, `adr:` and GQ reference in talk files resolves; every ADR has a title and status, and **every link between ADRs, including its `#anchor`, resolves**.
@@ -429,7 +429,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 - **Closed with the remaining checks and the copy review moved to the end of the build:** Pete runs the manual checks (➡️ below) and reviews the talk and copy once the whole demo is complete, in [Phase 5 step 8, Clean-up and sign-off](#phase-5--finish--publish). **ADR-0014 stays Proposed until then**, because an ADR is Accepted only when its criteria are verified.
 
 ### Acceptance criteria
-- ✅ `aspire run` opens the UI. Choosing GQ-01 and stepping 1 → 5 shows the results changing, and in Stage 5 the near miss appears in the Flagged column with its failed checks, **with no paging**.
+- ✅ `aspire run` opens the UI. Choosing GQ-03 and stepping 1 → 5 shows the results changing, and in Stage 5 the near miss appears in the Flagged column with its failed checks, **with no paging**.
 - ✅ Every trace step renders with a purpose-built view (no raw JSON for stages 1–5): all 129 steps for GQ-01 to GQ-08 are covered by a test.
 - ✅ Both themes match the design screens in [docs/design](../design/README.md) closely: triad colours, status badges with text, Dosis only on the logo and title. ➡️ *Fonts loading with the network disconnected:* Pete checks (the fonts are self-hosted).
 - ✅ Readable on a 1280×720 projector in presentation mode; keyboard-only operable (step 11's run).
@@ -488,7 +488,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
      - Contracts: `AnswerMeta`, `AnswerDelta`, `AnswerFinal` (with `invalidCitations`), `AnswerDone`, `AnswerResponse`, `AnswerSections`.
      - Endpoints: `POST /api/search/rag`, `POST /api/search/rag/answer`; `AnswerStreamWriter` (SSE or JSON; a failure before the first event is an ordinary 503, after it an `error` event) and `ServerSentEventWriter` (buffering off, flush per event).
      - Stage 5 now also offers `SearchWithContextAsync` → `OntologySearchResult` (device, understood query, rule checks), so the evidence is built from typed values rather than read back out of the trace. `SearchAsync` is unchanged.
-   - **Checked live** (GQ-01, `qwen3.6:35b`):
+   - **Checked live** (GQ-03, `qwen3.6:35b`):
      - `/rag`: 50 results; evidence = the laptop, PROD-0012/0013/0011 Compatible and PROD-0014/0015/0016 Incompatible (ranks 44–46, after demotion); concepts Chargers (altLabels power adapter, power brick, AC adapter, PSU) and Laptops; rule chargers → laptops.
      - `/rag/answer` (JSON): cites only evidence IDs, recommends the three compatible chargers and warns about all three near misses; no invalid citations.
      - SSE: `meta`, 227 `delta`s, `final`, `done`; **first delta at 56 ms, complete in 2.3 s**.
@@ -505,7 +505,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
      - Prompts: `pedagogy-system.md`, `pedagogy-baseline.md`, `pedagogy-audiences.md` (one section per audience) and `pedagogy-user.md`. The user message is shared: the toggle changes only the system prompt, which a unit test asserts.
      - Contracts: `AnswerFinal.structure` (`ExplanationStructure`, `ExplanationProduct`); `EvidenceRule.SpecTerms` for the expert's words.
      - Endpoints: `POST /api/search/pedagogy` (the same retrieval and evidence as Stage 6) and `POST /api/search/pedagogy/answer`.
-   - **Live side by side** (GQ-01, `qwen3.6:35b`; full JSON kept for the review):
+   - **Live side by side** (GQ-03, `qwen3.6:35b`; full JSON kept for the review):
      | | First token | Answer | Explanation | Total | Explanation warnings |
      |---|---|---|---|---|---|
      | novice, pedagogy off | 250 ms | 2.8 s | 3.7 s | 6.6 s | none; `structure: null` |
@@ -525,13 +525,13 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - **Smoke run** (`qwen3.6:35b`, 1 run, 2 minutes) found two validator faults, now fixed with unit tests; unit tests **248 pass**:
      - **The target device counted as a choice.** "For your laptop [PROD-0001], get …" made Decision "cite 2 products". Decision and Near miss now ignore citations of the target device.
      - **No device, no rule words.** Without a target device no rule is checked, so the evidence had no rules and the concept heuristic flagged "Voltage vs. Platform". It now also reads the products' compatibility reasons, which quote the rules.
-     - Worth noting for ADR-0015: Stage 7's answer reaches its first token faster than Stage 6's (about 40 ms against 600 ms), probably because Ollama reuses the cached prompt Stage 6 just sent. And without a target device (GQ-02, GQ-03, GQ-07) the answer can start with `INSUFFICIENT_EVIDENCE`: 3 of 7 queries in the smoke run.
+     - Worth noting for ADR-0015: Stage 7's answer reaches its first token faster than Stage 6's (about 40 ms against 600 ms), probably because Ollama reuses the cached prompt Stage 6 just sent. And without a target device (GQ-02, GQ-04, GQ-07) the answer can start with `INSUFFICIENT_EVIDENCE`: 3 of 7 queries in the smoke run.
    - ✅ **Done 2026-09-16. Default: `qwen3.6:35b`** (decided by Pete once gemma's speed was clear). Full results in [ADR-0015](0015-llm-hosting-and-client.md) § Bake-off results: 210 requests, none failed, **no invalid citations at all**, structure checks 65/70, Stage 6 median 2.3 s, Stage 7 median 5.4 s, first token 43–73 ms. Every acceptance criterion for the AI stages is met by this model.
      - **`gemma4:31b` was abandoned mid-run.** It generates ~22 tokens/second on this laptop (a dense 31B model runs every weight per token), so a request took ~15 s and Stage 7 ~30 s, twice the talk's budget; holding both models also pushed the 64 GB machine into swap. Its half of the run was stopped after three hours.
      - **The report is now written after each model**, not at the end: stopping gemma lost qwen's completed results the first time.
      - **macOS throttling, not the model:** with the display asleep the run took three hours of wall-clock for ~20 minutes of model time, roughly one call every 30 s, even under `caffeinate -i`. Use `caffeinate -dimsu`. The report's timings are the API's own, so they are unaffected.
      - **Two faults the bake-off exposed, both fixed with unit tests:** with no target device the evidence carried no rules at all (the applicable rules are now named from the ontology), and a concept named after a product's own spec ("Capacity (Ah)", "Form Factor") was flagged as "not from the ontology" (spec names now count as grounded).
-     - **30 of 210 answers began with `INSUFFICIENT_EVIDENCE`:** exactly the three golden queries with no target device (GQ-02, GQ-03, GQ-07), where no rule can be checked. Correct behaviour, and a talk moment: the answer says what it can't confirm.
+     - **30 of 210 answers began with `INSUFFICIENT_EVIDENCE`:** exactly the three golden queries with no target device (GQ-02, GQ-04, GQ-07), where no rule can be checked. Correct behaviour, and a talk moment: the answer says what it can't confirm.
    - Done alongside: README "Getting started" (Node, LLM set-up with Ollama or Anthropic, the web UI under `aspire run`, the Stage 6–7 endpoints, UI checks, the bake-off command); `architecture.md` (the `Llm/` folder, the six prompt files, `useAnswerStream`, `answerEvents.ts`, `BakeOff/`, and LLM settings living on the API, not the AppHost); `src/PI.SearchApi/CLAUDE.md` layout table; the Answer panel shows long waits in seconds ("6.2 s") via `formatDuration`.
 5. **UI plumbing** (0014)
    - `gen:api`; `answerEvents.ts`; a pure incremental SSE parser; `useAnswerStream` (fetch + parser, in parallel with the results request, `AbortController`); Stages 6–7 selectable.
@@ -540,7 +540,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - **Audience picker** and Stage 7's **"Apply pedagogy" toggle** in `StageOptions` on the tab row (both part of URL state).
 7. **Under the hood for Stages 6–7** (0014, 0003)
    - `PromptView`, `EvidenceView`, `GenerationView` renderers; the answer's `done` trace appended to the search trace; the coverage test extended to Stages 6–7.
-   - ✅ **Steps 5–7 built together 2026-09-15** (brought forward for the prompt review). Typecheck, lint, Prettier and build pass; Vitest **266 pass (47 new)**. Checked in headless Chrome at 1280×900 against the live API: GQ-01 on Stage 7, novice, pedagogy on. Built:
+   - ✅ **Steps 5–7 built together 2026-09-15** (brought forward for the prompt review). Typecheck, lint, Prettier and build pass; Vitest **266 pass (47 new)**. Checked in headless Chrome at 1280×900 against the live API: GQ-03 on Stage 7, novice, pedagogy on. Built:
      - **Plumbing:** `gen:api` (the stage type now excludes the `/answer` sub-paths, so `SearchStage` is the seven stages); `api/answerEvents.ts` (hand-typed events, checked at runtime); `lib/parseSseEvents.ts`; `streamAnswer` in `client.ts`; `hooks/useAnswerStream.ts` (runs in parallel with `usePipelineSearch`, aborts on change, a stream that closes without `done` is an error).
      - **Answer tab:** `AnswerTab`, `AnswerPanel`, `ExplanationPanel`, `EvidenceSet`, `CitationChip`, `CitationSummary`, `AnswerWarnings`, `StreamingBadge`; `lib/citations.ts` (links `[PROD-…]` to a `product:` scheme `Markdown` renders as a chip, and hides the sentinel line). Chips are coloured by the product's verdict in the evidence set, marked invalid when `final` says so, and select the product in the evidence set.
      - **Options and tabs:** the audience picker and Apply pedagogy switch on Stage 7; "50 ready" on Results and "live" on Answer while streaming; Stages 6–7 selectable in the stepper; Stages 6–7 show Stage 5's grouped results and signals.
@@ -552,7 +552,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 8. **Content, talk mode and glossary**
    - Stage explanations for `rag` and `pedagogy`; talk steps `stage-rag`, `stage-pedagogy-baseline`, `stage-pedagogy`, `stage-pedagogy-audience`; glossary entries; content-integrity tests for Stages 1–7.
 9. **Acceptance run and ADR status**
-   - ✅ **Live run 2026-09-16, through the Vite proxy** (`qwen3.6:35b`, GQ-01 "power adapter for my laptop" with the Aerobook as the target device):
+   - ✅ **Live run 2026-09-16, through the Vite proxy** (`qwen3.6:35b`, GQ-03 "power adapter for my laptop" with the Aerobook as the target device):
      | Request | First token | Total | Result |
      |---|---|---|---|
      | `/api/search/rag` (results) | — | **213 ms** | 50 results, no LLM call |
@@ -571,8 +571,8 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - The acceptance criteria below, live under `aspire run` (Ollama and Anthropic), including mid-stream cancellation through the Vite proxy (left open in Phase 3 step 2); README, `architecture.md` and `src/PI.SearchApi/CLAUDE.md` updated; ADRs 0015–0017 → Accepted.
 
 ### Acceptance criteria
-- ✅ GQ-01 in Stage 6 gives a grounded answer citing the compatible charger and warning about the near miss: 7 citations, none invalid, no warnings; across the bake-off's 210 requests **no citation ever fell outside the evidence**.
-- ✅ **GQ-01 in Stage 7, `novice`, pedagogy off:** free-form, no citation warnings; `structure: null`, and the trace step reads "Validate: citations (structure checks not applied)".
+- ✅ GQ-03 in Stage 6 gives a grounded answer citing the compatible charger and warning about the near miss: 7 citations, none invalid, no warnings; across the bake-off's 210 requests **no citation ever fell outside the evidence**.
+- ✅ **GQ-03 in Stage 7, `novice`, pedagogy off:** free-form, no citation warnings; `structure: null`, and the trace step reads "Validate: citations (structure checks not applied)".
 - ✅ **The same with pedagogy on:** all five headings, Decision on a compatible charger (PROD-0011), Connector and Wattage explained, and the near miss (PROD-0016, the 45W USB-C charger that "looks correct") as the counter-example.
 - ✅ Switching audience changes the wording, not the facts: novice gets plain words and an analogy, expert is spec-first (`wattageW ≥ minChargerWattageW`); the decision stayed PROD-0011.
 - ✅ Results render before any LLM text (**213 ms**, no LLM call, while the tab reads "50 ready"); first token **38–73 ms** warm, and Stage 7's answer plus explanation complete in **5.8 s** against the ~15 s budget. A cold model adds a few seconds to the first request: warm up before the talk.
@@ -599,7 +599,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 3. **CI:** OpenAPI → TypeScript drift check; optional manual integration-test workflow.
 4. **Talk content & rehearsal:**
    - The talk-mode steps, the **"Going further" step** ([ADR-0018](0018-scope-and-going-further.md)) and its glossary entries were drafted in Phase 3 (step 10); Stages 6–7 steps are added in Phase 4. The copy itself is reviewed in step 8. No agent protocols.
-   - Rehearse the full talk end to end in the UI (there are no slides). `nomic.jsonl` was rebuilt after dataset growth; GQ-01's evidence set for Stages 6–7 may now include generated chargers (the Stage 6–7 integration tests pass on Ollama), so look at the answers during the prompt review.
+   - Rehearse the full talk end to end in the UI (there are no slides). `nomic.jsonl` was rebuilt after dataset growth; GQ-03's evidence set for Stages 6–7 may now include generated chargers (the Stage 6–7 integration tests pass on Ollama), so look at the answers during the prompt review.
 1a. ✅ **Stage 5 without a target device (added and done 2026-09-16, ADR-0013 amended):** requirements stated in the query ("65W", "USB-C") are checked with the same rules when no device is given (`compatibility.source: Query`), and every rule-bound product lists the catalog devices it fits (`compatibility.fits`). Evidence for Stages 6–7 carries both. New GQ-09 ("65W USB-C charger"); GQ-07 now also flags the barrel charger. UI: "you asked for" on flagged cards and rule checks, "Fits N of M" on rows and cards, requirements in the understand-step trace; UI types regenerated. 271 unit, 48 integration (Stages 6–7 on Ollama) and 272 UI tests pass. One GQ-09 Stage 6 run cited outside the evidence in the first full run and couldn't be reproduced in 13 more runs; the test now reports the IDs and text if it recurs.
 5. ✅ **Public ADRs (drafted 2026-09-16, for Pete's review):** 18 learner-facing ADRs plus an index in `docs/decisions/`, same numbers and file names, 0012 kept as Rejected; all others Accepted. Written from each ADR's decisions and teaching notes, with build history removed and numbers re-measured on the 300-product catalog. The UI's `/decisions` glob, code-comment `Decision:` links, CI comment and CLAUDE.md ADR links now point at `docs/decisions/`; the root CLAUDE.md still lists the working index, architecture and roadmap. **Check after step 7:** ADR-0009 and ADR-0015 describe the OpenAI providers without test results, and ADR-0015 says the README names the suggested OpenAI model.
 6. **Final review:** code comments read as teaching material; every stage file opens with its technique / strength / failure-mode comment; all ADRs **Accepted**, **Rejected** or explicitly superseded.
@@ -607,7 +607,7 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 8. **Clean-up and sign-off (Pete, once the whole demo is complete)** (0014):
    - **Copy and talk review:** every piece of UI text Pete hasn't written yet. The talk steps (`content/talk.json`, `content/talk/*.md`: intro, the needle, each stage caption, Going further, summary), the stage explanations (`content/stages/*.md`), the glossary (`content/glossary.json`), the Home thesis (`content/home.md`), and short labels in components (filter hints, empty states, trace section titles).
    - **Speaker details** in `content/speaker.md`, with the photo and LinkedIn QR code in `content/images/`.
-   - **Prompt review** (moved from Phase 4 step 3, 2026-09-15), in `src/PI.SearchApi/assets/prompts/`, with GQ-01 on Stage 7 (novice off, novice on, expert) side by side in the Answer tab and the prompts in Under the hood:
+   - **Prompt review** (moved from Phase 4 step 3, 2026-09-15), in `src/PI.SearchApi/assets/prompts/`, with GQ-03 on Stage 7 (novice off, novice on, expert) side by side in the Answer tab and the prompts in Under the hood:
      - Is `pedagogy-baseline.md` a fair first prompt, not a straw man?
      - `pedagogy-system.md`: add "plain text, no LaTeX"? The expert run wrote `$\ge$`, which the UI doesn't render.
      - `pedagogy-system.md`: should Decision always choose one product ("if several fit, choose one and say why")? It sometimes names two.

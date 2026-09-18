@@ -31,7 +31,7 @@ public sealed class ExplanationValidatorTests
     [Fact]
     public void Validate_WellFormedExplanation_PassesEveryCheck()
     {
-        var validation = ExplanationValidator.Validate(Explanation(), Gq01Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
+        var validation = ExplanationValidator.Validate(Explanation(), Gq03Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
 
         Assert.Empty(validation.Warnings);
         Assert.All(validation.Checks, check => Assert.True(check.Passed, check.Detail));
@@ -42,7 +42,7 @@ public sealed class ExplanationValidatorTests
     public void Validate_DecisionRecommendsTheNearMiss_Warns()
     {
         var validation = ExplanationValidator.Validate(
-            Explanation(decision: "Get the Voltline 45W Barrel Charger [PROD-0014]."), Gq01Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
+            Explanation(decision: "Get the Voltline 45W Barrel Charger [PROD-0014]."), Gq03Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
 
         Assert.Contains(validation.Warnings, w => w.Contains("Decision recommends PROD-0014, which is Incompatible"));
     }
@@ -51,7 +51,7 @@ public sealed class ExplanationValidatorTests
     public void Validate_DecisionCitesTwoProducts_Warns()
     {
         var validation = ExplanationValidator.Validate(
-            Explanation(decision: "Get [PROD-0012] or [PROD-0014]."), Gq01Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
+            Explanation(decision: "Get [PROD-0012] or [PROD-0014]."), Gq03Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
 
         Assert.Contains(validation.Warnings, w => w.Contains("it should choose exactly one"));
     }
@@ -64,7 +64,7 @@ public sealed class ExplanationValidatorTests
             Explanation(
                 decision: "For your laptop [PROD-0001], get the Voltline 65W USB-C GaN Charger [PROD-0012].",
                 nearMiss: "The Voltline 45W Barrel Charger [PROD-0014] won't fit your laptop [PROD-0001]."),
-            Gq01Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
+            Gq03Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
 
         Assert.Empty(validation.Warnings);
     }
@@ -73,7 +73,7 @@ public sealed class ExplanationValidatorTests
     public void Validate_InsufficientEvidenceAndDecisionCitesNothing_Passes()
     {
         var validation = ExplanationValidator.Validate(
-            Explanation(decision: "No suitable product was found."), Gq01Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: true);
+            Explanation(decision: "No suitable product was found."), Gq03Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: true);
 
         Assert.DoesNotContain(validation.Warnings, w => w.Contains("Decision"));
     }
@@ -82,7 +82,7 @@ public sealed class ExplanationValidatorTests
     public void Validate_NearMissCitesACompatibleProduct_Warns()
     {
         var validation = ExplanationValidator.Validate(
-            Explanation(nearMiss: "The Voltline 65W [PROD-0012] is similar."), Gq01Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
+            Explanation(nearMiss: "The Voltline 65W [PROD-0012] is similar."), Gq03Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
 
         Assert.Contains(validation.Warnings, w => w.Contains("Near miss cites PROD-0012, which is not Incompatible"));
     }
@@ -92,7 +92,7 @@ public sealed class ExplanationValidatorTests
     {
         const string markdown = "## Concepts\n- **Connector**: fits.\n\n## Decision\nGet [PROD-0012].";
 
-        var validation = ExplanationValidator.Validate(markdown, Gq01Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
+        var validation = ExplanationValidator.Validate(markdown, Gq03Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
 
         Assert.Contains(validation.Warnings, w => w.StartsWith("Missing heading(s): Near miss, Rule of thumb, Next step", StringComparison.Ordinal));
         Assert.Contains(validation.Warnings, w => w.StartsWith("Headings are out of order", StringComparison.Ordinal));
@@ -102,7 +102,7 @@ public sealed class ExplanationValidatorTests
     public void Validate_ConceptNotFromTheOntology_WarnsAsAHeuristic()
     {
         var validation = ExplanationValidator.Validate(
-            Explanation(concepts: "- **Connector**: fits.\n- **Brand loyalty**: stick with one maker."), Gq01Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
+            Explanation(concepts: "- **Connector**: fits.\n- **Brand loyalty**: stick with one maker."), Gq03Evidence(), applyPedagogy: true, answerFoundInsufficientEvidence: false);
 
         var warning = Assert.Single(validation.Warnings);
         Assert.StartsWith("Heuristic: the concept \"Brand loyalty\"", warning);
@@ -112,7 +112,7 @@ public sealed class ExplanationValidatorTests
     [Fact]
     public void Validate_NoTargetDevice_ConceptHeuristicStillKnowsTheRuleWords()
     {
-        // Bake-off finding (2026-09-15), GQ-03: with no device no rule is checked, so the evidence has no rules, but the
+        // Bake-off finding (2026-09-15), GQ-04: with no device no rule is checked, so the evidence has no rules, but the
         // Unknown reason still quotes the rule. "Battery platform" must not be flagged as "not from the ontology".
         var evidence = new EvidenceSet(
             [
@@ -163,7 +163,7 @@ public sealed class ExplanationValidatorTests
     {
         const string freeForm = "The charger you want is the Voltline 65W [PROD-0012]. It has the right plug, and [PROD-0099] too.";
 
-        var validation = ExplanationValidator.Validate(freeForm, Gq01Evidence(), applyPedagogy: false, answerFoundInsufficientEvidence: false);
+        var validation = ExplanationValidator.Validate(freeForm, Gq03Evidence(), applyPedagogy: false, answerFoundInsufficientEvidence: false);
 
         Assert.Null(validation.Structure);
         Assert.Equal(["Cited PROD-0099, which was not in the evidence."], validation.Warnings);

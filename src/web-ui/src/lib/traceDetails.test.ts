@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SearchResponse } from '@/api/client';
-import { gq01OntologyResponse } from '@/test/responses';
+import { gq03OntologyResponse } from '@/test/responses';
 import {
     operatorPrefix,
     parseRrfFormula,
@@ -11,7 +11,7 @@ import {
 
 describe('readRuleChecks', () => {
     it('reads every check for the 45W barrel charger, with the values compared', () => {
-        const checks = readRuleChecks(gq01OntologyResponse)?.filter(
+        const checks = readRuleChecks(gq03OntologyResponse)?.filter(
             (check) => check.candidateId === 'PROD-0014',
         );
 
@@ -35,10 +35,10 @@ describe('readRuleChecks', () => {
 
     it('returns null when no rules were checked', () => {
         const withoutConstrain: SearchResponse = {
-            ...gq01OntologyResponse,
+            ...gq03OntologyResponse,
             debugTrace: {
-                ...gq01OntologyResponse.debugTrace,
-                steps: gq01OntologyResponse.debugTrace.steps.filter(
+                ...gq03OntologyResponse.debugTrace,
+                steps: gq03OntologyResponse.debugTrace.steps.filter(
                     (step) => !step.title.startsWith('Constrain'),
                 ),
             },
@@ -50,7 +50,7 @@ describe('readRuleChecks', () => {
 
 describe('readWantedConcepts', () => {
     it('reads the concepts the query asked for', () => {
-        expect(readWantedConcepts(gq01OntologyResponse)).toEqual(['chargers']);
+        expect(readWantedConcepts(gq03OntologyResponse)).toEqual(['chargers']);
     });
 });
 

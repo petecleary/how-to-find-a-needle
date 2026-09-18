@@ -24,7 +24,7 @@ public sealed partial class DistractorCatalog
             "Wish it came with a belt clip.",
         ];
 
-        // Every generated Brakk 18V product costs more than £100: GQ-04 asserts exactly six under £100.
+        // Every generated Brakk 18V product costs more than £100: GQ-01 asserts exactly six under £100.
         (string Brand, string Platform, string Name, string Tool, bool IsKit, decimal Price)[] drills =
         [
             ("Tornio", "tornio-20v-max", "Hammer Drill (Body Only)", "hammer drill", false, 109),

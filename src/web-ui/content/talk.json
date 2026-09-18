@@ -1,13 +1,17 @@
 [
-  { "id": "intro", "kind": "intro", "title": "Not every technique finds the needle", "file": "talk/intro.md" },
-  { "id": "the-needle", "kind": "intro", "title": "The needle", "file": "talk/the-needle.md" },
+  {
+    "id": "intro",
+    "kind": "intro",
+    "title": "Not every technique finds the needle",
+    "file": "talk/intro.md"
+  },
   {
     "id": "stage-structured",
     "kind": "stage",
     "title": "Stage 1 · Structured search",
     "file": "talk/stage-structured.md",
     "stage": "structured",
-    "goldenQuery": "GQ-04"
+    "goldenQuery": "GQ-01"
   },
   {
     "id": "stage-keyword",
@@ -17,13 +21,14 @@
     "stage": "keyword",
     "goldenQuery": "GQ-02"
   },
+  { "id": "the-needle", "kind": "intro", "title": "The needle", "file": "talk/the-needle.md" },
   {
     "id": "stage-vector",
     "kind": "stage",
     "title": "Stage 3 · Vector search",
     "file": "talk/stage-vector.md",
     "stage": "vector",
-    "goldenQuery": "GQ-01"
+    "goldenQuery": "GQ-03"
   },
   {
     "id": "stage-hybrid",
@@ -31,7 +36,7 @@
     "title": "Stage 4 · Hybrid search",
     "file": "talk/stage-hybrid.md",
     "stage": "hybrid",
-    "goldenQuery": "GQ-03"
+    "goldenQuery": "GQ-04"
   },
   {
     "id": "stage-ontology",
@@ -39,7 +44,7 @@
     "title": "Stage 5 · Ontology",
     "file": "talk/stage-ontology.md",
     "stage": "ontology",
-    "goldenQuery": "GQ-01",
+    "goldenQuery": "GQ-03",
     "options": { "expandSynonyms": true, "applyConstraints": true }
   },
   {
@@ -48,7 +53,7 @@
     "title": "Stage 6 · RAG",
     "file": "talk/stage-rag.md",
     "stage": "rag",
-    "goldenQuery": "GQ-01"
+    "goldenQuery": "GQ-03"
   },
   {
     "id": "stage-pedagogy-baseline",
@@ -56,7 +61,7 @@
     "title": "Stage 7 · Pedagogy: the baseline",
     "file": "talk/stage-pedagogy-baseline.md",
     "stage": "pedagogy",
-    "goldenQuery": "GQ-01",
+    "goldenQuery": "GQ-03",
     "options": { "audience": "novice", "applyPedagogy": false },
     "tabs": ["how-it-works", "answer", "under-the-hood"]
   },
@@ -66,7 +71,7 @@
     "title": "Stage 7 · Pedagogy",
     "file": "talk/stage-pedagogy.md",
     "stage": "pedagogy",
-    "goldenQuery": "GQ-01",
+    "goldenQuery": "GQ-03",
     "options": { "audience": "novice", "applyPedagogy": true },
     "tabs": ["answer", "under-the-hood"]
   },
@@ -76,7 +81,7 @@
     "title": "Stage 7 · Pedagogy for an expert",
     "file": "talk/stage-pedagogy-audience.md",
     "stage": "pedagogy",
-    "goldenQuery": "GQ-01",
+    "goldenQuery": "GQ-03",
     "options": { "audience": "expert", "applyPedagogy": true },
     "tabs": ["answer"]
   },

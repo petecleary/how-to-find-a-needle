@@ -6,7 +6,7 @@ using PI.SearchApi.Pipeline.Rag;
 
 namespace PI.SearchApi.Tests.Pipeline.Rag;
 
-/// <summary>Small hand-made products and evidence, shaped like GQ-01, for the Stage 6 unit tests.</summary>
+/// <summary>Small hand-made products and evidence, shaped like GQ-03, for the Stage 6 unit tests.</summary>
 public static class RagTestData
 {
     public static readonly IOntology DomainModel = new DomainOntology(Path.Combine(AppContext.BaseDirectory, "assets", "data"));
@@ -25,8 +25,8 @@ public static class RagTestData
             new CandidateSignals { ConceptMatch = conceptMatch },
             new CompatibilityResult(status, reasons));
 
-    /// <summary>GQ-01 in miniature: the laptop, a compatible USB-C charger and the 45W barrel near miss.</summary>
-    public static EvidenceSet Gq01Evidence() => new(
+    /// <summary>GQ-03 in miniature: the laptop, a compatible USB-C charger and the 45W barrel near miss.</summary>
+    public static EvidenceSet Gq03Evidence() => new(
         [
             new EvidenceItem(
                 Product("PROD-0001", "Blackbird Aerobook 14", ["laptops"], """{"chargingPort":"usb-c","minChargerWattageW":65}""", 999.99m),

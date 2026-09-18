@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Area:** AI
-- **Related:** [ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0004](0004-pipeline-composition.md), [ADR-0013](0013-domain-ontology-and-compatibility.md), [ADR-0014](0014-web-ui-architecture.md), [ADR-0015](0015-llm-hosting-and-client.md), [ADR-0017](0017-pedagogy-engine.md); golden queries GQ-01, GQ-05, GQ-06
+- **Related:** [ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0004](0004-pipeline-composition.md), [ADR-0013](0013-domain-ontology-and-compatibility.md), [ADR-0014](0014-web-ui-architecture.md), [ADR-0015](0015-llm-hosting-and-client.md), [ADR-0017](0017-pedagogy-engine.md); golden queries GQ-03, GQ-05, GQ-06
 
 ## Context
 

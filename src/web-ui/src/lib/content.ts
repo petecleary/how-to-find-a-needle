@@ -106,7 +106,7 @@ export function adrLinkIds(markdown: string): string[] {
     return [...markdown.matchAll(/\]\(adr:([^)\s]+)\)/g)].flatMap((match) => match[1] ?? []);
 }
 
-/** The golden-query ids a piece of markdown mentions, e.g. "GQ-01". */
+/** The golden-query ids a piece of markdown mentions, e.g. "GQ-03". */
 export function goldenQueryIds(markdown: string): string[] {
     return [...markdown.matchAll(/\bGQ-\d{2}\b/g)].map((match) => match[0]);
 }

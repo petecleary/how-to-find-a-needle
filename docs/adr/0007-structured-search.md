@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework).
 - **Date:** 2026-09-13
-- **Related:** ADR-0003, ADR-0004, ADR-0006; golden query GQ-04; roadmap Phase 2
+- **Related:** ADR-0003, ADR-0004, ADR-0006; golden query GQ-01; roadmap Phase 2
 
 ## Context
 

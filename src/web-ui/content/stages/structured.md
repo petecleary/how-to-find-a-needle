@@ -11,7 +11,7 @@ Search by the attributes you already know. The filters become [parameterised SQL
 
 ## What to look for
 
-Choose **GQ-04**: Brakk, at most £100, 18V. Six products come back, and the query box is ignored.
+Choose **GQ-01**: Brakk, at most £100, 18V. Six products come back, and the query box is ignored.
 
 ## Strength
 

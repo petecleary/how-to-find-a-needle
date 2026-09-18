@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { gq01OntologyResponse } from '@/test/responses';
+import { gq03OntologyResponse } from '@/test/responses';
 import { groupByConcept } from './resultGroups';
 
 const ids = (products: { id: string }[]) => products.map((product) => product.id);
 
-describe('groupByConcept, with GQ-01 on Stage 5', () => {
-    const { results } = gq01OntologyResponse;
+describe('groupByConcept, with GQ-03 on Stage 5', () => {
+    const { results } = gq03OntologyResponse;
     const groups = groupByConcept(results, 'PROD-0001');
 
     it('keeps the compatible USB-C chargers in concept', () => {

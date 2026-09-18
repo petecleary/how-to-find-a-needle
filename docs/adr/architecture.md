@@ -183,7 +183,7 @@ The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a 
 | SEARCH · what is relevant?            | ONTOLOGY · how related? | PEDAGOGY · explain it?  |
 | (1) Structured (2) Keyword (3) Vector (4) Hybrid | (5) Ontology | (6) RAG (7) Pedagogy    |
 +------------------------------------------------------------------------------------------+
-| [GQ-01 ▾] [ power adapter for my laptop           ] [I own: Aerobook 14 ▾] [Filters 0]    |
+| [GQ-03 ▾] [ power adapter for my laptop           ] [I own: Aerobook 14 ▾] [Filters 0]    |
 +------------------------------------------------------------------------------------------+
 | How it works | Results 50 | Answer (6–7) | Under the hood 8     stage options: toggles, |
 |                                                                 audience, apply pedagogy |

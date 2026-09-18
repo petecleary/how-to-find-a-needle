@@ -53,7 +53,7 @@ CREATE INDEX IF NOT EXISTS ix_products_dense      ON products USING hnsw (embedd
 ```
 
 - `array_to_string` isn't `IMMUTABLE`, which generated columns require, so a small `immutable_array_to_string` wrapper makes categories and reviews indexable.
-- **Reviews are indexed, at the lowest weight (D).** Shoppers' words live in reviews, and GQ-03's keyword trap depends on one ([ADR-0008](0008-keyword-search-bm25-style.md)).
+- **Reviews are indexed, at the lowest weight (D).** Shoppers' words live in reviews, and GQ-04's keyword trap depends on one ([ADR-0008](0008-keyword-search-bm25-style.md)).
 - At a few hundred rows the planner may choose a sequential scan over the HNSW index. That is the right choice at this size; the indexes are still created to show the production shape.
 - The API gets a pooled `NpgsqlDataSource` from Aspire's Npgsql integration, with pgvector's type mappings registered.
 

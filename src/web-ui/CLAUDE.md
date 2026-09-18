@@ -63,7 +63,7 @@ Decided in [ADR-0014 § Visual design](../../docs/decisions/0014-web-ui-architec
 - API types come from `schema.d.ts`. Don't hand-duplicate DTOs. No `any`; use `unknown` and narrow.
 - Every request gets an `AbortController`; switching stage cancels the previous search and stream.
 - `usePipelineSearch` and `useAnswerStream` run **in parallel**. Results never wait for the LLM.
-- Demo state lives in the URL (`/demo?stage=hybrid&q=…&gq=GQ-01`); talk position lives in the route (`/talk/:step`).
+- Demo state lives in the URL (`/demo?stage=hybrid&q=…&gq=GQ-03`); talk position lives in the route (`/talk/:step`).
 - Tailwind classes in markup; no CSS-in-JS. Put conditional class logic in a small `cn()` helper.
 - Render maths and formulas as monospaced text from the API.
 - Trace renderers map known `details` keys to purpose-built views, falling back to pretty-printed JSON.

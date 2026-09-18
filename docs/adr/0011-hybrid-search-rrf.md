@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework).
 - **Date:** 2026-09-13
-- **Related:** ADR-0004, ADR-0008, ADR-0010, ADR-0018; golden queries GQ-01 to GQ-03; roadmap Phase 2
+- **Related:** ADR-0004, ADR-0008, ADR-0010, ADR-0018; golden queries GQ-02 to GQ-04; roadmap Phase 2
 
 ## Context
 
@@ -47,7 +47,7 @@ IReadOnlyList<FusedItem> Fuse(IReadOnlyList<RankedList> lists, int k);
 
 - No score normalisation or calibration is needed. The formula fits on a slide and the trace shows real numbers.
 - RRF ignores *how much* better one result is than the next. Close-scored and far-apart items fuse the same way. The talk mentions this.
-- Hybrid still ranks the incompatible charger well (GQ-01). Fusion improves relevance, **not** correctness, which sets up Stage 5.
+- Hybrid still ranks the incompatible charger well (GQ-03). Fusion improves relevance, **not** correctness, which sets up Stage 5.
 
 ## Alternatives considered
 
@@ -64,7 +64,7 @@ IReadOnlyList<FusedItem> Fuse(IReadOnlyList<RankedList> lists, int k);
 - Hybrid search is the pragmatic default for most production search today.
 
 **For the talk (found while building, Phase 2):**
-- **A strong keyword trap survives fusion (GQ-03).** For "cordless drill battery", keyword search ranks the phone battery 1st and vector search ranks it 7th.
+- **A strong keyword trap survives fusion (GQ-04).** For "cordless drill battery", keyword search ranks the phone battery 1st and vector search ranks it 7th.
   - RRF: 1/(60+1) + 1/(60+7) = 0.01639 + 0.01493 = **0.03132**, 3rd overall.
   - The drill battery (4th in keyword, 2nd in vector): 1/(60+4) + 1/(60+2) = **0.03175**, 2nd.
   - Hybrid puts the right battery above the trap, but can't push the trap out of the top 3: being near the top of *one* list is worth almost as much as doing well in both.

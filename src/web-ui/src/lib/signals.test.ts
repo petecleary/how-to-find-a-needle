@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { ProductResult } from '@/api/client';
-import { gq01OntologyResponse } from '@/test/responses';
+import { gq03OntologyResponse } from '@/test/responses';
 import { scoreMeaning, signalBadges } from './signals';
 
 function product(id: string): ProductResult {
-    const found = gq01OntologyResponse.results.find((result) => result.id === id);
+    const found = gq03OntologyResponse.results.find((result) => result.id === id);
     if (found === undefined) {
-        throw new Error(`${id} is not in the GQ-01 fixture`);
+        throw new Error(`${id} is not in the GQ-03 fixture`);
     }
     return found;
 }

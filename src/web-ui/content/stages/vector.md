@@ -11,7 +11,7 @@ Matching meaning. A local model turns the query and every product into an [embed
 
 ## What to look for
 
-**GQ-01**: the 45W barrel charger is in the top 5. It reads exactly like the right answer, but it won't fit the laptop. Similarity is not compatibility.
+**GQ-03**: the 45W barrel charger is in the top 5. It reads exactly like the right answer, but it won't fit the laptop. Similarity is not compatibility.
 
 ## Strength
 

@@ -66,7 +66,7 @@ CREATE INDEX IF NOT EXISTS ix_products_dense     ON products USING hnsw (embeddi
 
 Notes:
 - `reviews` **are** in `search_vector`, at the lowest weight, D (changed in Phase 2; the first draft left them out to avoid lexical noise).
-  - *Why:* real shoppers' words live in reviews ("Cordless phone battery arrived quickly"), and GQ-03's keyword trap depends on them.
+  - *Why:* real shoppers' words live in reviews ("Cordless phone battery arrived quickly"), and GQ-04's keyword trap depends on them.
   - GQ-02 is unaffected, because no review says "power brick".
   - Weight D keeps a review match below a name, brand, category or description match.
 - **Changing a generated column in place:** PostgreSQL 16 can't alter a generated column's expression. So `init.sql` checks the stored expression, and if `reviews` is missing it drops and re-adds `search_vector` (the GIN index is then recreated by its `IF NOT EXISTS`). Existing volumes migrate on the next start, without a reset.

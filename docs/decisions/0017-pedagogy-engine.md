@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Area:** AI
-- **Related:** [ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0013](0013-domain-ontology-and-compatibility.md), [ADR-0014](0014-web-ui-architecture.md), [ADR-0015](0015-llm-hosting-and-client.md), [ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0018](0018-scope-and-going-further.md); golden queries GQ-01, GQ-05, GQ-06
+- **Related:** [ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0013](0013-domain-ontology-and-compatibility.md), [ADR-0014](0014-web-ui-architecture.md), [ADR-0015](0015-llm-hosting-and-client.md), [ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0018](0018-scope-and-going-further.md); golden queries GQ-03, GQ-05, GQ-06
 
 ## Context
 
@@ -45,7 +45,7 @@ Stage 7's before-and-after switch. **Only the system prompt changes.**
 
 - **The grounding rules are in both prompts**, so the comparison isolates teaching design rather than re-running Stage 6's lesson.
 - **The baseline must not be a straw man.** It is a reasonable first prompt, and the trace shows it in full so the audience can judge the comparison themselves.
-- The talk runs GQ-01 three ways: novice with pedagogy off; novice with pedagogy on; expert with pedagogy on.
+- The talk runs GQ-03 three ways: novice with pedagogy off; novice with pedagogy on; expert with pedagogy on.
 
 ### Teaching principles (in `pedagogy-system.md`)
 

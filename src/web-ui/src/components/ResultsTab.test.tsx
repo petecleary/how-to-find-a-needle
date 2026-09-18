@@ -1,16 +1,16 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { gq01OntologyResponse } from '@/test/responses';
+import { gq03OntologyResponse } from '@/test/responses';
 import { ResultsTab } from './ResultsTab';
 
 afterEach(cleanup);
 
-describe('ResultsTab on Stage 5, GQ-01', () => {
+describe('ResultsTab on Stage 5, GQ-03', () => {
     it('puts the near miss in the Flagged column with the checks it failed', () => {
         render(
             <ResultsTab
-                response={gq01OntologyResponse}
+                response={gq03OntologyResponse}
                 taxonomy={null}
                 targetProductId="PROD-0001"
                 applyConstraints
@@ -28,7 +28,7 @@ describe('ResultsTab on Stage 5, GQ-01', () => {
     it('keeps out-of-concept items one click away, counted', () => {
         render(
             <ResultsTab
-                response={gq01OntologyResponse}
+                response={gq03OntologyResponse}
                 taxonomy={null}
                 targetProductId="PROD-0001"
                 applyConstraints
@@ -45,7 +45,7 @@ describe('ResultsTab on Stage 5, GQ-01', () => {
     it('shows one list with concept badges when the rules are off', () => {
         render(
             <ResultsTab
-                response={gq01OntologyResponse}
+                response={gq03OntologyResponse}
                 taxonomy={null}
                 targetProductId="PROD-0001"
                 applyConstraints={false}

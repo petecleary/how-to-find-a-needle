@@ -65,7 +65,7 @@ public sealed class EvidenceSetBuilderTests
     [Fact]
     public void Build_OutOfConceptProducts_AreLeftOut()
     {
-        // GQ-01's DDR4 modules are Incompatible, but they aren't chargers: not what the shopper asked for.
+        // GQ-03's DDR4 modules are Incompatible, but they aren't chargers: not what the shopper asked for.
         List<Candidate> ranked =
         [
             Candidate("PROD-0012", CompatibilityStatus.Compatible),

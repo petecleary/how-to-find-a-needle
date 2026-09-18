@@ -8,7 +8,7 @@ import { AnswerTab } from './AnswerTab';
 
 afterEach(cleanup);
 
-// GQ-01 in miniature: the evidence step Stage 7's results response carries, and a finished answer and explanation.
+// GQ-03 in miniature: the evidence step Stage 7's results response carries, and a finished answer and explanation.
 const response: SearchResponse = {
     stage: 'pedagogy',
     query: 'power adapter for my laptop',

@@ -1,6 +1,6 @@
 [
   {
-    "response": "GQ-01-hybrid",
+    "response": "GQ-03-hybrid",
     "steps": [
       {
         "stage": "keyword",
@@ -38,7 +38,7 @@
     ]
   },
   {
-    "response": "GQ-01-keyword",
+    "response": "GQ-03-keyword",
     "steps": [
       {
         "stage": "keyword",
@@ -49,7 +49,7 @@
     ]
   },
   {
-    "response": "GQ-01-ontology-both-off",
+    "response": "GQ-03-ontology-both-off",
     "steps": [
       {
         "stage": "ontology",
@@ -127,7 +127,7 @@
     ]
   },
   {
-    "response": "GQ-01-ontology-synonyms-off",
+    "response": "GQ-03-ontology-synonyms-off",
     "steps": [
       {
         "stage": "ontology",
@@ -214,7 +214,7 @@
     ]
   },
   {
-    "response": "GQ-01-ontology",
+    "response": "GQ-03-ontology",
     "steps": [
       {
         "stage": "ontology",
@@ -301,7 +301,7 @@
     ]
   },
   {
-    "response": "GQ-01-structured",
+    "response": "GQ-03-structured",
     "steps": [
       {
         "stage": "structured",
@@ -312,7 +312,7 @@
     ]
   },
   {
-    "response": "GQ-01-vector",
+    "response": "GQ-03-vector",
     "steps": [
       {
         "stage": "vector",
@@ -511,7 +511,7 @@
     ]
   },
   {
-    "response": "GQ-03-hybrid",
+    "response": "GQ-04-hybrid",
     "steps": [
       {
         "stage": "keyword",
@@ -549,7 +549,7 @@
     ]
   },
   {
-    "response": "GQ-03-keyword",
+    "response": "GQ-04-keyword",
     "steps": [
       {
         "stage": "keyword",
@@ -560,7 +560,7 @@
     ]
   },
   {
-    "response": "GQ-03-ontology",
+    "response": "GQ-04-ontology",
     "steps": [
       {
         "stage": "ontology",
@@ -647,7 +647,7 @@
     ]
   },
   {
-    "response": "GQ-03-structured",
+    "response": "GQ-04-structured",
     "steps": [
       {
         "stage": "structured",
@@ -658,7 +658,7 @@
     ]
   },
   {
-    "response": "GQ-03-vector",
+    "response": "GQ-04-vector",
     "steps": [
       {
         "stage": "vector",
@@ -684,7 +684,7 @@
     ]
   },
   {
-    "response": "GQ-04-structured",
+    "response": "GQ-01-structured",
     "steps": [
       {
         "stage": "structured",

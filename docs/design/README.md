@@ -3,7 +3,7 @@
 The visual design for the `web-ui`, agreed with Pete on 2026-09-14. The decision it records is in [ADR-0014 § Visual design](../adr/0014-web-ui-architecture.md#visual-design); this folder holds the pictures.
 
 - **Editable canvas:** [Needle Look and Feel](https://claude.ai/code/artifact/6bb701e8-6cdb-4fcb-b17e-c8a6669c36a8) (private to Pete; the PNGs below are the committed record).
-- **Data:** every result, score and trace value on the Stage 1–5 screens is real GQ-01 output from the API. The Stage 7 answer text and timings are **sample** text written from ADR-0016 and ADR-0017, because Stages 6–7 are built in Phase 4.
+- **Data:** every result, score and trace value on the Stage 1–5 screens is real GQ-03 output from the API. The Stage 7 answer text and timings are **sample** text written from ADR-0016 and ADR-0017, because Stages 6–7 are built in Phase 4.
 - Screens are drawn at the projector target (1280×720, presentation mode on) except the Demo (1440×900, presentation mode off).
 
 ## Screens

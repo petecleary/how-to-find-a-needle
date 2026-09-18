@@ -3,12 +3,12 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { ProductResult } from '@/api/client';
 import type { RuleCheck } from '@/lib/traceDetails';
-import { gq01OntologyResponse } from '@/test/responses';
+import { gq03OntologyResponse } from '@/test/responses';
 import { FlaggedCard } from './FlaggedCard';
 
 afterEach(cleanup);
 
-const barrel = gq01OntologyResponse.results.find((product) => product.id === 'PROD-0014')!;
+const barrel = gq03OntologyResponse.results.find((product) => product.id === 'PROD-0014')!;
 
 const queryCheck: RuleCheck = {
     candidateId: 'PROD-0014',

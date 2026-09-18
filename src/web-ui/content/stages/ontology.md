@@ -31,7 +31,7 @@ The **Filters** panel is built from this file, through `GET /api/taxonomy`: `pre
 
 ## What to look for
 
-**GQ-01**: the 45W barrel charger was **#2 in Hybrid**. Here it is flagged, with the two checks it failed: its plug and its wattage.
+**GQ-03**: the 45W barrel charger was **#2 in Hybrid**. Here it is flagged, with the two checks it failed: its plug and its wattage.
 
 ## Strength
 

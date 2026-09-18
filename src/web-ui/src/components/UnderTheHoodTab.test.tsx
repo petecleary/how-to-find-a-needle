@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { gq01OntologyResponse, gq04StructuredResponse } from '@/test/responses';
+import { gq03OntologyResponse, gq01StructuredResponse } from '@/test/responses';
 import { UnderTheHoodTab } from './UnderTheHoodTab';
 
 afterEach(cleanup);
@@ -11,9 +11,9 @@ function selectStep(name: RegExp) {
     fireEvent.mouseDown(screen.getByRole('tab', { name }), { button: 0 });
 }
 
-describe('UnderTheHoodTab, GQ-01 on Stage 5', () => {
+describe('UnderTheHoodTab, GQ-03 on Stage 5', () => {
     it('shows one chip per step and opens on the last one, the rule checks', () => {
-        render(<UnderTheHoodTab response={gq01OntologyResponse} />);
+        render(<UnderTheHoodTab response={gq03OntologyResponse} />);
 
         expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
             '1 Understand',
@@ -29,7 +29,7 @@ describe('UnderTheHoodTab, GQ-01 on Stage 5', () => {
     });
 
     it('draws every step with a purpose-built view, never the JSON fallback', () => {
-        render(<UnderTheHoodTab response={gq01OntologyResponse} />);
+        render(<UnderTheHoodTab response={gq03OntologyResponse} />);
 
         for (const tab of screen.getAllByRole('tab')) {
             fireEvent.mouseDown(tab, { button: 0 });
@@ -39,7 +39,7 @@ describe('UnderTheHoodTab, GQ-01 on Stage 5', () => {
     });
 
     it("shows the RRF maths as the API wrote it, next to the rules' verdict", () => {
-        render(<UnderTheHoodTab response={gq01OntologyResponse} />);
+        render(<UnderTheHoodTab response={gq03OntologyResponse} />);
 
         selectStep(/RRF/);
 
@@ -49,9 +49,9 @@ describe('UnderTheHoodTab, GQ-01 on Stage 5', () => {
     });
 });
 
-describe('UnderTheHoodTab, GQ-04 on Stage 1', () => {
+describe('UnderTheHoodTab, GQ-01 on Stage 1', () => {
     it('shows the parameterised SQL with its parameters beside it', () => {
-        render(<UnderTheHoodTab response={gq04StructuredResponse} />);
+        render(<UnderTheHoodTab response={gq01StructuredResponse} />);
 
         expect(screen.getAllByText(/specs @> @specs::jsonb/).length).toBeGreaterThan(0);
         expect(screen.getByText('@brand')).not.toBeNull();

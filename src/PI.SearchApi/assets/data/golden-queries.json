@@ -1,29 +1,28 @@
 [
   {
     "id": "GQ-01",
-    "title": "Similarity is not compatibility",
-    "moment": "Vector search ranks the 45W barrel charger highly because it reads like the right one; the ontology flags it Incompatible on connector and wattage.",
+    "title": "Structured search wins",
+    "moment": "The user already knows the attributes: an exact filter returns precisely the Brakk 18V items under £100, with no ranking needed.",
     "request": {
-      "query": "power adapter for my laptop",
-      "context": { "targetProductId": "PROD-0001" }
+      "query": "",
+      "filters": {
+        "brand": "Brakk",
+        "maxPrice": 100.00,
+        "specs": { "voltageV": 18 }
+      }
     },
     "expectations": {
-      "keyword": [
-        { "productId": "PROD-0011", "rank": { "max": 3 } }
-      ],
-      "vector": [
-        { "productId": "PROD-0014", "rank": { "max": 5 } },
-        { "productId": "PROD-0012", "rank": { "max": 5 } }
-      ],
-      "hybrid": [
-        { "productId": "PROD-0014", "rank": { "max": 5 } }
-      ],
-      "ontology": [
-        { "productId": "PROD-0012", "compatibility": "Compatible", "rank": { "max": 3 } },
-        { "productId": "PROD-0011", "compatibility": "Compatible", "rank": { "max": 3 } },
-        { "productId": "PROD-0014", "compatibility": "Incompatible" },
-        { "productId": "PROD-0015", "compatibility": "Incompatible" },
-        { "productId": "PROD-0016", "compatibility": "Incompatible" }
+      "structured": [
+        { "productId": "PROD-0006", "present": true },
+        { "productId": "PROD-0008", "present": true },
+        { "productId": "PROD-0010", "present": true },
+        { "productId": "PROD-0026", "present": true },
+        { "productId": "PROD-0027", "present": true },
+        { "productId": "PROD-0030", "present": true },
+        { "productId": "PROD-0007", "present": false },
+        { "productId": "PROD-0041", "present": false },
+        { "productId": "PROD-0029", "present": false },
+        { "productId": "PROD-0028", "present": false }
       ]
     }
   },
@@ -52,6 +51,34 @@
   },
   {
     "id": "GQ-03",
+    "title": "Similarity is not compatibility",
+    "moment": "Vector search ranks the 45W barrel charger highly because it reads like the right one; the ontology flags it Incompatible on connector and wattage.",
+    "request": {
+      "query": "power adapter for my laptop",
+      "context": { "targetProductId": "PROD-0001" }
+    },
+    "expectations": {
+      "keyword": [
+        { "productId": "PROD-0011", "rank": { "max": 3 } }
+      ],
+      "vector": [
+        { "productId": "PROD-0014", "rank": { "max": 5 } },
+        { "productId": "PROD-0012", "rank": { "max": 5 } }
+      ],
+      "hybrid": [
+        { "productId": "PROD-0014", "rank": { "max": 5 } }
+      ],
+      "ontology": [
+        { "productId": "PROD-0012", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0011", "compatibility": "Compatible", "rank": { "max": 3 } },
+        { "productId": "PROD-0014", "compatibility": "Incompatible" },
+        { "productId": "PROD-0015", "compatibility": "Incompatible" },
+        { "productId": "PROD-0016", "compatibility": "Incompatible" }
+      ]
+    }
+  },
+  {
+    "id": "GQ-04",
     "title": "The keyword trap",
     "moment": "Keyword search ranks a cordless phone battery first because it shares the words; vector search puts the drill battery first; hybrid lifts the drill battery above the trap, which stays close behind; the ontology marks the phone battery OutOfConcept.",
     "request": {
@@ -72,33 +99,6 @@
       "ontology": [
         { "productId": "PROD-0026", "conceptMatch": "InConcept", "rank": { "max": 3 } },
         { "productId": "PROD-0032", "conceptMatch": "OutOfConcept" }
-      ]
-    }
-  },
-  {
-    "id": "GQ-04",
-    "title": "Structured search wins",
-    "moment": "The user already knows the attributes: an exact filter returns precisely the Brakk 18V items under £100, with no ranking needed.",
-    "request": {
-      "query": "",
-      "filters": {
-        "brand": "Brakk",
-        "maxPrice": 100.00,
-        "specs": { "voltageV": 18 }
-      }
-    },
-    "expectations": {
-      "structured": [
-        { "productId": "PROD-0006", "present": true },
-        { "productId": "PROD-0008", "present": true },
-        { "productId": "PROD-0010", "present": true },
-        { "productId": "PROD-0026", "present": true },
-        { "productId": "PROD-0027", "present": true },
-        { "productId": "PROD-0030", "present": true },
-        { "productId": "PROD-0007", "present": false },
-        { "productId": "PROD-0041", "present": false },
-        { "productId": "PROD-0029", "present": false },
-        { "productId": "PROD-0028", "present": false }
       ]
     }
   },

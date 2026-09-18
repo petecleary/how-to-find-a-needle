@@ -11,13 +11,13 @@ public sealed class RagStageGoldenQueryTests(AppHostFixture fixture)
     private static readonly string[] CompatibleChargers = ["PROD-0011", "PROD-0012"];
 
     [Fact]
-    public async Task GQ01_Rag_EvidenceIncludesTheCompatibleChargerAndTheNearMiss()
+    public async Task GQ03_Rag_EvidenceIncludesTheCompatibleChargerAndTheNearMiss()
     {
         // Talk moment: the model is given the near miss on purpose, with its reasons, so it can warn about it.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
         using var client = fixture.CreateSearchApiClient();
 
-        var response = await SearchApiClient.SearchAsync(client, "rag", GoldenQueryCase.Load("GQ-01").Request, TestContext.Current.CancellationToken);
+        var response = await SearchApiClient.SearchAsync(client, "rag", GoldenQueryCase.Load("GQ-03").Request, TestContext.Current.CancellationToken);
 
         var evidenceStep = response.DebugTrace.Steps[^1];
         Assert.Equal("rag", evidenceStep.Stage);
@@ -31,13 +31,13 @@ public sealed class RagStageGoldenQueryTests(AppHostFixture fixture)
     }
 
     [Fact]
-    public async Task GQ01_Rag_AnswerCitesACompatibleChargerFromTheEvidence()
+    public async Task GQ03_Rag_AnswerCitesACompatibleChargerFromTheEvidence()
     {
         // Talk moment: a grounded answer: it recommends a charger that fits, and every citation is checkable.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
         using var client = fixture.CreateSearchApiClient();
 
-        var answer = await AnswerApiClient.AnswerAsync(client, "rag", GoldenQueryCase.Load("GQ-01").Request, TestContext.Current.CancellationToken);
+        var answer = await AnswerApiClient.AnswerAsync(client, "rag", GoldenQueryCase.Load("GQ-03").Request, TestContext.Current.CancellationToken);
 
         var section = Assert.Single(answer.Sections);
         Assert.Equal("answer", section.Section);
@@ -80,13 +80,13 @@ public sealed class RagStageGoldenQueryTests(AppHostFixture fixture)
     }
 
     [Fact]
-    public async Task GQ01_Rag_EventStreamRunsFromMetaThroughToDone()
+    public async Task GQ03_Rag_EventStreamRunsFromMetaThroughToDone()
     {
         // Talk moment: results don't wait for the LLM; the answer streams in as Server-Sent Events.
         RepositoryPaths.SkipUnlessNomicModelIsPresent();
         using var client = fixture.CreateSearchApiClient();
 
-        var events = await AnswerApiClient.ReadEventStreamAsync(client, "rag", GoldenQueryCase.Load("GQ-01").Request, TestContext.Current.CancellationToken);
+        var events = await AnswerApiClient.ReadEventStreamAsync(client, "rag", GoldenQueryCase.Load("GQ-03").Request, TestContext.Current.CancellationToken);
 
         var names = events.Select(e => e.Name).ToList();
         Assert.Equal("meta", names[0]);

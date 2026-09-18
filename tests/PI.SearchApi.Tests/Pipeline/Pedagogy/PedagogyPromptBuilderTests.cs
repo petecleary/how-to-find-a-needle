@@ -18,8 +18,8 @@ public sealed class PedagogyPromptBuilderTests
     public void Build_ApplyPedagogyToggle_ChangesOnlyTheSystemPrompt()
     {
         // A fair demo changes one thing: the facts, audience and words in the user message are identical.
-        var pedagogy = Builder.Build("power adapter for my laptop", "novice", applyPedagogy: true, Gq01Evidence(), Answer);
-        var baseline = Builder.Build("power adapter for my laptop", "novice", applyPedagogy: false, Gq01Evidence(), Answer);
+        var pedagogy = Builder.Build("power adapter for my laptop", "novice", applyPedagogy: true, Gq03Evidence(), Answer);
+        var baseline = Builder.Build("power adapter for my laptop", "novice", applyPedagogy: false, Gq03Evidence(), Answer);
 
         Assert.Equal(pedagogy.UserPrompt, baseline.UserPrompt);
         Assert.NotEqual(pedagogy.SystemPrompt, baseline.SystemPrompt);
@@ -30,7 +30,7 @@ public sealed class PedagogyPromptBuilderTests
     [Fact]
     public void Build_PedagogyOn_HasTheFiveHeadingsAndTheActiveAudienceGuidance()
     {
-        var prompt = Builder.Build("q", "expert", applyPedagogy: true, Gq01Evidence(), Answer);
+        var prompt = Builder.Build("q", "expert", applyPedagogy: true, Gq03Evidence(), Answer);
 
         foreach (var heading in ExplanationHeadingParser.Headings)
         {
@@ -45,7 +45,7 @@ public sealed class PedagogyPromptBuilderTests
     [Fact]
     public void Build_Baseline_NamesTheAudienceWithoutHeadingsOrGuidance()
     {
-        var prompt = Builder.Build("q", "novice", applyPedagogy: false, Gq01Evidence(), Answer);
+        var prompt = Builder.Build("q", "novice", applyPedagogy: false, Gq03Evidence(), Answer);
 
         Assert.Contains("novice", prompt.SystemPrompt);
         Assert.DoesNotContain("## Decision", prompt.SystemPrompt);
@@ -56,7 +56,7 @@ public sealed class PedagogyPromptBuilderTests
     [Fact]
     public void Build_Novice_OffersEverydayAltLabelsAndTheProperName()
     {
-        var prompt = Builder.Build("q", "novice", applyPedagogy: true, Gq01Evidence(), Answer);
+        var prompt = Builder.Build("q", "novice", applyPedagogy: true, Gq03Evidence(), Answer);
 
         Assert.Contains("- Laptop chargers: everyday words: power adapter, power brick; proper name to give once: Laptop chargers", prompt.UserPrompt);
         Assert.Equal(["power adapter", "power brick", "Laptop chargers"], prompt.WordsOffered["laptop-chargers"]);
@@ -65,7 +65,7 @@ public sealed class PedagogyPromptBuilderTests
     [Fact]
     public void Build_Expert_OffersPreferredLabelAndSpecTermsButNoAltLabels()
     {
-        var prompt = Builder.Build("q", "expert", applyPedagogy: true, Gq01Evidence(), Answer);
+        var prompt = Builder.Build("q", "expert", applyPedagogy: true, Gq03Evidence(), Answer);
 
         Assert.DoesNotContain("power brick", prompt.UserPrompt);
         Assert.Contains("- Spec terms from the rules: connector, charging port, wattage, min charger wattage", prompt.UserPrompt);

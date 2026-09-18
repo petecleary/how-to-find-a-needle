@@ -24,7 +24,7 @@ Repo-wide rules are in the [root CLAUDE.md](../CLAUDE.md). Decisions: [ADR-0002]
 
 - Test class: `{TypeUnderTest}Tests` (e.g. `ReciprocalRankFusionTests`). Folders mirror the API project (`Pipeline/Fusion/…`).
 - Unit test method: `Method_Scenario_ExpectedResult`, e.g. `Fuse_ItemInBothLists_RanksAboveItemInOneList`.
-- Golden-query test method: `{GoldenQueryId}_{Stage}_{Expectation}`, e.g. `GQ01_Ontology_FlagsNearMissWithReason`.
+- Golden-query test method: `{GoldenQueryId}_{Stage}_{Expectation}`, e.g. `GQ03_Ontology_FlagsNearMissWithReason`.
 - Integration test classes are grouped per stage: `KeywordStageGoldenQueryTests`.
 
 ## Style

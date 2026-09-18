@@ -66,7 +66,7 @@ public sealed class DemoEndpointTests(AppHostFixture fixture)
 
         var brands = (await client.GetFromJsonAsync<List<string>>("/api/brands", TestContext.Current.CancellationToken))!;
 
-        Assert.Contains("Brakk", brands); // GQ-04 filters on it
+        Assert.Contains("Brakk", brands); // GQ-01 filters on it
         Assert.Contains("Voltline", brands);
         Assert.Equal(brands.Distinct().Order(StringComparer.Ordinal), brands);
     }

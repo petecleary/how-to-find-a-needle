@@ -12,8 +12,8 @@ import {
 } from './searchState';
 
 // The presets as they appear in assets/data/golden-queries.json.
-const gq01: GoldenQuery = {
-    id: 'GQ-01',
+const gq03: GoldenQuery = {
+    id: 'GQ-03',
     title: 'Similarity is not compatibility',
     moment: 'The ontology flags the 45W barrel charger Incompatible on connector and wattage.',
     request: {
@@ -24,8 +24,8 @@ const gq01: GoldenQuery = {
     expectations: {},
 };
 
-const gq04: GoldenQuery = {
-    id: 'GQ-04',
+const gq01: GoldenQuery = {
+    id: 'GQ-01',
     title: 'Structured filters',
     moment: 'Stage 1 filters without a query.',
     request: {
@@ -40,7 +40,7 @@ const everyFieldChanged: SearchState = {
     stage: 'ontology',
     tab: 'under-the-hood',
     query: 'power adapter for my laptop',
-    goldenQueryId: 'GQ-01',
+    goldenQueryId: 'GQ-03',
     targetProductId: 'PROD-0001',
     filters: {
         brand: 'Voltline',
@@ -140,38 +140,38 @@ describe('countActiveFilters', () => {
     it('counts the brand, each category, the price range once and each spec', () => {
         expect(countActiveFilters(defaultSearchState.filters)).toBe(0);
         expect(countActiveFilters(everyFieldChanged.filters)).toBe(6);
-        expect(countActiveFilters(applyGoldenQuery(defaultSearchState, gq04).filters)).toBe(3);
+        expect(countActiveFilters(applyGoldenQuery(defaultSearchState, gq01).filters)).toBe(3);
     });
 });
 
 describe('matchesGoldenQuery', () => {
     it('matches until an input moves away from the preset, whatever the stage or tab', () => {
-        const loaded = { ...applyGoldenQuery(defaultSearchState, gq04), stage: 'keyword' as const };
+        const loaded = { ...applyGoldenQuery(defaultSearchState, gq01), stage: 'keyword' as const };
 
-        expect(matchesGoldenQuery(loaded, gq04)).toBe(true);
-        expect(matchesGoldenQuery({ ...loaded, query: 'drill battery' }, gq04)).toBe(false);
+        expect(matchesGoldenQuery(loaded, gq01)).toBe(true);
+        expect(matchesGoldenQuery({ ...loaded, query: 'drill battery' }, gq01)).toBe(false);
         expect(
             matchesGoldenQuery(
                 { ...loaded, filters: { ...loaded.filters, categories: ['power-tools'] } },
-                gq04,
+                gq01,
             ),
         ).toBe(false);
-        expect(matchesGoldenQuery({ ...loaded, targetProductId: 'PROD-0001' }, gq04)).toBe(false);
+        expect(matchesGoldenQuery({ ...loaded, targetProductId: 'PROD-0001' }, gq01)).toBe(false);
     });
 });
 
 describe('applyGoldenQuery', () => {
-    it("fills the query and target device from GQ-01's preset", () => {
-        const state = applyGoldenQuery(defaultSearchState, gq01);
+    it("fills the query and target device from GQ-03's preset", () => {
+        const state = applyGoldenQuery(defaultSearchState, gq03);
 
-        expect(state.goldenQueryId).toBe('GQ-01');
+        expect(state.goldenQueryId).toBe('GQ-03');
         expect(state.query).toBe('power adapter for my laptop');
         expect(state.targetProductId).toBe('PROD-0001');
         expect(toSearchRequest(state).context).toEqual({ targetProductId: 'PROD-0001' });
     });
 
-    it("fills the brand, price and numeric spec filters from GQ-04's preset", () => {
-        const state = applyGoldenQuery(defaultSearchState, gq04);
+    it("fills the brand, price and numeric spec filters from GQ-01's preset", () => {
+        const state = applyGoldenQuery(defaultSearchState, gq01);
 
         expect(state.filters).toEqual({
             brand: 'Brakk',
@@ -183,7 +183,7 @@ describe('applyGoldenQuery', () => {
     });
 
     it('replaces the previous inputs but keeps the stage, tab and toggles', () => {
-        const state = applyGoldenQuery(everyFieldChanged, gq04);
+        const state = applyGoldenQuery(everyFieldChanged, gq01);
 
         expect(state.targetProductId).toBeNull();
         expect(state.filters.categories).toEqual([]);

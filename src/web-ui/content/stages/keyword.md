@@ -10,7 +10,7 @@ Matching words. Postgres [full-text search](term:fts) turns each product into a 
 
 ## What to look for
 
-**GQ-02**, "power brick for laptop": no product says "power brick", so nothing matches. **GQ-03**, "cordless drill battery": a cordless _phone_ battery ranks near the top, because it shares the words.
+**GQ-02**, "power brick for laptop": no product says "power brick", so nothing matches. **GQ-04**, "cordless drill battery": a cordless _phone_ battery ranks near the top, because it shares the words.
 
 ## Strength
 
@@ -22,7 +22,7 @@ Blind to meaning. A synonym the catalogue never uses returns nothing, and shared
 
 ## Try this
 
-Choose **GQ-01**, change "adapter" to "charger" and press Enter. Same intent, different words, and the order changes.
+Choose **GQ-03**, change "adapter" to "charger" and press Enter. Same intent, different words, and the order changes.
 
 ## Read the decision
 

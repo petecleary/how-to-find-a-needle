@@ -11,7 +11,7 @@
 
 ## What to look for
 
-**GQ-01** for a novice, with **Apply pedagogy** off: a fair [baseline explanation](term:baseline-explanation). Turn it on: the same facts become a decision, the concepts behind it, and the [near miss](term:near-miss) as a counter-example.
+**GQ-03** for a novice, with **Apply pedagogy** off: a fair [baseline explanation](term:baseline-explanation). Turn it on: the same facts become a decision, the concepts behind it, and the [near miss](term:near-miss) as a counter-example.
 
 ## Strength
 

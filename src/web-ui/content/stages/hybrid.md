@@ -10,7 +10,7 @@ Keyword and vector search together. Their scores can't be compared, so [Reciproc
 
 ## What to look for
 
-**GQ-03**: keyword search put the cordless phone battery near the top, and hybrid lifts the drill battery above it. Under the hood, the RRF step shows every sum, such as `1/(60+1) + 1/(60+2) = 0.03252`.
+**GQ-04**: keyword search put the cordless phone battery near the top, and hybrid lifts the drill battery above it. Under the hood, the RRF step shows every sum, such as `1/(60+1) + 1/(60+2) = 0.03252`.
 
 ## Strength
 
@@ -18,11 +18,11 @@ It keeps exact-word hits and meaning hits without calibrating scores, and the ma
 
 ## Failure mode
 
-Better relevance, not correctness. In **GQ-01** the incompatible 45W barrel charger is still near the top, because both retrievers like it.
+Better relevance, not correctness. In **GQ-03** the incompatible 45W barrel charger is still near the top, because both retrievers like it.
 
 ## Try this
 
-Choose **GQ-01** and look at the badges in Results: each product's keyword rank, vector rank and the RRF sum they make.
+Choose **GQ-03** and look at the badges in Results: each product's keyword rank, vector rank and the RRF sum they make.
 
 ## Read the decision
 

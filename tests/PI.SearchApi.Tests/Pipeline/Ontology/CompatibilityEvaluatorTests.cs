@@ -33,7 +33,7 @@ public sealed class CompatibilityEvaluatorTests
     [Fact]
     public void Evaluate_BarrelCharger_IsIncompatibleWithBothReasonsQuotingRuleAndValues()
     {
-        // GQ-01's near miss: wrong plug (5.5mm barrel ≠ USB-C) and too little power (45 < 65).
+        // GQ-03's near miss: wrong plug (5.5mm barrel ≠ USB-C) and too little power (45 < 65).
         var charger = Product("PROD-0014", "Voltline 45W Barrel Charger", "laptop-chargers", """{ "connector": "barrel-5.5mm", "wattageW": 45 }""");
 
         var evaluation = Evaluator.Evaluate(charger, Aerobook);

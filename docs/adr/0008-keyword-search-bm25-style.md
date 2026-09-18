@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework).
 - **Date:** 2026-09-13
-- **Related:** ADR-0004, ADR-0006, ADR-0011; golden queries GQ-02, GQ-03; roadmap Phase 2
+- **Related:** ADR-0004, ADR-0006, ADR-0011; golden queries GQ-02, GQ-04; roadmap Phase 2
 
 ## Context
 
@@ -79,9 +79,9 @@ LIMIT @depth;
 
 **For the talk (found while building, Phase 2):**
 - **Keyword search rewards the shopper for using the catalog's words.**
-  - "power adapter for my laptop" (GQ-01) puts the official Blackbird charger in the top 3, because its description says "laptop power adapter". "charger for my laptop" ranked it 5th, behind barrel chargers whose descriptions say "laptop charger".
+  - "power adapter for my laptop" (GQ-03) puts the official Blackbird charger in the top 3, because its description says "laptop power adapter". "charger for my laptop" ranked it 5th, behind barrel chargers whose descriptions say "laptop charger".
   - Same intent, different words, different winner. The ontology's synonyms (Stage 5) are how you stop depending on the exact word.
 - **A device name helps keyword search and hurts vector search.** "charger for my Blackbird Aerobook 14" finds the official charger, because its description names the Aerobook. Stage 3 on the same query ranks laptops and bags first (GQ-08, ADR-0010).
-- **Cover density in action (GQ-03).** Before reviews were indexed, "cordless drill battery" matched the phone battery pack, but it came 5th. Drills whose descriptions put "cordless … drill … battery" closer together outranked it. `ts_rank_cd` scores proximity, not meaning.
+- **Cover density in action (GQ-04).** Before reviews were indexed, "cordless drill battery" matched the phone battery pack, but it came 5th. Drills whose descriptions put "cordless … drill … battery" closer together outranked it. `ts_rank_cd` scores proximity, not meaning.
 - **Reviews are where shoppers' words live.** The phone battery's review says "Cordless phone battery arrived quickly". Once reviews were indexed (at the lowest weight, D), the phone battery became keyword search's **#1** result for "cordless drill battery", a textbook keyword trap. Which fields you index is a relevance decision, not just a storage one.
 - **Rewording the product didn't work.** Moving "no drill needed" earlier in its description also made it #1 in keyword search, but it pulled the phone battery into vector search's top 3 as well. Words that match a query lexically also move the embedding towards it.

@@ -88,7 +88,7 @@ export function changeSpecKey(
 }
 
 /**
- * Spec filters no vocabulary covers, such as GQ-04's `voltageV: 18`. They still apply, so the panel lists
+ * Spec filters no vocabulary covers, such as GQ-01's `voltageV: 18`. They still apply, so the panel lists
  * them rather than hiding a filter that changes the results.
  */
 export function otherSpecs(

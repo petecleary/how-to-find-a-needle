@@ -16,7 +16,7 @@
   {
     "id": "golden-query",
     "term": "Golden query",
-    "definition": "A fixed query with expected results at each stage, GQ-01 to GQ-08. Each one is a moment in the talk, checked by an integration test.",
+    "definition": "A fixed query with expected results at each stage, GQ-01 to GQ-09. Each one is a moment in the talk, checked by an integration test.",
     "topic": "Evaluation",
     "adr": "0005-curated-dataset-and-golden-queries"
   },

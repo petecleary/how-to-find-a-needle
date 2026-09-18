@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (Phase 4, 2026-09-16): built and verified, in the API and the UI. The baseline toggle changes only the system prompt, and the structure checks held in 65 of 70 bake-off runs.
 - **Date:** 2026-09-13 (amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): renumbered from Stage 8; adds the baseline toggle and audience-aware labels. Amended 2026-09-14 by the ADR-0014 visual design: the audience picker sits in the stage options on the tab row. Amended 2026-09-15 while building Phase 4 step 3: one shared user message, audience guidance in its own file, audience-specific words offered identically to both prompts, Near miss limited to Incompatible products, tolerant heading parsing)
-- **Related:** ADR-0003, ADR-0013, ADR-0014, ADR-0015, ADR-0016, ADR-0018; golden queries GQ-01, GQ-05, GQ-06; roadmap Phase 4
+- **Related:** ADR-0003, ADR-0013, ADR-0014, ADR-0015, ADR-0016, ADR-0018; golden queries GQ-03, GQ-05, GQ-06; roadmap Phase 4
 
 ## Context
 
@@ -63,7 +63,7 @@ This is Stage 7's before/after switch, like Stage 5's `expandSynonyms` and `appl
 - **The words offered depend on the audience, not on the toggle.** The user message lists each concept with the words for that audience (novice: the everyday `altLabel`s, then the preferred label to give once; enthusiast: the preferred label; expert: the preferred label, plus the spec terms from the rules that were checked, such as connector and wattage). The baseline at a given audience is offered exactly the same words.
 - **Audience guidance** (how to write for a novice, enthusiast or expert) is in `assets/prompts/pedagogy-audiences.md`, one section per audience. The pedagogy system prompt includes the active section; the baseline names the audience only, as a developer's first prompt would.
 - **The baseline must not be a straw man.** It's a sensible, typical prompt, and the trace shows it in full, so the audience can judge the comparison for themselves.
-- The talk sequence for GQ-01:
+- The talk sequence for GQ-03:
   1. `novice` with the toggle off;
   2. the same with the toggle on;
   3. switch audience with the toggle on.
@@ -126,8 +126,8 @@ Check the "W" rating printed on your current charger.
   - Label choice: the novice prompt includes alternative labels, and no prompt includes hidden labels.
   - Validator rules: Decision Compatible, Near miss Incompatible, uncited IDs, the concept-label heuristic. The baseline skips structure checks.
 - **Integration (structural, via JSON mode):**
-  - GQ-01 with pedagogy on produces a Decision on the compatible charger, a Near miss on the 45W barrel charger, and at least one concept.
-  - GQ-01 with pedagogy off completes with no citation warnings and `structure: null`.
+  - GQ-03 with pedagogy on produces a Decision on the compatible charger, a Near miss on the 45W barrel charger, and at least one concept.
+  - GQ-03 with pedagogy off completes with no citation warnings and `structure: null`.
 
 ## Consequences
 

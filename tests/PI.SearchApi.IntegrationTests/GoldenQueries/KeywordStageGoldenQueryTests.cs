@@ -6,10 +6,10 @@ namespace PI.SearchApi.IntegrationTests.GoldenQueries;
 public sealed class KeywordStageGoldenQueryTests(AppHostFixture fixture)
 {
     [Fact]
-    public async Task GQ01_Keyword_FindsTheOfficialChargerByItsExactWords()
+    public async Task GQ03_Keyword_FindsTheOfficialChargerByItsExactWords()
     {
         // Talk moment: keyword search is great when the catalog uses the same words as the shopper.
-        await GoldenQueryRunner.RunAsync(fixture, "GQ-01", "keyword");
+        await GoldenQueryRunner.RunAsync(fixture, "GQ-03", "keyword");
     }
 
     [Fact]
@@ -23,10 +23,10 @@ public sealed class KeywordStageGoldenQueryTests(AppHostFixture fixture)
     }
 
     [Fact]
-    public async Task GQ03_Keyword_RanksTheCordlessPhoneBatteryHighly()
+    public async Task GQ04_Keyword_RanksTheCordlessPhoneBatteryHighly()
     {
         // Talk moment: the keyword trap — a cordless phone battery shares every word with "cordless drill battery".
-        var response = await GoldenQueryRunner.RunAsync(fixture, "GQ-03", "keyword");
+        var response = await GoldenQueryRunner.RunAsync(fixture, "GQ-04", "keyword");
 
         var step = Assert.Single(response.DebugTrace.Steps);
         Assert.Contains("'batteri'", step.Details!["tsquery"].GetString()); // stemming is visible in the trace

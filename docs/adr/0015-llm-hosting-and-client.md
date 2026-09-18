@@ -66,7 +66,7 @@ The original design put LiteLLM in front of the providers. .NET's `Microsoft.Ext
 | Stage 7, baseline | 70/70 | 70/70 | — | 57 ms | 5.1 s / 8.9 s |
 
 - **Every criterion is met:** no citation was ever outside the evidence, the five headings and the Decision and Near miss rules held in 65 of 70 runs, the first token arrives in well under 1.5 s, and Stage 7's two calls finish in about 5.4 s against the ~15 s budget.
-- **The 30 "insufficient evidence" answers** are the three golden queries with no target device (GQ-02, GQ-03, GQ-07), where no rule can be checked. The model saying so is correct behaviour, not a failure.
+- **The 30 "insufficient evidence" answers** are the three golden queries with no target device (GQ-02, GQ-04, GQ-07), where no rule can be checked. The model saying so is correct behaviour, not a failure.
 - **The warnings are mostly the concept heuristic**, and the bake-off exposed two faults in the evidence and the checker, now fixed: with no target device the evidence carried no rules at all, and a concept named after a product's own spec ("Capacity (Ah)", "Form Factor") counted as "not from the ontology".
 - **`gemma4:31b` was abandoned mid-run and is not the default.** It generates about 22 tokens/second here against qwen's much higher rate (it runs every weight per token; the Qwen model activates only part of itself), so a request took about 15 s and Stage 7 about 30 s: twice the talk's budget. Loading both models also pushed a 64 GB machine into swap.
 

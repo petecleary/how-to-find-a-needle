@@ -30,7 +30,7 @@ public sealed class ConceptClassifierTests
     [Fact]
     public void Classify_PhoneBatteryForDrillBatteryQuery_IsOutOfConcept()
     {
-        // GQ-03: phone-batteries sits under Telephony, not under Power tools › Batteries.
+        // GQ-04: phone-batteries sits under Telephony, not under Power tools › Batteries.
         var result = Classifier.Classify(["phone-batteries"], ["drills", "batteries"]);
 
         Assert.Equal(ConceptMatch.OutOfConcept, result.Match);

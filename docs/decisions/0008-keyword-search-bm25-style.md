@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Area:** Search
-- **Related:** [ADR-0004](0004-pipeline-composition.md), [ADR-0006](0006-database-schema-and-seeding.md), [ADR-0011](0011-hybrid-search-rrf.md), [ADR-0013](0013-domain-ontology-and-compatibility.md); golden queries GQ-01, GQ-02, GQ-03, GQ-07
+- **Related:** [ADR-0004](0004-pipeline-composition.md), [ADR-0006](0006-database-schema-and-seeding.md), [ADR-0011](0011-hybrid-search-rrf.md), [ADR-0013](0013-domain-ontology-and-compatibility.md); golden queries GQ-02, GQ-03, GQ-04, GQ-07
 
 ## Context
 

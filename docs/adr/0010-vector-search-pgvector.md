@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (Phase 2, 2026-09-14). Amended 2026-09-14 by [ADR-0018](0018-scope-and-going-further.md): BGE-M3 removed and stages renumbered, with no change in behaviour (code updated in the Phase 2 rework).
 - **Date:** 2026-09-13
-- **Related:** ADR-0006, ADR-0009, ADR-0011; golden queries GQ-01, GQ-02, GQ-03; roadmap Phase 2
+- **Related:** ADR-0006, ADR-0009, ADR-0011; golden queries GQ-02, GQ-03, GQ-04; roadmap Phase 2
 
 ## Context
 
@@ -41,8 +41,8 @@ LIMIT @depth;
 ## Consequences
 
 - GQ-02 (synonym) succeeds here where keyword search failed.
-- GQ-01 shows the incompatible 45W barrel charger ranked near the top. That is the intended failure the ontology fixes in Stage 5.
-- GQ-03 (keyword trap) is corrected: "cordless phone battery" is less similar to "cordless drill battery" than real drill batteries.
+- GQ-03 shows the incompatible 45W barrel charger ranked near the top. That is the intended failure the ontology fixes in Stage 5.
+- GQ-04 (keyword trap) is corrected: "cordless phone battery" is less similar to "cordless drill battery" than real drill batteries.
 
 ## Alternatives considered
 

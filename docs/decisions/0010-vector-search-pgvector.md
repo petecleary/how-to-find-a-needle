@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Area:** Search
-- **Related:** [ADR-0006](0006-database-schema-and-seeding.md), [ADR-0009](0009-local-embeddings-onnx-runtime.md), [ADR-0011](0011-hybrid-search-rrf.md); golden queries GQ-01, GQ-02, GQ-03, GQ-08
+- **Related:** [ADR-0006](0006-database-schema-and-seeding.md), [ADR-0009](0009-local-embeddings-onnx-runtime.md), [ADR-0011](0011-hybrid-search-rrf.md); golden queries GQ-02, GQ-03, GQ-04, GQ-08
 
 ## Context
 
@@ -33,8 +33,8 @@ LIMIT @candidateDepth;
 
 ## Consequences
 
-- **GQ-01:** the incompatible 45W barrel charger ranks **2nd**, right behind the correct charger. That is the failure the ontology fixes.
-- **GQ-03:** "cordless drill battery" puts a drill and the drill battery first; the cordless *phone* battery that tops keyword search drops to 10th.
+- **GQ-03:** the incompatible 45W barrel charger ranks **2nd**, right behind the correct charger. That is the failure the ontology fixes.
+- **GQ-04:** "cordless drill battery" puts a drill and the drill battery first; the cordless *phone* battery that tops keyword search drops to 10th.
 - **GQ-02:** "power brick for laptop" finds power products that keyword search missed entirely, but ranks power banks above the laptop chargers.
 
 ## Alternatives considered

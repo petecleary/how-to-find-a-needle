@@ -82,7 +82,7 @@ describe('talk navigation', () => {
 
 describe('talkStepState', () => {
     // JSON types each query's shape separately, so the API's contract type needs a cast through unknown.
-    const gq01 = goldenQueriesJson.find((query) => query.id === 'GQ-01') as unknown as GoldenQuery;
+    const gq03 = goldenQueriesJson.find((query) => query.id === 'GQ-03') as unknown as GoldenQuery;
 
     it("fills a stage step's golden query and options", () => {
         const step: TalkStep = {
@@ -91,16 +91,16 @@ describe('talkStepState', () => {
             title: 'Ontology',
             file: 'talk/o.md',
             stage: 'ontology',
-            goldenQuery: 'GQ-01',
+            goldenQuery: 'GQ-03',
             options: { applyConstraints: false },
         };
 
-        const state = talkStepState(step, gq01);
+        const state = talkStepState(step, gq03);
 
         expect(state).toMatchObject({
             stage: 'ontology',
             tab: 'how-it-works',
-            goldenQueryId: 'GQ-01',
+            goldenQueryId: 'GQ-03',
             query: 'power adapter for my laptop',
             targetProductId: 'PROD-0001',
             applyConstraints: false,

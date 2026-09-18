@@ -42,7 +42,7 @@ The frontend has to be as readable as the backend: no black-box component librar
 
 - **`openapi-typescript` generates the API types** from the API's OpenAPI document (`npm run gen:api`). The generated file is committed, so the UI builds without the API running and contract changes show up in diffs. A small typed `fetch` wrapper replaces a generated client.
 - **One hook, `usePipelineSearch`**, sends the same request to whichever stage is selected. An `AbortController` cancels a search when the stage changes.
-  - It asks for **50 results per page**, the API's maximum. Stage 5 keeps flagged items but sorts them last, so a page of 10 would hide GQ-01's near miss.
+  - It asks for **50 results per page**, the API's maximum. Stage 5 keeps flagged items but sorts them last, so a page of 10 would hide GQ-03's near miss.
   - For ranked stages it then **reads every remaining page**. Fusion keeps the union of two lists, so Stage 5 can return more than 50: GQ-08 returns 67, with its flagged chargers last. Stage 1 keeps its first page, because its total counts the whole filtered catalog.
   - One response holds every candidate, so switching tabs never refetches.
 - **`useAnswerStream`** (Stages 6–7) runs **in parallel**, so results never wait for the LLM. It reads Server-Sent Events with `fetch` and a small parser, because `EventSource` can't send a POST body.

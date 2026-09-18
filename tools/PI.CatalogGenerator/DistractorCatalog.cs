@@ -16,7 +16,7 @@ public sealed partial class DistractorCatalog(int seed)
 
     // The curated core's talk moments depend on these brands staying small and hand-written:
     // GQ-08's device-name trap needs Blackbird's brand pull to come from the curated items only,
-    // and GQ-01, GQ-02 and GQ-07 are all about Voltline's specific chargers.
+    // and GQ-03, GQ-02 and GQ-07 are all about Voltline's specific chargers.
     private static readonly HashSet<string> ReservedBrands = ["Blackbird", "Voltline"];
 
     private Random _random = new(seed);
@@ -79,11 +79,11 @@ public sealed partial class DistractorCatalog(int seed)
                 problems.Add($"{product.Id} uses {product.Brand}, a brand reserved for the curated core");
             }
 
-            // GQ-04 asserts that brand = Brakk, voltageV = 18, maxPrice = £100 returns exactly six products.
+            // GQ-01 asserts that brand = Brakk, voltageV = 18, maxPrice = £100 returns exactly six products.
             var isBrakk18V = product.Brand == "Brakk" && product.Specs.Any(s => s is { Key: "voltageV", Value: 18 });
             if (isBrakk18V && product.Price <= 100m)
             {
-                problems.Add($"{product.Id} is a Brakk 18V product at £{product.Price}; GQ-04 needs every generated one above £100");
+                problems.Add($"{product.Id} is a Brakk 18V product at £{product.Price}; GQ-01 needs every generated one above £100");
             }
         }
 

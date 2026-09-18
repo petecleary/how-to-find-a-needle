@@ -3,8 +3,8 @@ import traceSteps from '@/test/fixtures/golden-query-trace-steps.json';
 import { traceStepKind, traceStepShortLabel, type TraceStepKind } from './traceStepKind';
 
 // golden-query-trace-steps.json lists every trace step (stage, title, whether it has SQL, its details keys)
-// that GQ-01 to GQ-08 produce on Stages 1–5, plus GQ-01 on Stage 5 with each switch off. It was captured from
-// a running AppHost. GQ-04 has no query, so only Stage 1 answers it (Stages 2–5 return 400).
+// that GQ-01 to GQ-08 produce on Stages 1–5, plus GQ-03 on Stage 5 with each switch off. It was captured from
+// a running AppHost. GQ-01 has no query, so only Stage 1 answers it (Stages 2–5 return 400).
 
 const expectedKinds: [title: RegExp, kind: TraceStepKind][] = [
     [/^Parameterised SQL filters/, 'sql'],

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Area:** Search
-- **Related:** [ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0004](0004-pipeline-composition.md), [ADR-0005](0005-curated-dataset-and-golden-queries.md), [ADR-0008](0008-keyword-search-bm25-style.md), [ADR-0011](0011-hybrid-search-rrf.md), [ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0017](0017-pedagogy-engine.md), [ADR-0018](0018-scope-and-going-further.md); golden queries GQ-01 to GQ-03, GQ-05 to GQ-08
+- **Related:** [ADR-0003](0003-search-api-contract-and-debug-trace.md), [ADR-0004](0004-pipeline-composition.md), [ADR-0005](0005-curated-dataset-and-golden-queries.md), [ADR-0008](0008-keyword-search-bm25-style.md), [ADR-0011](0011-hybrid-search-rrf.md), [ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0017](0017-pedagogy-engine.md), [ADR-0018](0018-scope-and-going-further.md); golden queries GQ-02 to GQ-08
 
 ## Context
 

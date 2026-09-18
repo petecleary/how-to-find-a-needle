@@ -46,7 +46,7 @@ A small C# console app: `dotnet run --project tools/PI.CatalogGenerator`.
 
 - **Templates, not an LLM.** Product lines × variants (capacity, wattage, size, colour), with prices and reviews picked by a seeded random number generator. The output is the same every run, reviewable in a diff, and needs no API key.
 - **The curated core is copied byte for byte.** Each run replaces only the generated products after it.
-- **Guards for what tests can't see.** It refuses to reuse a curated name, to use the brands the talk moments rely on, or to add a Brakk 18V product at £100 or less (GQ-04 expects exactly six).
+- **Guards for what tests can't see.** It refuses to reuse a curated name, to use the brands the talk moments rely on, or to add a Brakk 18V product at £100 or less (GQ-01 expects exactly six).
 - **Look-alikes are few, and mostly near misses.** Chargers, SSDs, memory and batteries get a handful each; most generated products are audio, peripherals, cables and bags. Every generated laptop charger is a near miss for the Blackbird Aerobook 14, such as a 60W USB-C charger that falls 5W short.
 - After running it, re-embed once (`Embeddings:Rebuild = true`) and commit the catalog and the embeddings file together ([ADR-0009](0009-local-embeddings-onnx-runtime.md)).
 
@@ -56,10 +56,10 @@ A small C# console app: `dotnet run --project tools/PI.CatalogGenerator`.
 
 | ID | Query | Moment |
 |---|---|---|
-| GQ-01 | "power adapter for my laptop" + target device | **Similarity ≠ compatibility:** vector search ranks the 45W barrel charger 2nd; the ontology flags it on connector and wattage |
+| GQ-01 | filters only: Brakk, 18V, under £100 | **Structured search wins:** exactly six products, no ranking needed |
 | GQ-02 | "power brick for laptop" | **Synonym miss:** keyword search finds nothing; vector search finds the charger but ranks power banks above it; the ontology's synonyms rescue the keyword side |
-| GQ-03 | "cordless drill battery" | **Keyword trap:** keyword search ranks a cordless *phone* battery 1st; hybrid lifts the drill battery above it; the ontology marks the phone battery out of concept |
-| GQ-04 | filters only: Brakk, 18V, under £100 | **Structured search wins:** exactly six products, no ranking needed |
+| GQ-03 | "power adapter for my laptop" + target device | **Similarity ≠ compatibility:** vector search ranks the 45W barrel charger 2nd; the ontology flags it on connector and wattage |
+| GQ-04 | "cordless drill battery" | **Keyword trap:** keyword search ranks a cordless *phone* battery 1st; hybrid lifts the drill battery above it; the ontology marks the phone battery out of concept |
 | GQ-05 | "18V battery" + a Brakk drill | **Platform, not voltage:** a Tornio 20V MAX battery looks similar; the ontology rejects it |
 | GQ-06 | "SSD upgrade for my laptop" + target device | **Interface, not shape:** a SATA M.2 2280 SSD reads like the NVMe one the laptop needs; the ontology flags it |
 | GQ-07 | "cargador USB-C para portátil" | **Beyond English:** the Spanish label "cargador" matches *Chargers*, and English terms find the chargers |
@@ -68,7 +68,7 @@ A small C# console app: `dotnet run --project tools/PI.CatalogGenerator`.
 
 Golden queries do three jobs: they are the **integration tests**, the **UI presets**, and the **talk steps**.
 
-GQ-01, GQ-05 and GQ-06 take the device from a "my device" picker (`context.targetProductId`) rather than naming it, so each isolates one failure. Naming the device is a failure of its own, and GQ-08 shows it.
+GQ-03, GQ-05 and GQ-06 take the device from a "my device" picker (`context.targetProductId`) rather than naming it, so each isolates one failure. Naming the device is a failure of its own, and GQ-08 shows it.
 
 ### When a moment stops happening
 
@@ -96,7 +96,7 @@ Change the **wording of the data**, not the algorithm and not the assertion. Cha
 - Normalise units at ingestion. Structured search and ontology rules both depend on it.
 - **Each golden query should isolate one failure.** "battery for Brakk 18V drill" mixed a brand pull, a device word and the platform near miss. "18V battery" with a target device shows only the near miss.
 - **Real embeddings rewrote our queries, and that is what golden queries are for.** The first drafts named the device in the query, and vector search ranked every Blackbird product above the chargers. We didn't loosen the tests; we asked what each query was meant to prove, and gave the device-name failure its own query.
-- **Sometimes the expectation is wrong.** GQ-03 first expected hybrid search to push the phone battery out of its top 3 *and* keyword search to rank it highly. Under RRF those pull against each other ([ADR-0011](0011-hybrid-search-rrf.md)).
+- **Sometimes the expectation is wrong.** GQ-04 first expected hybrid search to push the phone battery out of its top 3 *and* keyword search to rank it highly. Under RRF those pull against each other ([ADR-0011](0011-hybrid-search-rrf.md)).
 - **Scale changes rankings, not moments.** Growing the catalog to 500 broke 7 of 23 checks while every moment still happened: "the official charger is in the top 3" failed because six generated compatible chargers competed with it. A test that pins one product to a tight rank is partly a test of catalog size.
 - **"Power brick" sits closer to "power bank" than to "laptop charger".** Add power banks and vector search ranks them first. Meaning is fuzzy in both directions.
 - **Distractor wording matters too.** Generated SSDs that said "for desktops and laptops", and memory reviews saying "easy upgrade", outranked the curated SATA near miss for "SSD upgrade for my laptop". Real catalogs are full of such accidental matches.

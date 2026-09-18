@@ -67,14 +67,14 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
   - Changing the stage or submitting re-runs `POST /api/search/{stage}` with the **same request**.
   - An `AbortController` cancels in-flight calls when the stage changes quickly.
   - It asks for **`pageSize: 50`**, the API's maximum and the default `candidateDepth`. For ranked stages it then reads any further pages, because hybrid fusion can retrieve more than 50 (Phase 5: GQ-08's flagged chargers rank 52nd–67th at 300 products). Stage 1 keeps its first page, since its total counts the whole filtered catalog. Switching tabs never refetches.
-  - Why: Stage 5 orders flagged items *after* the out-of-concept ones and keeps them all. At the default page size of 10, GQ-01's three incompatible chargers aren't on page 1, so the near-miss moment would be invisible. The endpoint still pages exactly once ("retrieve deep, page late"); the UI only groups and collapses what it received.
+  - Why: Stage 5 orders flagged items *after* the out-of-concept ones and keeps them all. At the default page size of 10, GQ-03's three incompatible chargers aren't on page 1, so the near-miss moment would be invisible. The endpoint still pages exactly once ("retrieve deep, page late"); the UI only groups and collapses what it received.
 - **`useAnswerStream`** (Stages 6–7) runs **in parallel** with `usePipelineSearch`, so the results list never waits for the LLM ([ADR-0016](0016-rag-grounding-and-citations.md)).
   - It POSTs the same request to `/api/search/{rag|pedagogy}/answer`.
   - It reads the response with `fetch` and a small, readable SSE parser, because `EventSource` can't POST.
   - It appends `delta` text to the Answer tab and applies `final` citations and warnings.
   - `[PROD-…]` renders as a chip that jumps to that product in the Answer tab's evidence set. The same `AbortController` cancels it, and the Vite proxy passes `text/event-stream` through unbuffered.
 - **No global state library** (Redux, Zustand) and **no TanStack Query**. Plain React state is enough and easier to read.
-- The URL holds demo state, including the tab, audience and toggles (`/demo?stage=pedagogy&tab=answer&q=...&gq=GQ-01&audience=novice`), and talk position lives in the route (`/talk/stage-hybrid/results`), so the presenter can bookmark and the browser back button works.
+- The URL holds demo state, including the tab, audience and toggles (`/demo?stage=pedagogy&tab=answer&q=...&gq=GQ-03&audience=novice`), and talk position lives in the route (`/talk/stage-hybrid/results`), so the presenter can bookmark and the browser back button works.
 
 ### Stage screen: layout and components (architecture §5)
 
@@ -122,7 +122,7 @@ Demo / talk stage step
 
 ### Visual design
 
-The UI is branded **Pi & Mash** (Pete's company). Agreed on 2026-09-14 from a design canvas built with real GQ-01 output; the screens are committed in [docs/design](../design/README.md).
+The UI is branded **Pi & Mash** (Pete's company). Agreed on 2026-09-14 from a design canvas built with real GQ-03 output; the screens are committed in [docs/design](../design/README.md).
 
 - **Brand colours = the triad.** The three logo colours mark which part of the argument a stage belongs to, in the stepper, tabs, trace chips and stage labels:
 

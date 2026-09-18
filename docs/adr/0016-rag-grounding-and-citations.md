@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (Phase 4, 2026-09-16): built and verified, in the API and the UI. Across 210 bake-off requests no citation ever fell outside the evidence set.
 - **Date:** 2026-09-13 (amended 2026-09-15 while building Phase 4 step 2: evidence for unchecked and out-of-concept items, descriptions read with one query, `invalidCitations` in `final`, errors before the first event)
-- **Related:** ADR-0003, ADR-0004, ADR-0013, ADR-0014, ADR-0015, ADR-0017; golden queries GQ-01, GQ-05, GQ-06; roadmap Phase 4
+- **Related:** ADR-0003, ADR-0004, ADR-0013, ADR-0014, ADR-0015, ADR-0017; golden queries GQ-03, GQ-05, GQ-06; roadmap Phase 4
 
 ## Context
 
@@ -99,7 +99,7 @@ data: {"timeToFirstTokenMs":640,"totalMs":5210,"trace":[…]}
   - Citation extraction and validation (valid, unknown ID, none cited); the sentinel; the incompatible-recommendation heuristic.
   - SSE event formatting.
 - **Integration (structural only):**
-  - GQ-01 via JSON mode: the answer cites the compatible charger, every citation is in the evidence, and there are no citation warnings.
+  - GQ-03 via JSON mode: the answer cites the compatible charger, every citation is in the evidence, and there are no citation warnings.
   - One test reads the SSE stream through to `done`.
 
 ## Consequences
