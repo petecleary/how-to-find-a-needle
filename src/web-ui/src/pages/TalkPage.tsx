@@ -9,14 +9,15 @@ import { TalkControls } from '@/components/TalkControls';
 import { useApiData } from '@/hooks/useApiData';
 import { useTalkKeys } from '@/hooks/useTalkKeys';
 import type { SearchState, StageTab } from '@/lib/searchState';
-import { isPipelineStage, pipelineStages, stageNumber } from '@/lib/stageGroup';
+import { isPipelineStage, pipelineStages, stageNumber, type PipelineStage } from '@/lib/stageGroup';
 import { stageTabDefinitions } from '@/lib/stageTabs';
 import {
+    findStageStep,
     findTalkStep,
     nextPosition,
     positionPath,
     previousPosition,
-    stepTabs,
+    stepTab,
     talkMarkdown,
     talkStartPath,
     talkStepState,
@@ -27,8 +28,8 @@ import { parseTalkTab, talkPath } from '@/lib/talkRoute';
 
 /**
  * `/talk/:step/:tab?`: the talk, replacing slides (ADR-0014 § Pages). Intro and summary steps are full-width
- * content; stage steps show the live stage screen with the step's golden query and options. ← / → walk through
- * a stage step's tabs and then on to the next step; H / R / A / U jump to a tab.
+ * content; stage steps show the live stage screen with the step's golden query and options. ← / → move one
+ * step, landing on that step's tab; H / R / A / U / G jump to a tab within it.
  */
 export function TalkPage() {
     const { step: stepId, tab: tabParam } = useParams();
@@ -46,21 +47,17 @@ export function TalkPage() {
         return <Navigate to={talkStartPath()} replace />;
     }
 
-    const tabs = stepTabs(step);
-
     // A stage step always shows a tab, so a bookmark or → lands on a definite place; other steps have none.
     if (step.kind === 'stage' && tab === null) {
-        return <Navigate to={talkPath(step.id, tabs[0])} replace />;
+        return <Navigate to={talkPath(step.id, stepTab(step) ?? undefined)} replace />;
     }
     if (step.kind !== 'stage' && tab !== null) {
         return <Navigate to={talkPath(step.id)} replace />;
     }
 
     const stepIndex = talkSteps.indexOf(step);
-    const tabIndex = tab === null ? -1 : tabs.indexOf(tab);
     const tabLabel = stageTabDefinitions.find((definition) => definition.tab === tab)?.label;
-    const tabPosition = tabIndex === -1 ? '' : ` (${tabIndex + 1} of ${tabs.length})`;
-    const label = `Step ${stepIndex + 1} of ${talkSteps.length}${tabLabel === undefined ? '' : ` · ${tabLabel}${tabPosition}`}`;
+    const label = `Step ${stepIndex + 1} of ${talkSteps.length}${tabLabel === undefined ? '' : ` · ${tabLabel}`}`;
 
     const headerPosition =
         step.stage !== undefined && isPipelineStage(step.stage)
@@ -76,6 +73,14 @@ export function TalkPage() {
                     step={step}
                     tab={tab}
                     onChooseTab={(nextTab) => navigate(talkPath(step.id, nextTab))}
+                    onChooseStage={(nextStage) => {
+                        // The stepper is a way through the talk, not just a stage switch: it moves the
+                        // position, so the caption and the step's preset arrive with the stage.
+                        const stageStep = findStageStep(nextStage);
+                        if (stageStep !== null) {
+                            navigate(talkPath(stageStep.id, stepTab(stageStep) ?? undefined));
+                        }
+                    }}
                 />
             ) : (
                 <TalkContentStep step={step} />
@@ -93,11 +98,12 @@ interface TalkStageStepProps {
     step: TalkStep;
     tab: StageTab;
     onChooseTab: (tab: StageTab) => void;
+    onChooseStage: (stage: PipelineStage) => void;
 }
 
 // The step starts from its golden query and options. The presenter can still change anything live (a toggle,
 // the query); those changes last until the talk moves to another step, which starts fresh.
-function TalkStageStep({ step, tab, onChooseTab }: TalkStageStepProps) {
+function TalkStageStep({ step, tab, onChooseTab, onChooseStage }: TalkStageStepProps) {
     const goldenQueries = useApiData(getGoldenQueries);
     const [editedState, setEditedState] = useState<SearchState | null>(null);
 
@@ -123,6 +129,7 @@ function TalkStageStep({ step, tab, onChooseTab }: TalkStageStepProps) {
             onStateChange={handleStateChange}
             goldenQueries={goldenQueries}
             filterLayout="drawer"
+            onChooseStage={onChooseStage}
             caption={
                 markdown === null ? null : (
                     <TalkCaption

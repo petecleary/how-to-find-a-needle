@@ -15,7 +15,7 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 
 | Path | Holds |
 |---|---|
-| `content/` | `speaker.md`, `talk.json` + `talk/*.md`, `stages/{stage}.md`, `glossary.json` |
+| `content/` | `speaker.md`, `talk.json` + `talk/*.md`, `stages/{stage}.md`, `going-further/{stage}.md`, `glossary.json` |
 | `src/api/schema.d.ts` | **Generated** by `npm run gen:api` while `aspire run` is running (it reads `http://localhost:5377/openapi/v1.json`). Never hand-edit; commit it |
 | `src/api/client.ts` | Small typed `fetch` wrapper: one function per endpoint; errors become `ApiError` with the ProblemDetails |
 | `src/api/answerEvents.ts` | Hand-typed SSE event shapes (OpenAPI can't describe them) |
@@ -38,7 +38,7 @@ Decided in [ADR-0014 § Visual design](../../docs/decisions/0014-web-ui-architec
 - Colours come from theme tokens (CSS variables); no raw hex in components. Both light and dark themes must work.
 - Green and orange fills take dark text; white text only on purple.
 - Shapes: circles for numbers, pills for controls, 18px card radius, 2px borders, flat colour, no gradients.
-- **Stage tabs:** How it works · Results · Answer · Under the hood. Each tab gets the full width; don't put the trace beside the results.
+- **Stage tabs:** How it works · Results · Answer · Under the hood · Going further. Each tab gets the full width; don't put the trace beside the results. An unavailable tab (Answer before Stage 6, Going further on Stage 1) stays visible and disabled with its reason; never hide it, or every other tab moves when the stage changes.
 
 ## Naming conventions
 
@@ -72,6 +72,7 @@ Decided in [ADR-0014 § Visual design](../../docs/decisions/0014-web-ui-architec
 
 - Talk text, stage explanations, glossary entries and speaker details live in `content/`, **never hard-coded in components**.
 - Stage explanation headings are fixed: *What it is · How it works · What to look for · Strength · Failure mode · Try this · Read the decision*.
+- `going-further/{stage}.md` is free-form, unlike a stage explanation. There is **no file for `structured`**: a missing file is what makes the tab unavailable, so absence needs no special case in code. Prose and glossary links only — a discussed topic gets no code, package, endpoint or data ([ADR-0018](../../docs/decisions/0018-scope-and-going-further.md)).
 - Inline glossary terms use `[RRF](term:rrf)`; every `term:` link must resolve to a `glossary.json` entry.
 - ADRs are imported from `docs/decisions/*.md` with `import.meta.glob`; don't copy them into the UI.
 - Content is British English, as in the root CLAUDE.md.
@@ -89,7 +90,7 @@ Trace renderers open with one line: `// RrfTable — shows each item's per-list 
 ## Accessibility and presentation
 
 - Semantic landmarks and visible focus. Badges use text as well as colour.
-- The stepper and the stage tabs are ARIA tablists. Talk mode is fully keyboard-operable: ←/→ walk a stage step's tabs, then the next step; H / R / A / U jump to a tab. Hover cards also open on focus.
+- The stepper and the stage tabs are ARIA tablists. Talk mode is fully keyboard-operable: ←/→ move **one talk step**, landing on that step's tab; H / R / A / U / G jump to a tab, and a letter never changes where → leads. Hover cards also open on focus.
 - Text contrast ≥ 4.5:1 (3:1 for large text) in both themes.
 - Readable on a 1280×720 projector in presentation mode (on by default in talk mode).
 

@@ -337,6 +337,48 @@
     "seeAlso": ["ontology"]
   },
   {
+    "id": "colbert",
+    "term": "Late interaction",
+    "definition": "Embedding every token separately and matching token against token at query time, as ColBERT does. Keeps some of a cross-encoder's precision at closer to a bi-encoder's cost. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["cross-encoder", "re-ranking"]
+  },
+  {
+    "id": "vector-database",
+    "term": "Vector database",
+    "definition": "A store built around approximate nearest-neighbour search, such as Qdrant, Weaviate, Milvus or Pinecone. Earns its place past a few million vectors or at high write rates; below that, keeping vectors beside the rows they describe is simpler. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["pgvector", "hnsw"]
+  },
+  {
+    "id": "reasoner",
+    "term": "Reasoner",
+    "definition": "Software that derives new statements from an OWL ontology: classifying an unlabelled thing, inheriting a parent concept's constraints, or finding a contradiction. More powerful than hand-written rules, and harder to inspect. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["owl", "domain-rule"]
+  },
+  {
+    "id": "graph-database",
+    "term": "Graph database",
+    "definition": "A database that stores relationships as first-class things, such as Neo4j or a triple store queried with SPARQL. Answers questions shaped like a path, where SQL needs a join per hop. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["knowledge-graph", "sparql"]
+  },
+  {
+    "id": "rag-metrics",
+    "term": "RAG metrics",
+    "definition": "Measures for a generated answer rather than a ranking: context recall (did retrieval fetch what was needed), faithfulness (is every claim supported) and answer relevance (does it answer the question asked). Tools such as RAGAS and TruLens usually compute them with a second model. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["golden-query", "rag", "precision"]
+  },
+  {
+    "id": "adaptive-tutoring",
+    "term": "Adaptive tutoring",
+    "definition": "Teaching across a conversation: keeping a model of what the learner knows, checking understanding by asking back, and shaping the next explanation from the answer. This repo's audience setting is the one-turn version. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["pedagogy", "audience"]
+  },
+  {
     "id": "evidence-set",
     "term": "Evidence set",
     "definition": "The bounded list an LLM may use in Stages 6–7: up to 5 compatible products, 3 incompatible ones with their reasons, 2 unknown and 5 unchecked, plus the matched concepts and the rules. The trace shows it in full.",

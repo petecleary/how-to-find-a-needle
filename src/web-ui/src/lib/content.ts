@@ -59,6 +59,31 @@ export function stageExplanationMarkdown(stage: PipelineStage): string | null {
     return stageExplanationFiles[stage] ?? null;
 }
 
+const goingFurtherFiles = import.meta.glob<string>('../../content/going-further/*.md', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+});
+
+/** Each stage's going-further markdown, by the file's name: `{ vector: "Where vector search goes next…" }`. */
+export const goingFurtherFileMarkdown: Readonly<Record<string, string>> = Object.fromEntries(
+    Object.entries(goingFurtherFiles).map(([path, markdown]) => [path.replace(/^.*\/|\.md$/g, ''), markdown]),
+);
+
+/**
+ * Where a stage's technique goes next: the topics the talk discusses but doesn't build (ADR-0018). Free-form,
+ * unlike a stage explanation, because each stage's horizon needs a different shape. `null` when the stage has
+ * no file — Stage 1 has none, and that absence is what makes its tab unavailable.
+ */
+export function goingFurtherMarkdown(stage: PipelineStage): string | null {
+    return goingFurtherFileMarkdown[stage] ?? null;
+}
+
+/** True when a stage has a going-further file, so its tab has something to show. */
+export function hasGoingFurther(stage: PipelineStage): boolean {
+    return goingFurtherMarkdown(stage) !== null;
+}
+
 export type ParsedExplanation = { sections: StageExplanation } | { error: string };
 
 /**
@@ -114,4 +139,9 @@ export function goldenQueryIds(markdown: string): string[] {
 /** True when every explanation file is named after a pipeline stage. */
 export function unknownStageFiles(): string[] {
     return Object.keys(stageExplanationFiles).filter((name) => !isPipelineStage(name));
+}
+
+/** The going-further files that aren't named after a pipeline stage, so a typo can't silently hide a tab. */
+export function unknownGoingFurtherFiles(): string[] {
+    return Object.keys(goingFurtherFileMarkdown).filter((name) => !isPipelineStage(name));
 }

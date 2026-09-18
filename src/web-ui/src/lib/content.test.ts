@@ -6,10 +6,12 @@ import {
     explanationHeadings,
     findGlossaryEntry,
     glossary,
+    goingFurtherFileMarkdown,
     goldenQueryIds,
     parseStageExplanation,
     stageExplanationFiles,
     termLinkIds,
+    unknownGoingFurtherFiles,
     unknownStageFiles,
 } from './content';
 
@@ -55,6 +57,35 @@ describe('stage explanations', () => {
     });
 
     it.each(explanations)('%s.md names only real golden queries', (_, markdown) => {
+        expect(goldenQueryIds(markdown).filter((id) => !goldenQueryIdsInData.has(id))).toEqual([]);
+    });
+});
+
+// The going-further tabs (ADR-0018). Free-form, so there are no fixed headings to check — only that each file
+// belongs to a stage, that Stage 1 has none, and that every link in it resolves.
+describe('going further', () => {
+    const goingFurther = Object.entries(goingFurtherFileMarkdown);
+
+    it('has a file for every stage but the first, and only for pipeline stages', () => {
+        expect(Object.keys(goingFurtherFileMarkdown).sort()).toEqual(
+            [...searchStages].filter((stage) => stage !== 'structured').sort(),
+        );
+        expect(unknownGoingFurtherFiles()).toEqual([]);
+    });
+
+    it.each(goingFurther)('%s.md links only to glossary terms that exist', (_, markdown) => {
+        expect(termLinkIds(markdown).filter((id) => findGlossaryEntry(id) === null)).toEqual([]);
+    });
+
+    it.each(goingFurther)(
+        '%s.md links to at least one decision record, and only real ones',
+        (_, markdown) => {
+            expect(adrLinkIds(markdown).length).toBeGreaterThan(0);
+            expect(adrLinkIds(markdown).filter((id) => !adrFileIds.includes(id))).toEqual([]);
+        },
+    );
+
+    it.each(goingFurther)('%s.md names only real golden queries', (_, markdown) => {
         expect(goldenQueryIds(markdown).filter((id) => !goldenQueryIdsInData.has(id))).toEqual([]);
     });
 });
@@ -109,6 +140,12 @@ describe('glossary', () => {
             'owl',
             'shacl',
             'knowledge-graph',
+            'colbert',
+            'vector-database',
+            'reasoner',
+            'graph-database',
+            'rag-metrics',
+            'adaptive-tutoring',
         ];
 
         expect(required.filter((id) => findGlossaryEntry(id) === null)).toEqual([]);

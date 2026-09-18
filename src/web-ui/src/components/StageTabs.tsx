@@ -1,4 +1,4 @@
-import { BookOpen, List, Settings, Sparkles, type LucideIcon } from 'lucide-react';
+import { BookOpen, List, Settings, Signpost, Sparkles, type LucideIcon } from 'lucide-react';
 import { Tabs as TabsPrimitive } from 'radix-ui';
 import { useEffect, type ReactNode } from 'react';
 import { isTypingTarget } from '@/lib/keyboard';
@@ -7,15 +7,16 @@ import { stageColourClasses, type PipelineStage } from '@/lib/stageGroup';
 import { isTabAvailable, stageTabDefinitions, tabForShortcut } from '@/lib/stageTabs';
 import { cn } from '@/lib/utils';
 
-// StageTabs — a stage split into How it works · Results · Answer · Under the hood, so the presenter can
-// step through a stage or jump to what a question needs (ADR-0014 § Stage screen). H / R / A / U jump to
-// a tab from anywhere on the page, except while typing. Built on Radix Tabs for the ARIA tablist.
+// StageTabs — a stage split into How it works · Results · Answer · Under the hood · Going further, so the
+// presenter can jump to what a question needs (ADR-0014 § Stage screen). H / R / A / U / G jump to a tab from
+// anywhere on the page, except while typing. Built on Radix Tabs for the ARIA tablist.
 
 const tabIcons: Record<StageTab, LucideIcon> = {
     'how-it-works': BookOpen,
     results: List,
     answer: Sparkles,
     'under-the-hood': Settings,
+    'going-further': Signpost,
 };
 
 export interface StageTabsProps {
@@ -68,7 +69,7 @@ export function StageTabs({ stage, tab, onChooseTab, counts, options, panels }: 
         >
             <div className="flex flex-wrap items-end gap-x-4 border-b-2">
                 <TabsPrimitive.List aria-label="Stage sections" className="flex gap-5">
-                    {stageTabDefinitions.map(({ tab: candidate, label, shortcut }) => {
+                    {stageTabDefinitions.map(({ tab: candidate, label, shortcut, unavailableHint }) => {
                         const Icon = tabIcons[candidate];
                         const isAvailable = isTabAvailable(candidate, stage);
                         const count = counts[candidate];
@@ -86,7 +87,9 @@ export function StageTabs({ stage, tab, onChooseTab, counts, options, panels }: 
                             >
                                 <Icon aria-hidden="true" className="size-[18px]" />
                                 {label}
-                                {isAvailable ? null : <span className="text-xs font-normal">Stages 6–7</span>}
+                                {isAvailable || unavailableHint === undefined ? null : (
+                                    <span className="text-xs font-normal">{unavailableHint}</span>
+                                )}
                                 {isAvailable && count !== undefined ? (
                                     <span className="rounded-full bg-muted px-2 text-[13px] font-normal text-muted-foreground">
                                         {count}

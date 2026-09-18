@@ -26,7 +26,7 @@ Area-specific standards (loaded when you work in that folder):
 
 - Follow the roadmap order: Data → Search APIs (stages 1–5) → Frontend → AI stages (6–7) → Finish & publish.
 - When time is short, cut from the bottom of the Must / Should / Could table in the roadmap.
-- **Build only the seven stages.** BGE-M3, chunking, re-ranking, OWL/SHACL/knowledge graphs and RAG evaluation are *discussed* in the talk's going-further step, not built. Agent protocols (MCP, A2A, AG-UI) are out of scope entirely. Don't add code for a discussed topic without an ADR change ([ADR-0018](docs/decisions/0018-scope-and-going-further.md)).
+- **Build only the seven stages.** BGE-M3, chunking, re-ranking, OWL/SHACL/knowledge graphs and RAG evaluation are *discussed* in each stage's "Going further" tab and the closing going-further talk step, not built. Agent protocols (MCP, A2A, AG-UI) are out of scope entirely. Don't add code for a discussed topic without an ADR change ([ADR-0018](docs/decisions/0018-scope-and-going-further.md)).
 - Working ADRs, `architecture.md` and `roadmap.md` live in `docs/adr/` on the `build` branch. The public, learner-facing ADRs are in `docs/decisions/` (same numbers and file names); code comments, content and the UI link to those. Keep both in step when a decision changes.
 - Don't add a package, service or framework the ADRs don't mention. If one is needed, propose an ADR change.
 
@@ -133,7 +133,7 @@ Use these names consistently in code, API, UI, content and tests.
 | Evidence set | The bounded candidates given to the LLM in Stages 6–7 |
 | Audience | `novice`, `enthusiast`, `expert` |
 | Baseline explanation | Stage 7 with `options.applyPedagogy: false`: same facts and audience, plain prompt, no pedagogical structure |
-| Going further | A topic the talk discusses but doesn't build ([ADR-0018](docs/decisions/0018-scope-and-going-further.md)) |
+| Going further | A topic the talk discusses but doesn't build. Each stage has a "Going further" tab (`content/going-further/{stage}.md`, none for Stage 1); the closing talk step carries the topics that belong to no single stage ([ADR-0018](docs/decisions/0018-scope-and-going-further.md)) |
 
 ## Data rules
 

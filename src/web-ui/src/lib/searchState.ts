@@ -6,7 +6,7 @@ import { pipelineStages, type PipelineStage } from './stageGroup';
 // The presenter can bookmark a moment, and the browser's back button undoes a change.
 // Only values that differ from the defaults are written, so a URL shows exactly what was changed.
 
-export const stageTabs = ['how-it-works', 'results', 'answer', 'under-the-hood'] as const;
+export const stageTabs = ['how-it-works', 'results', 'answer', 'under-the-hood', 'going-further'] as const;
 export type StageTab = (typeof stageTabs)[number];
 
 export const audiences = ['novice', 'enthusiast', 'expert'] as const;
@@ -56,7 +56,8 @@ export const resultsPageSize = 50;
 // The defaults match the API's own (SearchOptions.cs), so an unchanged option is never written to the URL.
 export const defaultSearchState: SearchState = {
     stage: 'structured',
-    tab: 'results',
+    // Every stage opens on How it works: the technique is explained before its results are argued about.
+    tab: 'how-it-works',
     query: '',
     goldenQueryId: null,
     targetProductId: null,

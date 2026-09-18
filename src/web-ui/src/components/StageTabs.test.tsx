@@ -8,6 +8,7 @@ const panels = {
     results: <p>Result list</p>,
     answer: <p>Generated answer</p>,
     'under-the-hood': <p>Trace steps</p>,
+    'going-further': <p>Where this goes next</p>,
 };
 
 afterEach(cleanup);
@@ -73,5 +74,37 @@ describe('StageTabs', () => {
 
         expect(screen.getByRole('tab', { name: /Answer/ }).hasAttribute('disabled')).toBe(true);
         expect(onChooseTab).not.toHaveBeenCalled();
+    });
+
+    // A disabled tab keeps its place in the row, so the tabs never move under the presenter's hand.
+    it('disables the Going further tab on Stage 1, and says which stages have it', () => {
+        const onChooseTab = vi.fn();
+        render(
+            <StageTabs
+                stage="structured"
+                tab="results"
+                onChooseTab={onChooseTab}
+                counts={{}}
+                panels={panels}
+            />,
+        );
+
+        fireEvent.keyDown(window, { key: 'g' });
+
+        const tab = screen.getByRole('tab', { name: /Going further/ });
+        expect(tab.hasAttribute('disabled')).toBe(true);
+        expect(tab.textContent).toContain('Stages 2–7');
+        expect(onChooseTab).not.toHaveBeenCalled();
+    });
+
+    it('jumps to Going further with G on a stage that has it', () => {
+        const onChooseTab = vi.fn();
+        render(
+            <StageTabs stage="vector" tab="results" onChooseTab={onChooseTab} counts={{}} panels={panels} />,
+        );
+
+        fireEvent.keyDown(window, { key: 'G' });
+
+        expect(onChooseTab).toHaveBeenCalledWith('going-further');
     });
 });

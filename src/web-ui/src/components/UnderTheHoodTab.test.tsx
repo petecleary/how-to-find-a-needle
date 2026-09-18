@@ -12,10 +12,12 @@ function selectStep(name: RegExp) {
 }
 
 describe('UnderTheHoodTab, GQ-03 on Stage 5', () => {
-    it('shows one chip per step and opens on the last one, the rule checks', () => {
+    it('shows one chip per step and opens on the first one, so the trace reads forwards', () => {
         render(<UnderTheHoodTab response={gq03OntologyResponse} />);
 
-        expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
+        const tabs = screen.getAllByRole('tab');
+
+        expect(tabs.map((tab) => tab.textContent)).toEqual([
             '1 Understand',
             '2 Expand',
             '3 Keyword',
@@ -25,7 +27,20 @@ describe('UnderTheHoodTab, GQ-03 on Stage 5', () => {
             '7 Classify',
             '8 Constrain',
         ]);
-        expect(screen.getByText('chargers → laptops')).not.toBeNull();
+        expect(tabs[0]?.getAttribute('aria-selected')).toBe('true');
+    });
+
+    // Leaving the tab unmounts the panel, so coming back starts at the first step again. Switching stage
+    // while staying on the tab has to reset it too: the chosen step belonged to a different pipeline.
+    it('goes back to the first step when the stage changes', () => {
+        const { rerender } = render(<UnderTheHoodTab response={gq03OntologyResponse} />);
+
+        selectStep(/RRF/);
+        expect(screen.getByText('1/(60+1) + 1/(60+4)')).not.toBeNull();
+
+        rerender(<UnderTheHoodTab response={gq01StructuredResponse} />);
+
+        expect(screen.getAllByRole('tab')[0]?.getAttribute('aria-selected')).toBe('true');
     });
 
     it('draws every step with a purpose-built view, never the JSON fallback', () => {

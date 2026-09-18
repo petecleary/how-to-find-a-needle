@@ -11,6 +11,7 @@ import {
 import { AnswerTab } from '@/components/AnswerTab';
 import { FilterDrawer } from '@/components/FilterDrawer';
 import { FilterPanel } from '@/components/FilterPanel';
+import { GoingFurtherTab } from '@/components/GoingFurtherTab';
 import { HowItWorksTab } from '@/components/HowItWorksTab';
 import { PipelineStepper } from '@/components/PipelineStepper';
 import { ResultsTab } from '@/components/ResultsTab';
@@ -31,7 +32,7 @@ import {
     type SearchState,
     type StageTab,
 } from '@/lib/searchState';
-import { stageLabel, stageNumber } from '@/lib/stageGroup';
+import { stageLabel, stageNumber, type PipelineStage } from '@/lib/stageGroup';
 import { isTabAvailable } from '@/lib/stageTabs';
 
 // Tailwind's `lg` breakpoint: from here the filters fit beside the results; below it they open as a drawer.
@@ -45,6 +46,11 @@ export interface StageScreenProps {
     filterLayout: 'responsive' | 'drawer';
     /** A line above the tabs: the talk step's caption. */
     caption?: ReactNode;
+    /**
+     * What the stepper does. The demo changes the stage in place; talk mode jumps to that stage's step, so the
+     * caption, golden query and preset options change with it. Defaults to changing the stage in place.
+     */
+    onChooseStage?: (stage: PipelineStage) => void;
 }
 
 /**
@@ -58,6 +64,7 @@ export function StageScreen({
     goldenQueries,
     filterLayout,
     caption,
+    onChooseStage,
 }: StageScreenProps) {
     const devices = useApiData(getDemoDevices);
     const brands = useApiData(getBrands);
@@ -74,7 +81,9 @@ export function StageScreen({
 
     // Every pipeline stage now has an endpoint, so the stage in the state is always one the API serves.
     const stage: SearchStage = state.stage;
-    const tab: StageTab = isTabAvailable(state.tab, stage) ? state.tab : 'results';
+    // Switching to a stage that lacks the open tab (Answer, or Going further on Stage 1) falls back to the
+    // one tab every stage has, rather than leaving an empty panel.
+    const tab: StageTab = isTabAvailable(state.tab, stage) ? state.tab : 'how-it-works';
     const request = useMemo(() => toSearchRequest(state), [state]);
     // The results and the answer are two requests with the same body, sent together: results never wait for the LLM.
     const search = usePipelineSearch(stage, request);
@@ -163,7 +172,10 @@ export function StageScreen({
                         onChooseDevice={(productId) => updateInputs({ targetProductId: productId })}
                         onToggleFilters={handleToggleFilters}
                     />
-                    <PipelineStepper stage={stage} onChooseStage={(next) => update({ stage: next })} />
+                    <PipelineStepper
+                        stage={stage}
+                        onChooseStage={onChooseStage ?? ((next) => update({ stage: next }))}
+                    />
                     {caption}
                     <StageTabs
                         stage={stage}
@@ -214,6 +226,7 @@ export function StageScreen({
                                     )}
                                 </SearchOutcome>
                             ),
+                            'going-further': <GoingFurtherTab stage={stage} />,
                         }}
                     />
                 </main>

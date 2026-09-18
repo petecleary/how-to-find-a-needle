@@ -36,7 +36,7 @@ builder.AddViteApp("web-ui", "../web-ui")
 | Route | Page | Content |
 |---|---|---|
 | `/` | **Home** | Speaker details (from `speaker.md`), talk title and abstract, the thesis, the triad (Search → Ontology → Pedagogy), buttons: *Start the talk* and *Explore the demo* |
-| `/talk/:step/:tab?` | **Talk mode** | A linear sequence that replaces slides, driven by ←/→. Intro and summary steps are full-width content. **Stage steps show the live stage screen** with a preset golden query and preset options (e.g. Stage 5 toggles); → steps through the stage's tabs before moving to the next step |
+| `/talk/:step/:tab?` | **Talk mode** | A linear sequence that replaces slides, driven by ←/→, **one position per step**. Intro and summary steps are full-width content and can sit anywhere in the order. **Stage steps show the live stage screen** with a preset golden query and preset options (e.g. Stage 5 toggles), landing on the step's `tab`; the letter keys move between tabs within the step |
 | `/demo` | **Demo** | The free-exploration screen: the same stage screen, with a collapsible filter sidebar and every tab available |
 | `/glossary` | **Glossary** | Searchable terms and acronyms, grouped by topic |
 | `/decisions`, `/decisions/:id` | **Decisions** | The ADR index and each ADR, rendered |
@@ -48,11 +48,12 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 | File | Purpose |
 |---|---|
 | `speaker.md` | Name, title, bio, email, LinkedIn URL, photo path and LinkedIn QR code image path. **Placeholder values until Pete supplies them** |
-| `talk.json` + `talk/*.md` | Ordered talk steps: `{ id, kind: intro \| stage \| summary, title, file, stage?, goldenQuery?, options?, tabs? }`. `tabs` is the order → walks through a stage step's tabs; it defaults to `how-it-works`, `results`, `under-the-hood` (with `answer` after `results` in Stages 6–7). A JSON manifest instead of front-matter avoids a parser dependency |
+| `talk.json` + `talk/*.md` | Ordered talk steps: `{ id, kind: intro \| stage \| summary, title, file, stage?, goldenQuery?, options?, tab? }`. `tab` is the single tab a stage step lands on; it defaults to `how-it-works`, so the technique is explained before its results are argued about. A JSON manifest instead of front-matter avoids a parser dependency |
 | `stages/{stage}.md` | One explanation per stage with fixed headings: *What it is · How it works · What to look for · Strength · Failure mode · Try this · Read the decision* |
+| `going-further/{stage}.md` | Free-form: where that stage's technique goes next. No file for `structured`, and a missing file is what makes the tab unavailable ([ADR-0018](0018-scope-and-going-further.md)) |
 | `glossary.json` | `[{ id, term, acronym?, definition, topic, seeAlso?, adr? }]`, e.g. BM25, FTS, tsvector, embedding, cosine distance, HNSW, RRF, dense/sparse, SKOS, RAG, ONNX, plus the going-further terms (chunking, re-ranking, cross-encoder, learned sparse, OWL, SHACL, knowledge graph) |
 
-- **A "Going further" talk step** follows the last stage step and comes before the summary. It is a `summary`-kind step with no live demo: one table of the topics the talk discusses but doesn't build, grouped by where they sit in the pipeline ([ADR-0018](0018-scope-and-going-further.md)).
+- **A "Going further" talk step** follows the last stage step and comes before the summary. It is a `summary`-kind step with no live demo: one table of the topics that sit *around* the pipeline rather than inside one stage of it — before-retrieval work, telemetry, A/B testing, index freshness, personalisation and permissions. Each stage's own topics live in that stage's going-further tab ([ADR-0018](0018-scope-and-going-further.md)).
 - **Inline terms:** in any markdown content, `[RRF](term:rrf)` renders as an underlined term with a hover card showing its definition and a link to the glossary. A custom `a` renderer in `react-markdown` does this, with no remark plugin. Trace notes from the API may use the same syntax.
 - **ADRs are read straight from the repo at build time.** `import.meta.glob` loads `docs/adr/*.md` as raw text (`server.fs.allow` includes the repo root), and links between ADRs are rewritten to `/decisions/:id`. There's no copy to drift and no API endpoint. Since Phase 5 the glob reads the public learner ADRs in `docs/decisions/`.
 
@@ -78,7 +79,7 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 
 ### Stage screen: layout and components (architecture §5)
 
-**Not everything is on screen at once.** Each stage splits into four tabs, so the presenter can step through a stage in the talk, or jump to the tab a question needs. Pictures: [docs/design](../design/README.md).
+**Not everything is on screen at once.** Each stage splits into five tabs, so the presenter can jump to the tab a question needs. Pictures: [docs/design](../design/README.md).
 
 | Tab | Shows | Key |
 |---|---|---|
@@ -86,6 +87,9 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 | **Results** | The candidates, with signal, concept and compatibility badges | R |
 | **Answer** | Stages 6–7 only (disabled, with a "Stages 6–7" hint, before that): the answer, the streamed explanation and the evidence set | A |
 | **Under the hood** | The trace: one chip per trace step as a flow, and the selected step's renderer | U |
+| **Going further** | Stages 2–7 (disabled, with a "Not for Stage 1" hint, on Stage 1): `content/going-further/{stage}.md` — where this technique goes next, in prose and glossary links ([ADR-0018](0018-scope-and-going-further.md)) | G |
+
+An unavailable tab stays visible and disabled with its reason beside it, rather than disappearing: a tab that comes and goes as the stage changes moves every other tab under the presenter's hand.
 
 ```text
 Demo / talk stage step
@@ -110,7 +114,8 @@ Demo / talk stage step
                         · ClassificationTable · RuleChecks · PromptView · JSON fallback
 ```
 
-- **Keyboard.** In talk mode ←/→ move through the talk: through a stage step's `tabs`, then to the next step. H, R, A and U jump to a tab in both modes. In the demo, ←/→ switch stages from the focused stepper (standard ARIA tablist behaviour).
+- **Keyboard.** In talk mode ←/→ move **one step** at a time, landing on that step's `tab` (How it works unless the step says otherwise). H, R, A, U and G jump to a tab in both modes, and a letter never changes where → leads. In the demo, ←/→ switch stages from the focused stepper (standard ARIA tablist behaviour).
+- **The stepper is a way through the talk.** In talk mode, choosing a stage moves the talk to that stage's step, so its caption, golden query and preset options arrive with it — not just the stage. In the demo it changes the stage in place, keeping the query and filters.
 - **Honest labels on flagged items.** A flagged card shows "#2 before rules", from `signals.fusedRank`: the rank from Stage 5's own fusion, before the rules moved the item. It is not the standalone Hybrid stage's rank (the design mock-up's "was #2 in Hybrid" wording is replaced for that reason).
 
 - **Trace renderers** map the known `details` keys to purpose-built views, falling back to pretty-printed JSON ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).

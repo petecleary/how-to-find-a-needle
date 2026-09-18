@@ -4,10 +4,11 @@ import { searchStages, type GoldenQuery } from '@/api/client';
 import { adrLinkIds, findGlossaryEntry, goldenQueryIds, termLinkIds } from './content';
 import { findDecision } from './decisions';
 import {
+    isStageTab,
     nextPosition,
     positionPath,
     previousPosition,
-    stepTabs,
+    stepTab,
     talkFileMarkdown,
     talkStartPath,
     talkStepState,
@@ -27,7 +28,7 @@ const steps: TalkStep[] = [
         title: 'RAG',
         file: 'talk/r.md',
         stage: 'rag',
-        tabs: ['results', 'answer'],
+        tab: 'answer',
     },
     { id: 'summary', kind: 'summary', title: 'Summary', file: 'talk/summary.md' },
 ];
@@ -41,38 +42,52 @@ function walk(from: TalkPosition, step: typeof nextPosition): string[] {
 }
 
 describe('talk navigation', () => {
-    it("→ walks each stage step's tabs, then moves to the next step, and stops at the end", () => {
+    it('→ visits each step once, landing on its tab, and stops at the end', () => {
         expect(walk({ stepId: 'intro', tab: null }, nextPosition)).toEqual([
             '/talk/intro',
             '/talk/stage-keyword/how-it-works',
-            '/talk/stage-keyword/results',
-            '/talk/stage-keyword/under-the-hood',
-            '/talk/stage-rag/results',
             '/talk/stage-rag/answer',
             '/talk/summary',
         ]);
     });
 
-    it('← walks the same positions backwards, entering a stage step on its last tab', () => {
+    it('← walks exactly the same positions backwards', () => {
         expect(walk({ stepId: 'summary', tab: null }, previousPosition)).toEqual(
             walk({ stepId: 'intro', tab: null }, nextPosition).reverse(),
         );
     });
 
-    it('moves on from a tab the step does not list, and ← returns to its first tab', () => {
-        const jumpedTo: TalkPosition = { stepId: 'stage-rag', tab: 'under-the-hood' };
+    it('goes to the next step from whichever tab the presenter jumped to', () => {
+        const jumpedTo: TalkPosition = { stepId: 'stage-rag', tab: 'going-further' };
 
         expect(nextPosition(steps, jumpedTo)).toEqual({ stepId: 'summary', tab: null });
-        expect(previousPosition(steps, jumpedTo)).toEqual({ stepId: 'stage-rag', tab: 'results' });
+        expect(previousPosition(steps, jumpedTo)).toEqual({ stepId: 'stage-keyword', tab: 'how-it-works' });
     });
 
-    it('adds Answer after Results on Stages 6–7 by default', () => {
-        expect(stepTabs({ id: 'p', kind: 'stage', title: 'P', file: 'p.md', stage: 'pedagogy' })).toEqual([
+    it('lands on How it works unless the step names another tab', () => {
+        expect(stepTab({ id: 'k', kind: 'stage', title: 'K', file: 'k.md', stage: 'keyword' })).toBe(
             'how-it-works',
-            'results',
-            'answer',
-            'under-the-hood',
-        ]);
+        );
+        expect(stepTab({ id: 'p', kind: 'stage', title: 'P', file: 'p.md', stage: 'pedagogy' })).toBe(
+            'how-it-works',
+        );
+    });
+
+    it('falls back when a step names a tab its stage does not have', () => {
+        const step: TalkStep = {
+            id: 's',
+            kind: 'stage',
+            title: 'S',
+            file: 's.md',
+            stage: 'structured',
+            tab: 'going-further',
+        };
+
+        expect(stepTab(step)).toBe('how-it-works');
+    });
+
+    it('gives a content step no tab', () => {
+        expect(stepTab({ id: 'intro', kind: 'intro', title: 'Intro', file: 'talk/intro.md' })).toBeNull();
     });
 
     it('starts the talk on its first step', () => {
@@ -126,29 +141,24 @@ describe('content/talk.json', () => {
         ).toEqual([]);
     });
 
-    it('walks Stages 1–7 in order, each with a golden query the API serves', () => {
+    it('walks Stages 1–7 in order, one step each, with a golden query the API serves', () => {
         const stageSteps = talkSteps.filter((step) => step.kind === 'stage');
-        // Stage 7 takes three steps in a row (baseline → pedagogy → another audience, ADR-0017), so repeats collapse.
-        const stagesInOrder = stageSteps
-            .map((step) => step.stage)
-            .filter((stage, index, stages) => index === 0 || stage !== stages[index - 1]);
 
-        expect(stagesInOrder).toEqual([...searchStages]);
+        expect(stageSteps.map((step) => step.stage)).toEqual([...searchStages]);
         expect(stageSteps.filter((step) => !goldenQueryIdsInData.has(step.goldenQuery ?? ''))).toEqual([]);
     });
 
-    it('lists only tabs that exist and are available on the step’s stage', () => {
-        const invalid = talkSteps.flatMap((step) =>
-            (step.tabs ?? []).filter(
-                (tab) =>
+    it('names only tabs that exist and are available on the step’s stage', () => {
+        const invalid = talkSteps.filter(
+            (step) =>
+                step.tab !== undefined &&
+                (!isStageTab(step.tab) ||
                     step.stage === undefined ||
                     !isPipelineStage(step.stage) ||
-                    !stepTabs(step).some((known) => known === tab) ||
-                    !isTabAvailable(stepTabs(step).find((known) => known === tab) ?? 'answer', step.stage),
-            ),
+                    !isTabAvailable(step.tab, step.stage)),
         );
 
-        expect(invalid).toEqual([]);
+        expect(invalid.map((step) => step.id)).toEqual([]);
     });
 
     it('opens the Summary after Going further, as ADR-0018 orders them', () => {

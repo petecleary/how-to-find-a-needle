@@ -56,34 +56,13 @@
     "goldenQuery": "GQ-03"
   },
   {
-    "id": "stage-pedagogy-baseline",
-    "kind": "stage",
-    "title": "Stage 7 · Pedagogy: the baseline",
-    "file": "talk/stage-pedagogy-baseline.md",
-    "stage": "pedagogy",
-    "goldenQuery": "GQ-03",
-    "options": { "audience": "novice", "applyPedagogy": false },
-    "tabs": ["how-it-works", "answer", "under-the-hood"]
-  },
-  {
     "id": "stage-pedagogy",
     "kind": "stage",
     "title": "Stage 7 · Pedagogy",
     "file": "talk/stage-pedagogy.md",
     "stage": "pedagogy",
     "goldenQuery": "GQ-03",
-    "options": { "audience": "novice", "applyPedagogy": true },
-    "tabs": ["answer", "under-the-hood"]
-  },
-  {
-    "id": "stage-pedagogy-audience",
-    "kind": "stage",
-    "title": "Stage 7 · Pedagogy for an expert",
-    "file": "talk/stage-pedagogy-audience.md",
-    "stage": "pedagogy",
-    "goldenQuery": "GQ-03",
-    "options": { "audience": "expert", "applyPedagogy": true },
-    "tabs": ["answer"]
+    "options": { "audience": "novice", "applyPedagogy": false }
   },
   { "id": "going-further", "kind": "summary", "title": "Going further", "file": "talk/going-further.md" },
   { "id": "summary", "kind": "summary", "title": "Summary", "file": "talk/summary.md" }

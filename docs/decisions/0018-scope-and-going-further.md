@@ -31,25 +31,37 @@ This is a 30-minute talk, built in four weeks. Search has far more techniques th
 | Tier | What it gets |
 |---|---|
 | **Built** | Code, data, tests, a stage explanation and an ADR |
-| **Discussed** | One row in the talk's "Going further" step, a glossary entry, and at most a line in a stage explanation. **No code, packages, endpoints or data** |
+| **Discussed** | A section in its stage's "Going further" tab, a glossary entry, and a row on the closing "Going further" page when it belongs to no single stage. **No code, packages, endpoints or data** |
 | **Out of scope** | Not mentioned |
 
-### Discussed, not built: the "Going further" step
+### Discussed, not built: each stage's "Going further" tab
 
-| Where in the pipeline | Topic | Why a developer meets it |
+A discussed topic belongs where the question about it gets asked. Someone asks about chunking during Stage 3, not twenty minutes later, so each stage carries its own going-further tab: prose and glossary links, no demo. Stage 1 has none — there is nothing beyond SQL that earns a panel.
+
+| Stage | Topics |
+|---|---|
+| 2 Keyword | True BM25 against `ts_rank_cd`; how other stores search text (Lucene, SQL Server, MongoDB, `LIKE` and regex); analysers, stemming and language detection |
+| 3 Vector | Choosing an embedding model; chunking: fixed-size, sliding window, structure- and layout-aware; multilingual and learned-sparse models such as BGE-M3; the vector landscape — dedicated databases, index choices, filtering at scale |
+| 4 Hybrid | Re-ranking with cross-encoders and late interaction (ColBERT); normalising scores instead of fusing ranks; off-the-shelf hybrid search |
+| 5 Ontology | OWL and reasoners; SHACL; knowledge graphs and graph databases |
+| 6 RAG | RAG metrics: context recall, faithfulness, answer relevance; verifying citations; letting a model choose what to retrieve |
+| 7 Pedagogy | Adaptive, multi-turn tutoring; carrying a learner model between turns; judging an explanation |
+
+### Discussed, not built: the closing "Going further" page
+
+The closing page carries what sits *around* the pipeline rather than inside one stage of it.
+
+| Where | Topic | Why a developer meets it |
 |---|---|---|
 | Before retrieval | Query understanding and intent routing | Conversational queries carry noise and several intents; our label matcher is the simplest version |
 | Before retrieval | Language detection | Choose language-specific analysers or labels before searching |
 | Before retrieval | LLM query rewriting | Turns an exploratory question into concrete searches: more recall, less inspectable |
-| Retrieval | Chunking: fixed-size, sliding window, structure- and layout-aware | Manuals and PDFs aren't product rows; how you split them decides what can be found |
-| Retrieval | Multilingual and learned-sparse models such as BGE-M3 | Dense and sparse vectors in one pass; full-sentence cross-language search |
-| Retrieval | The vector landscape | Dedicated vector databases, index choices, filtering at scale: where pgvector stops being enough |
-| Ranking | Re-ranking with cross-encoders and late interaction (ColBERT) | Precision on the top candidates before they reach a person or an LLM |
-| Knowledge | OWL and reasoners, SHACL, knowledge graphs and graph databases | Formal inference, validating instance data, multi-hop relationships |
-| Evaluation | RAG metrics: context recall, faithfulness, answer relevance | Measuring answers as well as rankings; golden queries are the small version |
-| Explanation | Adaptive, multi-turn tutoring | Teaching over a conversation instead of one answer |
+| Watching it work | Search telemetry: zero-result, click and abandonment logs | The queries that failed are the ones no golden query thought to ask |
+| Proving a change | A/B tests and interleaving | Golden queries say a change is correct; only real traffic says it helped |
+| Keeping it fresh | Indexing pipelines, re-embedding, ontology versioning | Every structure the talk builds has to be rebuilt when the model or the catalogue moves |
+| Who is asking | Personalisation and permission-aware search | Relevance depends on the person, and results must never include what they may not see |
 
-In talk mode this step comes after Stage 7 and before the summary. It is a map, not a second talk: one table, a sentence per row.
+In talk mode this page comes after Stage 7 and before the summary. It is a map, not a second talk: one table, a sentence per row.
 
 ### Out of scope: agent protocols
 
@@ -59,6 +71,8 @@ MCP, A2A and AG-UI standardise how agents, tools and user interfaces talk to eac
 
 - The stepper shows seven stages with no gap, and the repository has one embedding model.
 - Learners get a map of the adjacent techniques without a second codebase to read.
+- A question from the floor during a stage can be answered on the stage's own screen, with the topic named and defined, in the time it takes to press one key.
+- The going-further tabs are prose and glossary links only, so they cost no request and can't drift from the demo.
 - Anyone promoting a discussed topic to "built" should write a new ADR first.
 
 ## Alternatives considered
@@ -69,6 +83,8 @@ MCP, A2A and AG-UI standardise how agents, tools and user interfaces talk to eac
 | A cross-encoder re-ranking stage | Another model, improving relevance, which Stage 4 already teaches |
 | Include agent protocols in the going-further step | Off-thesis; spends talk time on integration standards rather than search, structure or explanation |
 | No going-further step | Learners leave without knowing where the techniques they didn't see fit |
+| One flat going-further table, after Stage 7 | A question asked during Stage 3 can't be answered by a page that comes twenty minutes later |
+| A going-further tab on every stage, Stage 1 included | Padding. Nothing beyond SQL earns a panel, and an empty tab teaches that the tab is empty |
 | A separate "Taxonomy" stage before "Ontology" | A stage split only for framing; SKOS-first framing inside Stage 5 does the same |
 
 ## What to take away

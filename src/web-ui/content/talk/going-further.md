@@ -1,14 +1,11 @@
-What the talk discusses but doesn't build, and where each topic sits in the pipeline.
+Each stage's own **Going further** tab holds where that technique goes next. These are the ones that belong to no single stage: the work that sits around the pipeline rather than inside it.
 
-| Where            | Topic                                                                             | Why a developer meets it                                                                            |
-| ---------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Before retrieval | Query understanding and intent routing                                            | Conversational queries carry noise and several intents; routing them first stops irrelevant matches |
-| Before retrieval | Language detection                                                                | Choosing language-specific analysers or labels before searching                                     |
-| Before retrieval | LLM query rewriting                                                               | Turning an exploratory question into concrete searches: more recall, less inspectable               |
-| Retrieval        | [Chunking](term:chunking)                                                         | Manuals and PDFs aren't product rows; how you split them decides what can be found                  |
-| Retrieval        | [Learned sparse](term:learned-sparse) and multilingual models such as BGE-M3      | Dense and sparse vectors in one pass, and full-sentence cross-language search                       |
-| Retrieval        | The vector landscape                                                              | Dedicated vector databases, index choices, and filtering at scale                                   |
-| Ranking          | [Re-ranking](term:re-ranking) with [cross-encoders](term:cross-encoder)           | Precision on the top candidates before they reach a user or an LLM                                  |
-| Knowledge        | [OWL](term:owl), [SHACL](term:shacl) and [knowledge graphs](term:knowledge-graph) | Formal inference, validating data, and multi-hop relationships                                      |
-| Evaluation       | RAG metrics                                                                       | Measuring answers (faithfulness, context recall) as well as rankings                                |
-| Explanation      | Adaptive, multi-turn tutoring                                                     | Teaching over a conversation instead of in one answer                                               |
+| Where            | Topic                                                 | Why a developer meets it                                                                                |
+| ---------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Before retrieval | Query understanding and intent routing                | Conversational queries carry noise and several intents; Stage 5's label matcher is the simplest version |
+| Before retrieval | Language detection                                    | Choosing the analyser or the labels to search with, before searching                                    |
+| Before retrieval | LLM query rewriting                                   | Turning an exploratory question into concrete searches: more recall, less inspectable                   |
+| Watching it work | Zero-result, click and abandonment logs               | The queries that failed are the ones no golden query thought to ask                                     |
+| Proving a change | A/B tests and interleaving                            | Golden queries say a change is correct; only real traffic says it helped                                |
+| Keeping it fresh | Indexing pipelines, re-embedding, ontology versioning | Every structure built today has to be rebuilt when the model or the catalogue moves                     |
+| Who is asking    | Personalisation and permission-aware search           | Relevance depends on the person — and results must never include what they aren't allowed to see        |

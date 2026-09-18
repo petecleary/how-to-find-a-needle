@@ -1,1 +1,1 @@
-Same facts, same audience, same words; only the prompt changes. [Pedagogy](term:pedagogy) turns them into a decision, its concepts, and the [near miss](term:near-miss) as a counter-example.
+A fair first prompt: the same facts and words, no teaching design. This is the [baseline explanation](term:baseline-explanation) — now turn **Apply pedagogy** on, then change the [audience](term:audience) to expert. Only the prompt changes; the facts, the products and the reasons stay the same.

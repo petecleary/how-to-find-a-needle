@@ -22,10 +22,17 @@ export interface UnderTheHoodTabProps {
 export function UnderTheHoodTab({ response, answerTrace = [], isGenerating = false }: UnderTheHoodTabProps) {
     // The results' steps, then the answer's: the pipeline in the order it ran.
     const steps = [...response.debugTrace.steps, ...answerTrace];
-    const [chosenIndex, setChosenIndex] = useState<number | null>(null);
 
-    // It opens on the last step: that is where the stage's own technique runs, after any shared retrieval.
-    const selectedIndex = chosenIndex !== null && chosenIndex < steps.length ? chosenIndex : steps.length - 1;
+    // The shape of this trace, which is the stage's pipeline. It changes when the stage does, and not when the
+    // same stage runs a different query.
+    const traceShape = steps.map((traceStep) => traceStep.title).join(' → ');
+    const [chosen, setChosen] = useState<{ traceShape: string; index: number } | null>(null);
+
+    // It opens on the first step and the presenter walks forward, so the trace is read as the story of how the
+    // results were made. A choice made against a different pipeline means nothing, so changing stage starts
+    // again at the beginning; re-running the same stage with a new query keeps the step being compared.
+    const selectedIndex =
+        chosen !== null && chosen.traceShape === traceShape && chosen.index < steps.length ? chosen.index : 0;
     const step = steps[selectedIndex];
 
     if (step === undefined) {
@@ -39,7 +46,7 @@ export function UnderTheHoodTab({ response, answerTrace = [], isGenerating = fal
     return (
         <TabsPrimitive.Root
             value={String(selectedIndex)}
-            onValueChange={(value) => setChosenIndex(Number(value))}
+            onValueChange={(value) => setChosen({ traceShape, index: Number(value) })}
             className="flex flex-col gap-3"
         >
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">

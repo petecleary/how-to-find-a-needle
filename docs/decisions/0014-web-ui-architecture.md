@@ -25,17 +25,18 @@ The frontend has to be as readable as the backend: no black-box component librar
 | Route | Page |
 |---|---|
 | `/` | **Home:** speaker, talk title, the thesis and the triad (Search → Ontology → Pedagogy) |
-| `/talk/:step/:tab?` | **Talk mode:** a linear sequence driven by ← and →. Stage steps show the live stage screen with a golden query and preset options |
+| `/talk/:step/:tab?` | **Talk mode:** a linear sequence driven by ← and →, one position per step. Stage steps show the live stage screen with a golden query and preset options |
 | `/demo` | **Demo:** the same stage screen, with a filter sidebar and every tab |
 | `/glossary` | **Glossary:** searchable terms and acronyms |
 | `/decisions`, `/decisions/:id` | **Decisions:** these records, rendered |
 
 ### Content is markdown, not React
 
-`src/web-ui/content/` holds `talk.json` and `talk/*.md` (the talk steps), `stages/*.md` (one explanation per stage, with fixed headings: *What it is · How it works · What to look for · Strength · Failure mode · Try this · Read the decision*), `glossary.json` and `speaker.md`.
+`src/web-ui/content/` holds `talk.json` and `talk/*.md` (the talk steps), `stages/*.md` (one explanation per stage, with fixed headings: *What it is · How it works · What to look for · Strength · Failure mode · Try this · Read the decision*), `going-further/*.md`, `glossary.json` and `speaker.md`.
 
 - **Inline glossary terms:** `[RRF](term:rrf)` renders as an underlined term with a hover card, through a custom link renderer, with no plugin.
-- **A "Going further" step** after Stage 7 maps the topics the talk discusses but doesn't build ([ADR-0018](0018-scope-and-going-further.md)).
+- **`going-further/{stage}.md` is free-form**, unlike a stage explanation: each stage's horizon needs a different shape. There is no file for `structured`, and a missing file is what makes the tab unavailable, so absence needs no special case in code.
+- **A "Going further" step** after Stage 7 maps the topics that sit around the pipeline rather than inside one stage of it ([ADR-0018](0018-scope-and-going-further.md)).
 - **These decisions are read from `docs/decisions/` at build time** with `import.meta.glob`. Links between records become links between pages. There is no copy to drift and no API endpoint.
 
 ### Data flow
@@ -51,7 +52,7 @@ The frontend has to be as readable as the backend: no black-box component librar
 
 ### The stage screen
 
-Each stage has four tabs, so the presenter controls what the audience looks at, and each view gets the full width:
+Each stage has five tabs, so the presenter controls what the audience looks at, and each view gets the full width:
 
 | Tab | Shows | Key |
 |---|---|---|
@@ -59,9 +60,21 @@ Each stage has four tabs, so the presenter controls what the audience looks at, 
 | **Results** | Candidates with rank, concept and compatibility badges. Stage 5 groups them: in concept, out of concept (collapsed, "kept, moved down"), and a **Flagged** column showing every check with *has* and *needs* values | R |
 | **Answer** | Stages 6–7: the streamed answer with product chips, the explanation, and exactly the evidence the model was given | A |
 | **Under the hood** | The trace as a flow of step chips, and the selected step in a purpose-built view (SQL, tsquery, distances, RRF table, concepts, rule checks, prompts), with JSON as the fallback | U |
+| **Going further** | Stages 2–7: where this technique goes next, in prose and glossary links ([ADR-0018](0018-scope-and-going-further.md)) | G |
 
+- **Answer and Going further are conditional**, and an unavailable tab stays visible and disabled with the reason beside it, rather than disappearing. A tab that comes and goes as the stage changes moves every other tab under the presenter's hand.
 - **Filters come from the ontology:** categories from `GET /api/taxonomy`, spec values from `GET /api/vocabularies`. Nothing is hard-coded, so a Turtle edit appears in the filters after a restart.
 - **Honest labels:** a flagged card says "#2 before rules", Stage 5's own fused rank, not the standalone hybrid stage's rank.
+
+### Talk mode: one position per step
+
+`content/talk.json` lists the steps in order. **← and → move one step**, and a stage step declares the single `tab` it lands on; the letter keys move between tabs within a step. A talk is a sequence of arguments, not of panels, so the arrow keys should change the argument. Tab-by-tab arrows made the presenter count keypresses to reach the next stage, and pressing a letter left the count wrong.
+
+- **Each stage is one position**, seeded with its golden query and options. Stage 7 lands on its baseline, and the presenter flips **Apply pedagogy** and then the audience live: fewer positions, and the audience watches one thing change on screen rather than between screens.
+- **Every stage opens on How it works**, in the demo as well as the talk: the technique is explained before its results are argued about. A step can name another tab, and the letter keys are always a keypress away.
+- **The stepper moves the talk.** Choosing a stage in talk mode goes to that stage's step, so its caption, golden query and preset options arrive with the stage. In the demo it changes the stage in place, keeping the query and the filters — that is the demo's whole argument: same input, switchable technique.
+- **Content steps** (`intro` and `summary` kinds) are full-width markdown with no demo. They can sit anywhere in the order, not only at the ends, so a turn in the argument can have a page of its own.
+- Changes the presenter makes during a step (a toggle, the query) last until the talk moves on; the next step starts from its own preset.
 
 ### Visual design
 
@@ -74,7 +87,7 @@ Each stage has four tabs, so the presenter controls what the audience looks at, 
 ### Quality bar
 
 - `npm run typecheck`, `lint` and `build` must pass; Prettier formats everything.
-- Accessibility: landmarks and visible focus, text as well as colour on badges, ARIA tablists for the stepper and tabs, a fully keyboard-driven talk, text contrast of at least 4.5:1 in both themes.
+- Accessibility: landmarks and visible focus, text as well as colour on badges, ARIA tablists for the stepper and tabs, a fully keyboard-driven talk (← and → move between steps; H, R, A, U and G jump to a tab), text contrast of at least 4.5:1 in both themes.
 - **Vitest** tests the hooks, trace-renderer choice, talk navigation, Stage 5 grouping and **content integrity**: every talk file exists, every golden query and glossary term resolves, and no link between these records is broken. Golden-query behaviour is tested against the real API, not in the browser.
 
 ## Consequences
@@ -96,6 +109,8 @@ Each stage has four tabs, so the presenter controls what the audience looks at, 
 | TanStack Query | Excellent, but caching and retries hide the request-per-stage behaviour we want visible |
 | `EventSource` or SignalR for the answer stream | `EventSource` can't POST; SignalR is heavy for a one-way stream |
 | Everything on one screen | Tried in the design mock-ups: at 1280×720 the trace text fell below back-row size |
+| ← and → walking each step's tabs before moving on | Twenty-nine positions to reach eleven arguments, and one letter key left the presenter's count wrong |
+| Hiding a tab the stage doesn't have | Every other tab shifts under the presenter's hand when the stage changes |
 | Google Fonts `<link>` | The talk would break without venue internet |
 | Orange for Incompatible | Reads as "Pedagogy"; status and brand colours stay separate |
 

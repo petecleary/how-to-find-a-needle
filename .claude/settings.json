@@ -21,7 +21,9 @@
       "Bash(curl -sk http://localhost:60886/health -w \"\\\\nHTTP %{http_code}\\\\n\")",
       "Bash(curl -sk https://localhost:60886/health -w \"\\\\nHTTP %{http_code}\\\\n\")",
       "Bash(curl -sk http://localhost:60887/health -w \"\\\\nHTTP %{http_code}\\\\n\")",
-      "Read(//Users/petecleary/Developer/teaching/how-to-find-a-needle-phase5/src/PI.SearchApi/Pipeline/Ontology/**)"
+      "Read(//Users/petecleary/Developer/teaching/how-to-find-a-needle-phase5/src/PI.SearchApi/Pipeline/Ontology/**)",
+      "Bash(cd /Users/petecleary/Developer/teaching/how-to-find-a-needle/src/web-ui && ls node_modules/.bin | grep -iE \"playwright|puppeteer\" ; ls node_modules | grep -iE \"^playwright|^puppeteer\" ; echo \"---\"; ls /Applications | grep -i chrom)",
+      "Read(//Applications/**)"
     ],
     "additionalDirectories": [
       "/Users/petecleary/Developer/teaching/how-to-find-a-needle-phase5/docs/adr"

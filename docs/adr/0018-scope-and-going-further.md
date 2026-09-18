@@ -1,8 +1,8 @@
 # ADR-0018: Scope — seven stages, what the talk discusses, and what it leaves out
 
 - **Status:** Proposed
-- **Date:** 2026-09-14
-- **Related:** ADR-0001, ADR-0003, ADR-0004, ADR-0006, ADR-0010, ADR-0011, ADR-0012, ADR-0013, ADR-0014, ADR-0016, ADR-0017; roadmap Phases 0–5
+- **Date:** 2026-09-14 (amended 2026-09-18: a going-further tab per stage, and the closing step keeps only the cross-cutting topics, agreed with Pete)
+- **Related:** ADR-0001, ADR-0003, ADR-0004, ADR-0005, ADR-0006, ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0013, ADR-0014, ADR-0016, ADR-0017; roadmap Phases 0–5
 
 ## Context
 
@@ -45,25 +45,35 @@ There are also many adjacent topics a developer will meet next: chunking, re-ran
   - The audience picker sits in the search bar ([ADR-0014](0014-web-ui-architecture.md)).
   - Stage 7 moves from **Should** to **Must** in the roadmap.
 
-### 3. Discussed, not built: the "Going further" step
+### 3. Discussed, not built: a "Going further" tab per stage, and a closing page
 
-Topics fall into three tiers: **built**, **discussed** and **out of scope**. A discussed topic gets talk content: one row in the going-further talk step, a glossary entry, and at most a line in the relevant stage explanation or ADR teaching notes. It gets **no code, packages, endpoints or data**. Promoting a topic to "built" needs an ADR change first.
+Topics fall into three tiers: **built**, **discussed** and **out of scope**. A discussed topic gets talk content: a section in its stage's going-further tab, a glossary entry, and a row on the closing going-further page when it belongs to no single stage. It gets **no code, packages, endpoints or data**. Promoting a topic to "built" needs an ADR change first.
 
-| Where in the pipeline | Topic | Why a developer meets it | Mentioned at |
-|---|---|---|---|
-| Before retrieval | Query understanding and intent routing | Conversational queries carry noise and several intents; routing and stripping them first stops irrelevant matches | Stage 5 (our label matcher is the simplest version) |
-| Before retrieval | Language detection | Choose language-specific analysers or labels before searching | Stage 2 (English-only stemming), Stage 5 (GQ-07) |
-| Before retrieval | LLM query rewriting (question → search intents) | Turns exploratory questions ("I have an iPad and want to make films") into concrete searches | Stage 5, as a trade-off: more recall, less inspectable ([ADR-0013](0013-domain-ontology-and-compatibility.md) rejects it for this repo) |
-| Retrieval | Chunking: fixed-size, sliding window, structure- and layout-aware | Documents such as manuals and PDFs aren't product rows; how you split them decides what can be found | Stage 3 |
-| Retrieval | Multilingual and learned-sparse single-model retrieval (BGE-M3) | Dense and sparse vectors in one pass; full-sentence cross-language search | Stage 4 ([ADR-0012](0012-bge-m3-dense-and-sparse.md)) |
-| Retrieval | The vector landscape: dedicated vector databases, index choices, filtering at scale | Where pgvector stops being enough | Stage 3 ([ADR-0010](0010-vector-search-pgvector.md)) |
-| Ranking | Re-ranking: cross-encoders and late interaction (ColBERT) | Precision on the top candidates before they reach a user or an LLM | Stage 4 ([ADR-0011](0011-hybrid-search-rrf.md)) |
-| Knowledge | OWL and reasoners, SHACL, knowledge graphs and graph databases | Formal inference, validating instance data, multi-hop relationships | Stage 5, at the rules boundary |
-| Evaluation | RAG metrics: context recall, faithfulness, answer relevance (e.g. RAGAS, TruLens) | Measuring answers as well as rankings | Stage 6; golden queries are the small version |
-| Explanation | Adaptive, multi-turn tutoring | Teaching over a conversation instead of one answer | Stage 7 ([ADR-0017](0017-pedagogy-engine.md)) |
+**Per stage (amended 2026-09-18).** A discussed topic belongs where the question about it gets asked. Someone asks about chunking during Stage 3, not twenty minutes later, so each stage carries a fifth tab, *Going further*: prose and glossary links, no demo, no request ([ADR-0014](0014-web-ui-architecture.md)). Stage 1 has no tab; nothing beyond SQL earns a panel.
 
-- In talk mode the step comes after Stage 7 and before the summary ([ADR-0014](0014-web-ui-architecture.md)).
-- It is a map, not a second talk: one step, one table, a sentence per row.
+| Stage | Topics | Anchored on |
+|---|---|---|
+| 2 Keyword | True BM25 (IDF, term-frequency saturation, `k1`/`b`) against `ts_rank_cd`; how other stores search text (Lucene, SQL Server, MongoDB, `LIKE` and regex); analysers, stemming and language detection | [ADR-0008](0008-keyword-search-bm25-style.md) |
+| 3 Vector | Choosing an embedding model; chunking: fixed-size, sliding window, structure- and layout-aware; multilingual and learned-sparse models such as BGE-M3; the vector landscape — dedicated databases, index choices, filtering at scale | [ADR-0010](0010-vector-search-pgvector.md), [ADR-0012](0012-bge-m3-dense-and-sparse.md) |
+| 4 Hybrid | Re-ranking: cross-encoders and late interaction (ColBERT); normalising scores instead of fusing ranks; off-the-shelf hybrid search | [ADR-0011](0011-hybrid-search-rrf.md) |
+| 5 Ontology | OWL and reasoners; SHACL; knowledge graphs and graph databases | [ADR-0013](0013-domain-ontology-and-compatibility.md) |
+| 6 RAG | RAG metrics: context recall, faithfulness, answer relevance (e.g. RAGAS, TruLens); verifying citations; letting a model choose what to retrieve | [ADR-0016](0016-rag-grounding-and-citations.md) |
+| 7 Pedagogy | Adaptive, multi-turn tutoring; carrying a learner model between turns; judging an explanation | [ADR-0017](0017-pedagogy-engine.md) |
+
+**The closing page.** What sits *around* the pipeline rather than inside one stage of it.
+
+| Where | Topic | Why a developer meets it |
+|---|---|---|
+| Before retrieval | Query understanding and intent routing | Conversational queries carry noise and several intents; routing and stripping them first stops irrelevant matches. Stage 5's label matcher is the simplest version |
+| Before retrieval | Language detection | Choose language-specific analysers or labels before searching. Stage 2 stems English only; Stage 5 carries GQ-07 on labels |
+| Before retrieval | LLM query rewriting (question → search intents) | Turns exploratory questions into concrete searches: more recall, less inspectable ([ADR-0013](0013-domain-ontology-and-compatibility.md) rejects it for this repo) |
+| Watching it work | Search telemetry: zero-result, click and abandonment logs | The queries that failed are the ones no golden query thought to ask |
+| Proving a change | A/B tests and interleaving | Golden queries say a change is correct; only real traffic says it helped ([ADR-0005](0005-curated-dataset-and-golden-queries.md)) |
+| Keeping it fresh | Indexing pipelines, re-embedding, ontology versioning | Every structure the talk builds has to be rebuilt when the model or the catalogue moves ([ADR-0006](0006-database-schema-and-seeding.md)) |
+| Who is asking | Personalisation and permission-aware search | Relevance depends on the person, and results must never include what they may not see |
+
+- In talk mode the page comes after Stage 7 and before the summary ([ADR-0014](0014-web-ui-architecture.md)).
+- It is a map, not a second talk: one page, one table, a sentence per row.
 
 ### 4. Out of scope, and not mentioned
 
@@ -79,6 +89,9 @@ Topics fall into three tiers: **built**, **discussed** and **out of scope**. A d
 - Stage 7 becomes a Must, so Phase 4 carries more weight in week 3.
 - The going-further step is content work in Phase 5. It must stay short.
 - Learners who want BGE-M3 code won't find it. ADR-0012 keeps the design as a starting point.
+- A question from the floor during a stage can be answered on the stage's own screen, with the topic named and defined, in the time it takes to press one key.
+- The going-further tabs are bundled prose and glossary links, so they cost no request and can't drift from the demo.
+- Seven of the ten original rows leave the closing page for a stage tab. The page is not shorter, because the cross-cutting topics take their place.
 
 ## Alternatives considered
 
@@ -89,6 +102,9 @@ Topics fall into three tiers: **built**, **discussed** and **out of scope**. A d
 | Build a cross-encoder re-ranking stage instead | Another model, and it improves relevance, which Stage 4 already teaches; it doesn't advance the triad |
 | Include agent protocols in the going-further step | Off-thesis; spends talk time on integration standards rather than search, structure or explanation |
 | No going-further step | Learners leave without knowing where the techniques they didn't see fit |
+| One flat going-further table, after Stage 7 (the original decision) | A question asked during Stage 3 can't be answered by a page that comes twenty minutes later |
+| A going-further tab on every stage, Stage 1 included | Padding. Nothing beyond SQL earns a panel, and an empty tab teaches that the tab is empty |
+| A going-further section inside each stage explanation instead of a tab | The explanation's seven headings are the shape the audience learns to read; an eighth about what was *not* built competes with the six that were |
 | A separate "Taxonomy" stage before "Ontology" | A stage split for framing only; SKOS-first framing inside Stage 5 does the same with no extra endpoint |
 
 ## Teaching notes

@@ -20,7 +20,7 @@ System context, backend architecture, search pipeline stages, API conventions an
 
 ### Scope
 
-Seven stages are built. Topics the talk discusses but doesn't build (chunking, BGE-M3 and learned sparse retrieval, re-ranking, query rewriting, OWL / SHACL / knowledge graphs, RAG evaluation) are gathered in one "Going further" talk step. Agent protocols are out of scope. → [ADR-0018](0018-scope-and-going-further.md)
+Seven stages are built. Topics the talk discusses but doesn't build sit in a **"Going further" tab on each stage** (chunking, BGE-M3 and learned sparse retrieval, re-ranking, OWL / SHACL / knowledge graphs, RAG evaluation, adaptive tutoring), with a closing "Going further" talk step for the topics that belong to no single stage (query rewriting, telemetry, A/B testing, index freshness, personalisation). Agent protocols are out of scope. → [ADR-0018](0018-scope-and-going-further.md)
 
 ---
 
@@ -79,7 +79,7 @@ src/
         nomic/                    # model_int8.onnx, tokenizer.json
 
   web-ui/                         # React + Vite + TS + Tailwind + shadcn/ui; the talk itself (no slides)
-    content/                      # speaker.md, talk.json + talk/*.md, stages/*.md, glossary.json
+    content/                      # speaker.md, talk.json + talk/*.md, stages/*.md, going-further/*.md, glossary.json
     src/
       api/                        # schema.d.ts (openapi-typescript), client.ts, answerEvents.ts (hand-typed SSE events)
       components/                 # SearchBar, PipelineStepper, StageTabs, ResultRow, AnswerTab, trace renderers
@@ -168,7 +168,7 @@ All search stages use **POST** with a shared JSON request and response, so the U
 | 6. RAG | `/api/search/rag` | Results as JSON immediately; `/answer` streams a markdown summary from a bounded evidence set (compatible + incompatible-with-reasons, concept definitions and labels), with `[PROD-…]` citations validated when complete. | 5 | [0016](0016-rag-grounding-and-citations.md) |
 | 7. Pedagogy | `/api/search/pedagogy` | Results as JSON immediately; `/answer` streams the Stage 6 summary, then an audience-aware explanation. Pedagogy on: fixed headings (decision → concepts → near miss → rule of thumb → next step), with words chosen from ontology labels for the audience. Toggle `applyPedagogy: false`: the same facts and audience through a plain baseline prompt, to show what the design adds. | 6 | [0017](0017-pedagogy-engine.md) |
 
-A **"Going further"** talk step follows Stage 7. It maps the discussed-not-built topics to where they sit in the pipeline ([ADR-0018](0018-scope-and-going-further.md)).
+Every stage from 2 onwards has a **"Going further"** tab: where that technique goes next, in prose and glossary links. A closing **"Going further"** talk step follows Stage 7 with the topics that belong to no single stage ([ADR-0018](0018-scope-and-going-further.md)).
 
 ---
 
@@ -185,20 +185,21 @@ The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a 
 +------------------------------------------------------------------------------------------+
 | [GQ-03 ▾] [ power adapter for my laptop           ] [I own: Aerobook 14 ▾] [Filters 0]    |
 +------------------------------------------------------------------------------------------+
-| How it works | Results 50 | Answer (6–7) | Under the hood 8     stage options: toggles, |
-|                                                                 audience, apply pedagogy |
+| How it works | Results 50 | Answer (6–7) | Under the hood 8 | Going further (2–7)       |
+|                                                       stage options: toggles, audience  |
 +------------------------------------------------------------------------------------------+
 | The selected tab, full width:                                                            |
 |   How it works    stage explanation with glossary hover cards                            |
 |   Results         badges · Stage 5: in concept | out of concept | flagged, with checks   |
 |   Answer          answer + citation chips | streamed explanation | evidence set          |
 |   Under the hood  trace steps as a flow → the selected step's renderer                   |
+|   Going further   where this technique goes next, in prose and glossary links            |
 +------------------------------------------------------------------------------------------+
 ```
 
 - **Fixed search state:** query, filters, device, audience, toggles and the tab persist across stage switches (and live in the URL).
 - **Stepper:** stages grouped by triad colour (purple Search, green Ontology, orange Pedagogy); click, or use ←/→ in the demo.
-- **Tabs:** in talk mode → steps through a stage's tabs, then to the next step; H / R / A / U jump to a tab.
+- **Tabs:** How it works · Results · Answer (Stages 6–7) · Under the hood · Going further (Stages 2–7). In talk mode → moves one step, landing on the step's tab; H / R / A / U / G jump to a tab.
 - **Filters:** a Filters button in the search bar; a sidebar in the demo, a drawer in talk mode; every value comes from the ontology.
 - **Under the hood, per stage:**
   1. SQL + parameters + row count.

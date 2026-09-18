@@ -8,12 +8,16 @@ import {
     type SearchState,
     type StageTab,
 } from './searchState';
-import { isPipelineStage, stageGroup } from './stageGroup';
+import { isPipelineStage, type PipelineStage } from './stageGroup';
+import { isTabAvailable } from './stageTabs';
 import { talkPath } from './talkRoute';
 
 // Talk mode replaces slides (ADR-0014 § Pages). content/talk.json lists the steps in order; each has a
-// markdown file, and a stage step also names its stage, a golden query and any preset options. → walks through
-// a stage step's tabs, then on to the next step. The position lives in the route, /talk/:step/:tab?.
+// markdown file, and a stage step also names its stage, a golden query and any preset options.
+//
+// → moves one step, landing on that step's `tab`. A talk is a sequence of arguments, not of panels, so the
+// arrow keys change the argument; the letter keys (H R A U G) move between tabs within a step, and never
+// change where → leads. The position lives in the route, /talk/:step/:tab?.
 
 export type TalkStepKind = 'intro' | 'stage' | 'summary';
 
@@ -33,8 +37,8 @@ export interface TalkStep {
     stage?: string;
     goldenQuery?: string;
     options?: TalkStepOptions;
-    /** The tabs → walks through on a stage step, in order. */
-    tabs?: string[];
+    /** The one tab a stage step lands on. Defaults to Results, or Answer in Stages 6–7. */
+    tab?: string;
 }
 
 // JSON types strings loosely, so the kinds and stages are checked at runtime by talk.test.ts instead.
@@ -73,70 +77,52 @@ export function isStageTab(value: string): value is StageTab {
 }
 
 /**
- * The tabs → walks through on a step. A stage step uses its own `tabs`, or How it works → Results → Under the
- * hood; Stages 6–7 add Answer after Results. Intro and summary steps have none.
+ * The tab a stage step lands on: its own `tab` when that tab exists and the stage has it, or How it works —
+ * the technique is explained before its results are argued about. Intro and summary steps have none.
  */
-export function stepTabs(step: TalkStep): StageTab[] {
+export function stepTab(step: TalkStep): StageTab | null {
     if (step.kind !== 'stage') {
-        return [];
+        return null;
     }
 
-    if (step.tabs !== undefined) {
-        return step.tabs.filter(isStageTab);
+    const stage = step.stage !== undefined && isPipelineStage(step.stage) ? step.stage : null;
+
+    if (step.tab !== undefined && isStageTab(step.tab)) {
+        if (stage === null || isTabAvailable(step.tab, stage)) {
+            return step.tab;
+        }
     }
 
-    const hasAnswer =
-        step.stage !== undefined && isPipelineStage(step.stage) && stageGroup(step.stage) === 'pedagogy';
-    return hasAnswer
-        ? ['how-it-works', 'results', 'answer', 'under-the-hood']
-        : ['how-it-works', 'results', 'under-the-hood'];
+    return 'how-it-works';
 }
 
-/** Where → goes from a position, or `null` at the end of the talk. */
+/**
+ * The step that presents a stage, so clicking the stepper in talk mode jumps to that moment in the talk —
+ * its caption, its golden query and its preset options — rather than changing the stage inside the step.
+ */
+export function findStageStep(stage: PipelineStage, steps: readonly TalkStep[] = talkSteps): TalkStep | null {
+    return steps.find((step) => step.kind === 'stage' && step.stage === stage) ?? null;
+}
+
+/** Where a step sits in the talk, or `null` when the id isn't one of the steps. */
+function positionOf(steps: readonly TalkStep[], offset: number, stepId: string): TalkPosition | null {
+    const index = steps.findIndex((step) => step.id === stepId);
+    const step = index === -1 ? undefined : steps[index + offset];
+
+    return step === undefined ? null : { stepId: step.id, tab: stepTab(step) };
+}
+
+/**
+ * Where → goes, or `null` at the end of the talk: the next step, whatever tab the presenter is looking at.
+ * Pressing a letter key mid-step doesn't change it, so the count of arrow presses to the next stage is fixed.
+ */
 export function nextPosition(steps: readonly TalkStep[], position: TalkPosition): TalkPosition | null {
-    const index = steps.findIndex((step) => step.id === position.stepId);
-    const step = steps[index];
-    if (step === undefined) {
-        return null;
-    }
-
-    const tabs = stepTabs(step);
-    const tabIndex = position.tab === null ? -1 : tabs.indexOf(position.tab);
-    const nextTab = tabIndex === -1 ? undefined : tabs[tabIndex + 1];
-
-    if (nextTab !== undefined) {
-        return { stepId: step.id, tab: nextTab };
-    }
-
-    // The last tab, or a tab the step doesn't list (the presenter jumped to it with a letter key): next step.
-    const nextStep = steps[index + 1];
-    return nextStep === undefined ? null : { stepId: nextStep.id, tab: stepTabs(nextStep)[0] ?? null };
+    return positionOf(steps, 1, position.stepId);
 }
 
-/** Where ← goes from a position, or `null` at the start of the talk. */
+/** Where ← goes, or `null` at the start of the talk. */
 export function previousPosition(steps: readonly TalkStep[], position: TalkPosition): TalkPosition | null {
-    const index = steps.findIndex((step) => step.id === position.stepId);
-    const step = steps[index];
-    if (step === undefined) {
-        return null;
-    }
-
-    const tabs = stepTabs(step);
-    const tabIndex = position.tab === null ? -1 : tabs.indexOf(position.tab);
-
-    if (tabIndex > 0) {
-        return { stepId: step.id, tab: tabs[tabIndex - 1] ?? null };
-    }
-
-    // From a tab the step doesn't list, ← goes back to the step's first tab rather than leaving the step.
-    if (tabIndex === -1 && position.tab !== null && tabs[0] !== undefined) {
-        return { stepId: step.id, tab: tabs[0] };
-    }
-
-    const previousStep = steps[index - 1];
-    return previousStep === undefined
-        ? null
-        : { stepId: previousStep.id, tab: stepTabs(previousStep).at(-1) ?? null };
+    return positionOf(steps, -1, position.stepId);
 }
 
 /** The route for a position. */
@@ -147,7 +133,7 @@ export function positionPath(position: TalkPosition): string {
 /** Where *Start the talk* goes. */
 export function talkStartPath(steps: readonly TalkStep[] = talkSteps): string {
     const first = steps[0];
-    return first === undefined ? '/' : positionPath({ stepId: first.id, tab: stepTabs(first)[0] ?? null });
+    return first === undefined ? '/' : positionPath({ stepId: first.id, tab: stepTab(first) });
 }
 
 /**
@@ -161,7 +147,7 @@ export function talkStepState(step: TalkStep, preset: GoldenQuery | null): Searc
         ...defaultSearchState,
         ...step.options,
         stage,
-        tab: stepTabs(step)[0] ?? defaultSearchState.tab,
+        tab: stepTab(step) ?? defaultSearchState.tab,
     };
 
     return preset === null ? state : applyGoldenQuery(state, preset);
