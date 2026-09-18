@@ -44,4 +44,15 @@ describe('StageOptions', () => {
 
         expect(onChange).toHaveBeenCalledWith({ applyPedagogy: false });
     });
+
+    it('refreshes the RAG answer without showing stage options', () => {
+        const onRefreshAnswer = vi.fn();
+        render(<StageOptions stage="rag" {...values} onChange={vi.fn()} onRefreshAnswer={onRefreshAnswer} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Refresh answer' }));
+
+        expect(onRefreshAnswer).toHaveBeenCalledOnce();
+        expect(screen.queryByRole('switch')).toBeNull();
+        expect(screen.queryByRole('radio')).toBeNull();
+    });
 });

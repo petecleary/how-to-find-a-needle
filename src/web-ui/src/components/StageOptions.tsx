@@ -1,5 +1,7 @@
+import { RefreshCw } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Button } from '@/components/ui/button';
 import { audiences, type SearchState } from '@/lib/searchState';
 import type { PipelineStage } from '@/lib/stageGroup';
 
@@ -15,6 +17,7 @@ export type StageOptionValues = Pick<
 export interface StageOptionsProps extends StageOptionValues {
     stage: PipelineStage;
     onChange: (change: Partial<StageOptionValues>) => void;
+    onRefreshAnswer?: () => void;
 }
 
 export function StageOptions({
@@ -24,6 +27,7 @@ export function StageOptions({
     audience,
     applyPedagogy,
     onChange,
+    onRefreshAnswer,
 }: StageOptionsProps) {
     if (stage === 'ontology') {
         return (
@@ -49,6 +53,22 @@ export function StageOptions({
     }
 
     // Only Stage 7 reads the audience, so the picker appears only there (its trace lists the audience it used).
+    if (stage === 'rag') {
+        return (
+            <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label="Refresh answer"
+                title="Refresh answer"
+                onClick={onRefreshAnswer}
+                className="size-8 rounded-full border-2"
+            >
+                <RefreshCw aria-hidden="true" className="size-4" />
+            </Button>
+        );
+    }
+
     if (stage !== 'pedagogy') {
         return null;
     }

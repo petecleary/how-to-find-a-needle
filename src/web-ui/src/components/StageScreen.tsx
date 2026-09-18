@@ -189,6 +189,7 @@ export function StageScreen({
                                 applyConstraints={state.applyConstraints}
                                 audience={state.audience}
                                 applyPedagogy={state.applyPedagogy}
+                                onRefreshAnswer={stage === 'rag' ? answerStream.rerun : undefined}
                                 onChange={update}
                             />
                         }
