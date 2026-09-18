@@ -1,6 +1,6 @@
 Each stage's own **Going further** tab holds where that technique goes next. These are the ones that belong to no single stage: the work that sits around the pipeline rather than inside it.
 
-| Where            | Topic                                                 | Why a developer meets it                                                                                |
+| Where            | What                                                 | Why                                                                                 |
 | ---------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Before retrieval | Query understanding and intent routing                | Conversational queries carry noise and several intents; Stage 5's label matcher is the simplest version |
 | Before retrieval | Language detection                                    | Choosing the analyser or the labels to search with, before searching                                    |

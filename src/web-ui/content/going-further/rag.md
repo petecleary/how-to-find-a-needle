@@ -8,7 +8,7 @@ Stage 6 checks that every [citation](term:citation) names a product in the [evid
 - **Faithfulness** — is every claim supported by the evidence given? This is the measurable version of "no hallucinations".
 - **Answer relevance** — does it address the question that was asked, rather than a nearby one?
 
-RAGAS and TruLens compute these, usually by asking a second model to judge, which means your evaluation inherits a model's opinions too. Our nine [golden queries](term:golden-query) are the small, honest version: a fixed set of questions whose right answers a human decided in advance ([ADR-0005 · Golden queries](adr:0005-curated-dataset-and-golden-queries)).
+RAGAS and TruLens — open-source Python libraries built to compute exactly these three — do it by asking a second, usually larger, model to judge each answer against the evidence, which means your evaluation inherits a model's opinions too. Our nine [golden queries](term:golden-query) are the small, honest version: a fixed set of questions whose right answers a human decided in advance ([ADR-0005 · Golden queries](adr:0005-curated-dataset-and-golden-queries)).
 
 Whichever you use, the rule holds: **evaluation data is part of the search system.** Without it, "better" is an opinion.
 

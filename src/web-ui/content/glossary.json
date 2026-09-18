@@ -374,7 +374,7 @@
   {
     "id": "adaptive-tutoring",
     "term": "Adaptive tutoring",
-    "definition": "Teaching across a conversation: keeping a model of what the learner knows, checking understanding by asking back, and shaping the next explanation from the answer. This repo's audience setting is the one-turn version. Discussed in the talk, not built.",
+    "definition": "Personalising an explanation across a conversation: keeping a model of what this person already knows, checking understanding by asking back, and shaping the next explanation from the answer. The same pattern powers any company's chat product, not only a classroom. This repo's audience setting is the one-turn version. Discussed in the talk, not built.",
     "topic": "Going further",
     "seeAlso": ["pedagogy", "audience"]
   },

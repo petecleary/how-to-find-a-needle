@@ -58,7 +58,7 @@ Topics fall into three tiers: **built**, **discussed** and **out of scope**. A d
 | 4 Hybrid | Re-ranking: cross-encoders and late interaction (ColBERT); normalising scores instead of fusing ranks; off-the-shelf hybrid search | [ADR-0011](0011-hybrid-search-rrf.md) |
 | 5 Ontology | OWL and reasoners; SHACL; knowledge graphs and graph databases | [ADR-0013](0013-domain-ontology-and-compatibility.md) |
 | 6 RAG | RAG metrics: context recall, faithfulness, answer relevance (e.g. RAGAS, TruLens); verifying citations; letting a model choose what to retrieve | [ADR-0016](0016-rag-grounding-and-citations.md) |
-| 7 Pedagogy | Adaptive, multi-turn tutoring; carrying a learner model between turns; judging an explanation | [ADR-0017](0017-pedagogy-engine.md) |
+| 7 Pedagogy | Adaptive, multi-turn tutoring; personalising with chat and user history; judging an explanation | [ADR-0017](0017-pedagogy-engine.md) |
 
 **The closing page.** What sits *around* the pipeline rather than inside one stage of it.
 

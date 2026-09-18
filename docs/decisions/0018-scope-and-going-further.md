@@ -45,7 +45,7 @@ A discussed topic belongs where the question about it gets asked. Someone asks a
 | 4 Hybrid | Re-ranking with cross-encoders and late interaction (ColBERT); normalising scores instead of fusing ranks; off-the-shelf hybrid search |
 | 5 Ontology | OWL and reasoners; SHACL; knowledge graphs and graph databases |
 | 6 RAG | RAG metrics: context recall, faithfulness, answer relevance; verifying citations; letting a model choose what to retrieve |
-| 7 Pedagogy | Adaptive, multi-turn tutoring; carrying a learner model between turns; judging an explanation |
+| 7 Pedagogy | Adaptive, multi-turn tutoring; personalising with chat and user history; judging an explanation |
 
 ### Discussed, not built: the closing "Going further" page
 
