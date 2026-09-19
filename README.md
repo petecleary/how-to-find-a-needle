@@ -158,6 +158,21 @@ docker volume rm pgvector-data-search
 
 The next `aspire run` rebuilds the schema and re-seeds the catalog from scratch.
 
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `aspire run` fails to find Postgres, or the container never becomes healthy | Start Docker Desktop (or your Docker daemon) first; Aspire orchestrates containers, it doesn't start Docker itself. |
+| `aspire: command not found` | Install the [.NET Aspire CLI](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling); it's separate from the .NET SDK. |
+| Stages 3–7 return `503 Service Unavailable` | The response's `detail` names the missing piece (usually the Nomic model or the LLM) and how to fix it. Stages 1–2 are unaffected either way. |
+| Stage 6 or 7's Answer tab shows a `503` | Ollama isn't running, or the model in `Llm:Model` hasn't been pulled. Run `ollama serve` and `ollama pull <model>`, then restart `aspire run` — the API builds its LLM client once, at startup. |
+| The first Stage 6/7 answer is slow, then later ones are fast | A cold local model has to load into memory. Send one throwaway query to warm it up before you go on stage, or set a longer `keep_alive` in Ollama. |
+| `npm run gen:api` fails or returns an empty schema | It reads the API from `http://localhost:5377`, so `aspire run` must already be running. Node doesn't trust the ASP.NET Core development certificate, which is also why the Vite proxy sets `secure: false`. |
+| A product edit doesn't show up in search | Editing `products.json` only takes effect on the next `aspire run`: the seeder diffs by `content_hash` and nulls that product's embeddings, which are then re-embedded live (and logged) on that run. |
+| An ontology edit (a new synonym, category or rule) doesn't show up | The API loads `domain-ontology.ttl` once, at startup. Restart `aspire run`. |
+| A golden query doesn't produce its moment (e.g. the wrong product ranks first) | Change the product **wording** in `products.json`, not the algorithm — see [ADR-0005](docs/decisions/0005-curated-dataset-and-golden-queries.md). Re-run with `Embeddings__Rebuild=true` if you touched embedded text. |
+| `npm test` or `dotnet test` fails only in CI, not locally | Check the Node version (`.nvmrc`) and that `schema.d.ts` is committed and current — CI never runs the API, Docker or the models. |
+
 ## Status
 
-This repo is built alongside the talk, following the phases in [docs/adr/roadmap.md](docs/adr/roadmap.md). All seven stages (structured → keyword → vector → hybrid → ontology → RAG → pedagogy) are built, in the API and the web UI; what remains is finishing and publishing.
+All seven stages (structured → keyword → vector → hybrid → ontology → RAG → pedagogy) are built and rehearsed, in the API and the web UI, with a local Ollama model. OpenAI hosted embeddings/chat aren't built; Anthropic's provider is built and unit-tested but not run live — both are added on request rather than up front. See [docs/adr/roadmap.md](docs/adr/roadmap.md) for the build history.

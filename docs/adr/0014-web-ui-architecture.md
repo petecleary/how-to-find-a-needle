@@ -1,7 +1,7 @@
 # ADR-0014: Web UI — the talk, the demo & learning pages
 
-- **Status:** Proposed
-- **Date:** 2026-09-13 (amended 2026-09-14: visual design, stage tabs, filter placement and the Answer tab, agreed with Pete from the design canvas)
+- **Status:** Accepted
+- **Date:** 2026-09-13 (amended 2026-09-14: visual design, stage tabs, filter placement and the Answer tab, agreed with Pete from the design canvas; accepted 2026-09-19 at Phase 5 sign-off)
 - **Related:** ADR-0002, ADR-0003, ADR-0005, ADR-0013, ADR-0016, ADR-0017, ADR-0018; [design reference](../design/README.md); roadmap Phase 3 (pages, talk and stages 1–5), Phase 4 (AI stages), Phase 5 (content, going-further step and public ADRs)
 
 ## Context

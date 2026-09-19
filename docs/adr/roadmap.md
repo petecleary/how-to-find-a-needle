@@ -24,9 +24,9 @@ If time runs short, cut from the bottom up. Anyone building, human or agent, fol
 |---|---|
 | **Must** (the talk works) | Data and ontology; Stages 1–5; Stage 6 with streaming; Stage 7 pedagogy with audience and the baseline toggle; demo screen; talk mode with stage explanations; golden-query tests for stages 1–5; README "Getting started" |
 | **Should** | "Going further" talk step; glossary with hover terms; ADR pages; CI |
-| **Could** | ~300-product growth; OpenAI providers; public ADR rewrite; OpenAPI drift check in CI |
+| **Could** | ~300-product growth; OpenAI providers; public ADR rewrite |
 
-Not built at any priority: BGE-M3 and the other going-further topics ([ADR-0018](0018-scope-and-going-further.md)).
+Not built at any priority: BGE-M3 and the other going-further topics ([ADR-0018](0018-scope-and-going-further.md)). Also not built: an OpenAPI → TypeScript drift check in CI, cut by Pete on 2026-09-19 — `npm run gen:api` catches drift by hand, and the schema rarely changes once a stage ships.
 
 **Weekly shape**
 
@@ -595,17 +595,17 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 ## Phase 5 — Finish & publish
 
 1. ✅ **Dataset growth (done 2026-09-16):** `tools/PI.CatalogGenerator` (C# console) adds 240 template-built distractors after the 60 curated products (300 total; ~500 was tried and cut, see ADR-0005 teaching notes). `nomic.jsonl` rebuilt (curated vectors unchanged). Golden queries adapted: GQ-02 vector/hybrid bound top 5 → top 10 and its moment text (power banks outrank the chargers); the integration client reads every page; GQ-08 checks the target-device reason only when the laptop is retrieved. **UI fix found by the growth:** fusion can retrieve more than one page of 50 (GQ-08 returns 67, flagged items last), so `usePipelineSearch` now reads every page for ranked stages (ADR-0014 amended; ADR-0003 wording on `totalResults` corrected). 250 unit, 45 integration (Stages 6–7 on Ollama) and 269 UI tests pass.
-2. **README (final pass; kept current since Phase 1):** prerequisites (.NET 10, Docker, Node LTS, Aspire CLI, Hugging Face CLI, and either Ollama or an OpenAI/Anthropic API key), model download, `aspire run`, a tour of the 7 stages, how to reset the data volume, troubleshooting.
-3. **CI:** OpenAPI → TypeScript drift check; optional manual integration-test workflow.
+2. ✅ **README (final pass, done 2026-09-19):** prerequisites, model download, `aspire run`, a tour of the 7 stages, how to reset the data volume were already kept current since Phase 1; this pass added a **Troubleshooting** table (Docker/Aspire setup, 503s, cold-model latency, `gen:api`, editing products/ontology, golden-query drift, CI-only failures) and rewrote **Status** to say the build is complete rather than "finishing and publishing".
+3. ❌ **Cut by Pete (2026-09-19):** the OpenAPI → TypeScript drift check in CI. `npm run gen:api` is run by hand when the contract changes; not worth a CI job for a teaching repo. The optional manual integration-test workflow was also not built.
 4. **Talk content & rehearsal:**
    - The talk-mode steps, the **"Going further" step** ([ADR-0018](0018-scope-and-going-further.md)) and its glossary entries were drafted in Phase 3 (step 10); Stages 6–7 steps are added in Phase 4. The copy itself is reviewed in step 8. No agent protocols.
    - Rehearse the full talk end to end in the UI (there are no slides). `nomic.jsonl` was rebuilt after dataset growth; GQ-03's evidence set for Stages 6–7 may now include generated chargers (the Stage 6–7 integration tests pass on Ollama), so look at the answers during the prompt review.
 1a. ✅ **Stage 5 without a target device (added and done 2026-09-16, ADR-0013 amended):** requirements stated in the query ("65W", "USB-C") are checked with the same rules when no device is given (`compatibility.source: Query`), and every rule-bound product lists the catalog devices it fits (`compatibility.fits`). Evidence for Stages 6–7 carries both. New GQ-09 ("65W USB-C charger"); GQ-07 now also flags the barrel charger. UI: "you asked for" on flagged cards and rule checks, "Fits N of M" on rows and cards, requirements in the understand-step trace; UI types regenerated. 271 unit, 48 integration (Stages 6–7 on Ollama) and 272 UI tests pass. One GQ-09 Stage 6 run cited outside the evidence in the first full run and couldn't be reproduced in 13 more runs; the test now reports the IDs and text if it recurs.
 4a. ✅ **Going further per stage, and step-level talk navigation (added and done 2026-09-18; [ADR-0018](0018-scope-and-going-further.md) and [ADR-0014](0014-web-ui-architecture.md) amended):** a fifth stage tab, **Going further** (`G`), showing `content/going-further/{stage}.md` — prose and glossary links, no request. Stage 1 has no file, so its tab is disabled with a "Stages 2–7" hint, the same pattern as Answer before Stage 6. Six new content files (keyword, vector, hybrid, ontology, rag, pedagogy) and six new glossary entries (late interaction, vector database, reasoner, graph database, RAG metrics, adaptive tutoring). The closing `going-further` talk step keeps only the topics that belong to no single stage: before-retrieval work, telemetry, A/B testing, index freshness, personalisation and permissions. **Talk navigation:** ←/→ now move **one step** (11 positions, not 29), landing on the step's single `tab`; letters move between tabs and no longer change where → leads. Stage 7's three steps become one, starting at the baseline, with **Apply pedagogy** and the audience flipped live. 297 UI tests pass; `dotnet` untouched.
 5. ✅ **Public ADRs (drafted 2026-09-16, for Pete's review):** 18 learner-facing ADRs plus an index in `docs/decisions/`, same numbers and file names, 0012 kept as Rejected; all others Accepted. Written from each ADR's decisions and teaching notes, with build history removed and numbers re-measured on the 300-product catalog. The UI's `/decisions` glob, code-comment `Decision:` links, CI comment and CLAUDE.md ADR links now point at `docs/decisions/`; the root CLAUDE.md still lists the working index, architecture and roadmap. **Check after step 7:** ADR-0009 and ADR-0015 describe the OpenAI providers without test results, and ADR-0015 says the README names the suggested OpenAI model.
-6. **Final review:** code comments read as teaching material; every stage file opens with its technique / strength / failure-mode comment; all ADRs **Accepted**, **Rejected** or explicitly superseded.
-7. **OpenAI providers (when credits allow)** (0009, 0015): test OpenAI embeddings (`Embeddings:Provider = openai`, `Rebuild: true` → commit `openai.jsonl`) and OpenAI chat; adjust golden-query expectations if needed; document the one-key setup in the README.
-8. **Clean-up and sign-off (Pete, once the whole demo is complete)** (0014):
+6. ✅ **Final review — done, Pete happy (2026-09-19):** code comments read as teaching material; every stage file opens with its technique / strength / failure-mode comment; all ADRs **Accepted**, **Rejected** or explicitly superseded.
+7. ⏸ **OpenAI providers — deferred until someone asks** (0009, 0015): not built. Pete will add OpenAI embeddings (`Embeddings:Provider = openai`, `Rebuild: true` → commit `openai.jsonl`) and OpenAI chat, adjust golden-query expectations if needed, and document the one-key setup in the README, if a learner or attendee wants it. Not a blocker for giving the talk on Ollama.
+8. ✅ **Clean-up and sign-off — done, Pete happy (2026-09-19)** (0014):
    - **Copy and talk review:** every piece of UI text Pete hasn't written yet. The talk steps (`content/talk.json`, `content/talk/*.md`: intro, the needle, each stage caption, Going further, summary), the stage explanations (`content/stages/*.md`), the glossary (`content/glossary.json`), the Home thesis (`content/home.md`), and short labels in components (filter hints, empty states, trace section titles).
    - **Speaker details** in `content/speaker.md`, with the photo and LinkedIn QR code in `content/images/`.
    - **Prompt review** (moved from Phase 4 step 3, 2026-09-15), in `src/PI.SearchApi/assets/prompts/`, with GQ-03 on Stage 7 (novice off, novice on, expert) side by side in the Answer tab and the prompts in Under the hood:
@@ -621,12 +621,12 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
    - Then **ADR-0014 → Accepted**.
 
 ### Acceptance criteria
-- A fresh clone on a clean machine runs end to end by following the README alone.
-- The whole golden-query suite passes at ~300 products.
-- Public ADRs are published; the full talk, including the going-further step, is rehearsed end to end in the UI's talk mode.
-- Pete has reviewed the copy and the talk, filled in the speaker details, and run the checks carried over from Phase 3 (step 8).
-- ADR-0014 → **Accepted**.
-- ADR-0018 → **Accepted**.
+- ➡️ A fresh clone on a clean machine runs end to end by following the README alone. Not yet re-verified against the finished README (2026-09-19) — the one item still open.
+- ✅ The whole golden-query suite passes at ~300 products (271 unit, 48 integration on Ollama, 297 UI tests, per steps 1 and 1a/4a above).
+- ✅ Public ADRs are published; the full talk, including the going-further step, is rehearsed end to end in the UI's talk mode (Pete, 2026-09-19).
+- ✅ Pete has reviewed the copy and the talk, filled in the speaker details, and run the checks carried over from Phase 3 (step 8).
+- ✅ ADR-0014 → **Accepted** (2026-09-19).
+- ✅ ADR-0018 → **Accepted** (2026-09-19).
 
 ### Open questions
 - ✅ No slides: the talk lives in the web UI ([ADR-0014](0014-web-ui-architecture.md)).

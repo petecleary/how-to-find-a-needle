@@ -1,7 +1,7 @@
 # ADR-0018: Scope — seven stages, what the talk discusses, and what it leaves out
 
-- **Status:** Proposed
-- **Date:** 2026-09-14 (amended 2026-09-18: a going-further tab per stage, and the closing step keeps only the cross-cutting topics, agreed with Pete)
+- **Status:** Accepted
+- **Date:** 2026-09-14 (amended 2026-09-18: a going-further tab per stage, and the closing step keeps only the cross-cutting topics, agreed with Pete; accepted 2026-09-19 at Phase 5 sign-off)
 - **Related:** ADR-0001, ADR-0003, ADR-0004, ADR-0005, ADR-0006, ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0013, ADR-0014, ADR-0016, ADR-0017; roadmap Phases 0–5
 
 ## Context
