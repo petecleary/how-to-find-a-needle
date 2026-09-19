@@ -1,1 +1,1 @@
-A fair first prompt: the same facts and words, no teaching design. This is the [baseline explanation](term:baseline-explanation) — now turn **Apply pedagogy** on, then change the [audience](term:audience) to expert. Only the prompt changes; the facts, the products and the reasons stay the same.
+Same facts, different words: [pedagogy](term:pedagogy) tailors the [baseline explanation](term:baseline-explanation) to the [audience](term:audience).
