@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 
 const pages = [
     { to: '/talk', label: 'Talk' },
+    { to: '/slides', label: 'Slides' },
     { to: '/demo', label: 'Demo' },
     { to: '/glossary', label: 'Glossary' },
     { to: '/decisions', label: 'Decisions' },

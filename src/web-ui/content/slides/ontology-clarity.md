@@ -1,0 +1,5 @@
+- [Domain rules](term:domain-rule) turn _similar_ into _compatible_, with reasons.
+- Flag near misses. Never hide them.
+- The LLM gets fewer pieces of evidence, each labelled and defined.
+- Fewer chances to guess, and every claim can be checked.
+- The same labels let the answer be explained to any audience.

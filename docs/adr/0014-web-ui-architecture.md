@@ -1,7 +1,7 @@
 # ADR-0014: Web UI — the talk, the demo & learning pages
 
 - **Status:** Accepted
-- **Date:** 2026-09-13 (amended 2026-09-14: visual design, stage tabs, filter placement and the Answer tab, agreed with Pete from the design canvas; accepted 2026-09-19 at Phase 5 sign-off)
+- **Date:** 2026-09-13 (amended 2026-09-14: visual design, stage tabs, filter placement and the Answer tab, agreed with Pete from the design canvas; accepted 2026-09-19 at Phase 5 sign-off; amended 2026-10-01: a slide deck at `/slides` with a demo window that follows it, after rehearsal feedback)
 - **Related:** ADR-0002, ADR-0003, ADR-0005, ADR-0013, ADR-0016, ADR-0017, ADR-0018; [design reference](../design/README.md); roadmap Phase 3 (pages, talk and stages 1–5), Phase 4 (AI stages), Phase 5 (content, going-further step and public ADRs)
 
 ## Context
@@ -9,6 +9,8 @@
 The audience needs to see the *same query* produce different results as the presenter steps through the stages, with the mechanics (SQL, distances, RRF maths, concepts, rule checks, prompts) shown next to the results. Scalar is fine for developers but can't tell that story on stage.
 
 **The UI replaces the slides.** Talk content, live demo, terminology and design decisions live in one place, so the talk and the demo can't drift apart, and learners who clone the repo get the whole talk as well as the code.
+
+**Amended 2026-10-01: the deck lives in the UI too.** A rehearsal audience found the talk steps too dense to follow: each stage step opens on the live stage screen, so the audience meets tabs, filters and results before the concept has been explained. The fix is a **slide deck inside the UI** (`/slides`): simple concept slides, several per stage for the stages with new vocabulary, with the demo in a second window that follows the current slide. The slides are still markdown in `content/`, pointing at the same golden queries, so the original reason for rejecting separate slides (drift) doesn't apply. `/talk` stays as the self-guided path for learners.
 
 The frontend must be as readable as the backend: no black-box component libraries, and no heavy state management that learners would need to study first.
 
@@ -37,7 +39,8 @@ builder.AddViteApp("web-ui", "../web-ui")
 |---|---|---|
 | `/` | **Home** | Speaker details (from `speaker.md`), talk title and abstract, the thesis, the triad (Search → Ontology → Pedagogy), buttons: *Start the talk* and *Explore the demo* |
 | `/talk/:step/:tab?` | **Talk mode** | A linear sequence that replaces slides, driven by ←/→, **one position per step**. Intro and summary steps are full-width content and can sit anywhere in the order. **Stage steps show the live stage screen** with a preset golden query and preset options (e.g. Stage 5 toggles), landing on the step's `tab`; the letter keys move between tabs within the step |
-| `/demo` | **Demo** | The free-exploration screen: the same stage screen, with a collapsible filter sidebar and every tab available |
+| `/slides/:slide?` | **Slides** | The presenter's deck: one full-screen concept slide per position, driven by ←/→. **D** opens (or focuses) the demo window for the current slide. No app header, so the slide fills the screen |
+| `/demo` | **Demo** | The free-exploration screen: the same stage screen, with a collapsible filter sidebar and every tab available. Opened from the deck (`?follow=1`), it **follows the slides**: each slide that names a demo loads its stage, golden query and options |
 | `/glossary` | **Glossary** | Searchable terms and acronyms, grouped by topic |
 | `/decisions`, `/decisions/:id` | **Decisions** | The ADR index and each ADR, rendered |
 
@@ -56,6 +59,13 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 - **A "Going further" talk step** follows the last stage step and comes before the summary. It is a `summary`-kind step with no live demo: one table of the topics that sit *around* the pipeline rather than inside one stage of it — before-retrieval work, telemetry, A/B testing, index freshness, personalisation and permissions. Each stage's own topics live in that stage's going-further tab ([ADR-0018](0018-scope-and-going-further.md)).
 - **Inline terms:** in any markdown content, `[RRF](term:rrf)` renders as an underlined term with a hover card showing its definition and a link to the glossary. A custom `a` renderer in `react-markdown` does this, with no remark plugin. Trace notes from the API may use the same syntax.
 - **ADRs are read straight from the repo at build time.** `import.meta.glob` loads `docs/adr/*.md` as raw text (`server.fs.allow` includes the repo root), and links between ADRs are rewritten to `/decisions/:id`. There's no copy to drift and no API endpoint. Since Phase 5 the glob reads the public learner ADRs in `docs/decisions/`.
+
+### Slides mode: a deck and a demo that follows it
+
+- **Content.** `content/slides.json` lists the slides in order: `{ id, section, title, file, demo? }`. `section` is a stage slug or `intro`, `needle`, `going-further`, `summary`; it gives the slide its triad colour and its "Stage n of 7" label. A stage slide's heading calls out its stage and triad group ("Stage 1 Search: Structured"), with the slide's `title` beneath it; the stage name is dropped where it repeats the group ("Stage 5 Ontology"). `demo` takes the same fields as a talk step (`stage`, `goldenQuery`, `options`, `tab`), so a slide and a talk step seed the stage screen through one function. Each slide's text is `content/slides/{id}.md`.
+- **Readable from the back row.** A slide has a short title and at most five bullets of about twelve words, plus an optional formula line. A content test enforces the limits; the detail stays in the stage explanations and the ADRs.
+- **Two windows, one channel.** The deck posts `{ type: 'slide', slideId, demo }` on a `BroadcastChannel` (`needle-presenter`) at every slide change. A demo window that is following replaces its URL state with the slide's demo, so the browser's back button still steps back through what was shown, and a badge names the slide it is following. A slide without `demo` changes only the badge. Changes the presenter makes in the demo last until the next slide with a demo. Without `BroadcastChannel`, the deck and demo still work; the demo just doesn't follow.
+- **Presentation mode** is on by default on `/slides` as well as `/talk`.
 
 ### API types
 
@@ -114,7 +124,7 @@ Demo / talk stage step
                         · ClassificationTable · RuleChecks · PromptView · JSON fallback
 ```
 
-- **Keyboard.** In talk mode ←/→ move **one step** at a time, landing on that step's `tab` (How it works unless the step says otherwise). H, R, A, U and G jump to a tab in both modes, and a letter never changes where → leads. In the demo, ←/→ switch stages from the focused stepper (standard ARIA tablist behaviour).
+- **Keyboard.** In slides mode ←/→ (and PageUp/PageDown, for clickers) move one slide and **D** opens the demo. In talk mode ←/→ move **one step** at a time, landing on that step's `tab` (How it works unless the step says otherwise). H, R, A, U and G jump to a tab in both modes, and a letter never changes where → leads. In the demo, ←/→ switch stages from the focused stepper (standard ARIA tablist behaviour).
 - **The stepper is a way through the talk.** In talk mode, choosing a stage moves the talk to that stage's step, so its caption, golden query and preset options arrive with it — not just the stage. In the demo it changes the stage in place, keeping the query and filters.
 - **Honest labels on flagged items.** A flagged card shows "#2 before rules", from `signals.fusedRank`: the rank from Stage 5's own fusion, before the rules moved the item. It is not the standalone Hybrid stage's rank (the design mock-up's "was #2 in Hybrid" wording is replaced for that reason).
 
@@ -178,7 +188,10 @@ The UI is branded **Pi & Mash** (Pete's company). Agreed on 2026-09-14 from a de
 
 | Option | Why not (for this repo) |
 |---|---|
-| Separate slides (PowerPoint/Keynote) + demo | Content duplicated and drifts; context-switching on stage; learners don't get the talk |
+| Separate slides (PowerPoint/Keynote) + demo | Content duplicated and drifts; learners don't get the talk. Rehearsal showed the audience *does* need simple concept slides, so the deck is built into the UI instead (`/slides`) |
+| Slides and demo in one window, toggled with a key | One screen, but the presenter loses the slide while demoing, and a second screen can't show both |
+| `localStorage` `storage` events to sync the windows | Works, but turns a message into shared state that outlives the talk; `BroadcastChannel` says what it means and needs no cleanup |
+| Sync through the API (SignalR or polling) | A server round trip for something two tabs of one browser can say to each other |
 | MDX for content | Mixes code into content and adds build tooling; markdown + manifest is enough |
 | Serve ADRs via an API endpoint | A backend responsibility unrelated to search; build-time import is simpler |
 | Mantine | Rich but opaque; less code for learners to read |
@@ -204,4 +217,5 @@ The UI is branded **Pi & Mash** (Pete's company). Agreed on 2026-09-14 from a de
 - Generated API types keep frontend and backend honest with each other.
 - Colour carries the argument: purple steps nested inside a green stage *show* that Stage 5 reuses Stage 4, and green and purple inside orange show that RAG reuses Stage 5.
 - The tabs mirror the talk's rhythm for every stage: what it is → what changed → why.
+- Rehearsal changed the rhythm to **concept slide, then demo**: an audience follows a live screen far better once it knows what to look for. Several slides for Stages 3, 4, 5 and 7; one each for Stages 1, 2 and 6, because the first two techniques need no new vocabulary, and by Stage 6 RAG adds only one step to retrieval the audience already knows.
 - The design canvas caught a real problem before any UI code existed: at `pageSize` 10, Stage 5's flagged items weren't on page 1. Designing with real API output, not placeholder data, is what found it.

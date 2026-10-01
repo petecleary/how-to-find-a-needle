@@ -1,0 +1,4 @@
+- Ranks matching words, closer together scores higher: [BM25-style](term:bm25).
+- Fast, exact and explainable.
+- No product says "power brick", so it finds nothing.
+- Built into your database: Postgres [tsquery](term:tsquery), SQL Server `CONTAINS`, MySQL `MATCH … AGAINST`.

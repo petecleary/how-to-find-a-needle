@@ -106,7 +106,7 @@ const components: Components = {
     // from --step-colour when the page sets one (the stage's triad colour), and the text colour otherwise.
     li({ children }) {
         return (
-            <li className="relative pl-9 [counter-increment:step] before:absolute before:top-0 before:left-0 before:flex before:size-6 before:items-center before:justify-center before:rounded-full before:border-2 before:border-[color:var(--step-colour,currentColor)] before:text-sm before:font-bold before:text-[color:var(--step-colour,currentColor)] before:content-[counter(step)] [ul>&]:pl-0 [ul>&]:before:hidden">
+            <li className="relative pl-9 [ol>&]:[counter-increment:step] before:absolute before:top-0 before:left-0 before:flex before:size-6 before:items-center before:justify-center before:rounded-full before:border-2 before:border-[color:var(--step-colour,currentColor)] before:text-sm before:font-bold before:text-[color:var(--step-colour,currentColor)] before:content-[counter(step)] [ul>&]:pl-0 [ul>&]:before:hidden">
                 {children}
             </li>
         );

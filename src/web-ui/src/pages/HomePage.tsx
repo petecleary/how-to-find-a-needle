@@ -2,27 +2,16 @@ import { ArrowRight } from 'lucide-react';
 import { Fragment } from 'react';
 import { Link } from 'react-router';
 import homeMarkdown from '../../content/home.md?raw';
-import speakerMarkdown from '../../content/speaker.md?raw';
 import { AppHeader } from '@/components/AppHeader';
 import { Markdown } from '@/components/Markdown';
 import { SpeakerCard } from '@/components/SpeakerCard';
-import { parseSpeaker } from '@/lib/speaker';
+import { speaker } from '@/lib/speakerProfile';
 import { pipelineStages, triadGroupClasses, triadGroups } from '@/lib/stageGroup';
+import { slidesStartPath } from '@/lib/slides';
 import { talkStartPath } from '@/lib/talk';
 import { cn } from '@/lib/utils';
 
-const contentImages = Object.fromEntries([
-    ...Object.entries(
-        import.meta.glob<string>('../../content/images/*', { query: '?url', import: 'default', eager: true }),
-    ).map(([path, url]) => [path.replace(/^.*\/content\//, ''), url]),
-    ...Object.entries(
-        import.meta.glob<string>('../../assets/images/*', { query: '?url', import: 'default', eager: true }),
-    ).map(([path, url]) => [path.replace(/^.*\/assets\//, 'assets/'), url]),
-]);
-
-const speaker = parseSpeaker(speakerMarkdown, contentImages);
-
-/** `/`: the talk's title, its thesis and the triad, the way in to the talk or the demo, and the speaker. */
+/** `/`: the talk's title, its thesis and the triad, the way in to the talk, the slides or the demo, and the speaker. */
 export function HomePage() {
     return (
         <div className="flex min-h-screen flex-col">
@@ -80,6 +69,12 @@ export function HomePage() {
                             className="flex items-center gap-2 rounded-full bg-ontology px-6 py-3 text-xl font-bold text-on-ontology hover:opacity-90"
                         >
                             Start the talk <ArrowRight aria-hidden="true" className="size-5" />
+                        </Link>
+                        <Link
+                            to={slidesStartPath()}
+                            className="rounded-full border-2 border-ontology px-6 py-3 text-xl font-bold text-ontology-ink hover:bg-ontology-tint"
+                        >
+                            Present the slides
                         </Link>
                         <Link
                             to="/demo"

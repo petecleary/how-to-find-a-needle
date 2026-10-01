@@ -1,5 +1,5 @@
 - **Name:** Pete Cleary
-- **Title:** Director of PI & Mash
+- **Title:** Director at Pi & Mash
 - **Email:** pete@piandmash.com
 - **GitHub:** github.com/petecleary/how-to-find-a-needle
 - **Photo:**

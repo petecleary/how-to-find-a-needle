@@ -1,17 +1,17 @@
 import { createContext } from 'react';
 
 // Presentation mode is for a projector (ADR-0014): larger type and fewer controls. It is on by default in talk
-// mode and off elsewhere. The header toggle overrides that everywhere, and the choice is remembered on this
+// mode and on the slide deck, and off elsewhere. The header toggle overrides that everywhere, and the choice is remembered on this
 // device, like the theme.
 
 export type PresentationChoice = 'on' | 'off';
 
 export const presentationStorageKey = 'needle-presentation';
 
-/** Whether presentation mode applies: the viewer's choice if they made one, otherwise on in talk mode only. */
+/** Whether presentation mode applies: the viewer's choice if they made one, otherwise on for the talk and the deck. */
 export function isPresentationOn(choice: PresentationChoice | null, pathname: string): boolean {
     if (choice === null) {
-        return pathname === '/talk' || pathname.startsWith('/talk/');
+        return ['/talk', '/slides'].some((root) => pathname === root || pathname.startsWith(`${root}/`));
     }
 
     return choice === 'on';

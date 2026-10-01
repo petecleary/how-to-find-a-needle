@@ -23,10 +23,17 @@
       "Bash(curl -sk http://localhost:60887/health -w \"\\\\nHTTP %{http_code}\\\\n\")",
       "Read(//Users/petecleary/Developer/teaching/how-to-find-a-needle-phase5/src/PI.SearchApi/Pipeline/Ontology/**)",
       "Bash(cd /Users/petecleary/Developer/teaching/how-to-find-a-needle/src/web-ui && ls node_modules/.bin | grep -iE \"playwright|puppeteer\" ; ls node_modules | grep -iE \"^playwright|^puppeteer\" ; echo \"---\"; ls /Applications | grep -i chrom)",
-      "Read(//Applications/**)"
+      "Read(//Applications/**)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(cd /Users/petecleary/Developer/Projects/pi && echo \"===adr index===\" && cat docs/adrs/index.md 2>/dev/null | head -50 && echo \"===all adrs===\" && ls docs/adrs)",
+      "Read(//Users/petecleary/Developer/Projects/pi/**)",
+      "Bash(cd /Users/petecleary/Developer/Projects/pi/docs/adrs && echo \"===0018 \\(MOCA adoption\\)===\" && head -80 ADR-0018-aipack-container-format-and-manifest-inheritance.md)",
+      "Read(//Users/petecleary/Developer/Projects/pi/docs/adrs/**)"
     ],
     "additionalDirectories": [
-      "/Users/petecleary/Developer/teaching/how-to-find-a-needle-phase5/docs/adr"
+      "/Users/petecleary/Developer/teaching/how-to-find-a-needle-phase5/docs/adr",
+      "/Users/petecleary/Developer/teaching/platform/docs/adr"
     ]
   }
 }

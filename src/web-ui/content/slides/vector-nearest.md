@@ -1,0 +1,4 @@
+- Embed the query, then find the closest stored vectors.
+- Closeness is the angle between them: [cosine distance](term:cosine-distance).
+- An index such as [HNSW](term:hnsw) hops between neighbours, not through every row.
+- No threshold, and no idea of fit: a near miss ranks high.

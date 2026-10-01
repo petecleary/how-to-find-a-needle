@@ -629,9 +629,28 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 - ✅ ADR-0018 → **Accepted** (2026-09-19).
 
 ### Open questions
-- ✅ No slides: the talk lives in the web UI ([ADR-0014](0014-web-ui-architecture.md)).
+- ✅ No slides: the talk lives in the web UI ([ADR-0014](0014-web-ui-architecture.md)). *Revisited in Phase 6: a slide deck is added, inside the UI.*
 - ✅ Public ADR location: `docs/decisions/`. The working ADRs, `architecture.md` and `roadmap.md` stay on the build branch and are **not merged to `main`** (decided 2026-09-16). At merge time, drop `docs/adr/` and repoint the root CLAUDE.md "Read before you build" list and the README's roadmap link.
 - ✅ Generator script language: C# console in `tools/` (decided 2026-09-16).
+
+---
+
+## Phase 6 — Slides mode (rehearsal feedback)
+
+A rehearsal audience found the talk steps too dense: each stage opens on the live stage screen before the concept is explained. Pete asked for a simple slide deck to talk through, with the demo in a second window ([ADR-0014](0014-web-ui-architecture.md) amended 2026-10-01). Built on the `slides` branch.
+
+1. **ADR-0014 amended** (working and public copies): `/slides/:slide?`, the slide format, the two-window model with `BroadcastChannel`, and why it doesn't bring back the drift that ruled out separate slides.
+2. **Content:** `content/slides.json` and `content/slides/*.md`, drafted from the talk steps, stage explanations and ADRs. One slide each for Stages 1, 2 and 6; several each for Stages 3, 4, 5 and 7. The copy is reviewed at sign-off, not during the build.
+3. **UI:** `src/lib/slides.ts` (manifest, navigation, demo state shared with talk steps), `src/lib/presenterSync.ts` (`BroadcastChannel`), `SlidesPage` (full screen, ←/→, PageUp/PageDown, **D** opens the demo), and a demo that follows the deck when opened with `?follow=1`. Presentation mode on by default on `/slides`. A *Present the slides* link on Home.
+4. **Tests:** slide content integrity and readability limits, navigation, the demo path round-trips through `parseSearchState`, the sync wrapper with and without `BroadcastChannel`, and the deck's keys.
+
+### Acceptance criteria
+- `/slides` steps through every slide by keyboard and clicker, readable at 1280×720 in both themes.
+- **D** opens one demo window (pressing it again reuses it), and the demo follows each slide that names a demo: stage, golden query, options and tab.
+- The browser's back button in the demo steps back through what the slides showed.
+- `/talk` and `/demo` without `follow` behave exactly as before.
+- UI typecheck, lint, format, build and tests pass; `dotnet build` 0 warnings.
+- Pete has reviewed the slide copy (sign-off).
 
 ---
 
@@ -647,6 +666,6 @@ The ADR-0018 rework of Phases 0–2 is done, so the generated API types contain 
 | 0007–0011 | 2 |
 | 0012 | — (Rejected by ADR-0018) |
 | 0013 | 1 (vocabulary), 2 (stage) |
-| 0014 | 3 (+ AI panels in 4, clean-up, copy review and acceptance in 5) |
+| 0014 | 3 (+ AI panels in 4, clean-up, copy review and acceptance in 5, slides mode in 6) |
 | 0015–0017 | 4 |
 | 0018 | 0–2 (rework), 4 (pedagogy baseline), 5 (going-further content) |

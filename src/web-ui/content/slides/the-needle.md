@@ -1,0 +1,4 @@
+- You own a **Blackbird Aerobook 14** laptop.
+- It needs a **USB-C** charger of at least **65W**.
+- You search: _power adapter for my laptop_.
+- _Beware not all the search results will work!_
