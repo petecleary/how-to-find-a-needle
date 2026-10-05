@@ -53,6 +53,8 @@ const everyFieldChanged: SearchState = {
     applyConstraints: false,
     audience: 'expert',
     applyPedagogy: false,
+    // A model name with its own slash: only the first one separates the provider (ADR-0019).
+    model: 'compat/meta-llama/llama-3.1-8b',
 };
 
 describe('parseSearchState', () => {
@@ -62,7 +64,7 @@ describe('parseSearchState', () => {
 
     it('falls back to the default for values it does not recognise', () => {
         const params = new URLSearchParams(
-            'stage=bm25&tab=slides&audience=child&maxPrice=cheap&minPrice=-5&expandSynonyms=maybe&spec.bad-key=x',
+            'stage=bm25&tab=slides&audience=child&maxPrice=cheap&minPrice=-5&expandSynonyms=maybe&spec.bad-key=x&model=qwen3',
         );
 
         expect(parseSearchState(params)).toEqual(defaultSearchState);
@@ -117,6 +119,7 @@ describe('toSearchRequest', () => {
                 applyConstraints: false,
                 audience: 'expert',
                 applyPedagogy: false,
+                model: 'compat/meta-llama/llama-3.1-8b',
             },
         });
     });

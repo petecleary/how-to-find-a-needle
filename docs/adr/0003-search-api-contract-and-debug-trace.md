@@ -1,6 +1,6 @@
 # ADR-0003: Search API contract & debug trace
 
-- **Status:** Accepted (Phase 2, 2026-09-14). Amended by [ADR-0018](0018-scope-and-going-further.md), which removed the `bge-m3` route and BGE signals and added `options.applyPedagogy`; re-accepted after the Phase 2 rework was verified (2026-09-14). Amended 2026-09-14 to add `GET /api/vocabularies` (built and verified). Amended 2026-09-15: the OpenAPI document now carries endpoint summaries and describes the `400` and `503` bodies (roadmap Phase 3 step 3). Amended 2026-09-15 to add `GET /api/brands`, so the UI's brand filter is a list from the catalogue rather than a text box (agreed with Pete at the Phase 3 step 7 checkpoint).
+- **Status:** Accepted (Phase 2, 2026-09-14). Amended by [ADR-0018](0018-scope-and-going-further.md), which removed the `bge-m3` route and BGE signals and added `options.applyPedagogy`; re-accepted after the Phase 2 rework was verified (2026-09-14). Amended 2026-09-14 to add `GET /api/vocabularies` (built and verified). Amended 2026-09-15: the OpenAPI document now carries endpoint summaries and describes the `400` and `503` bodies (roadmap Phase 3 step 3). Amended 2026-09-15 to add `GET /api/brands`, so the UI's brand filter is a list from the catalogue rather than a text box (agreed with Pete at the Phase 3 step 7 checkpoint). Amended 2026-10-05 by [ADR-0019](0019-bring-your-own-model.md) to add `options.model`.
 - **Date:** 2026-09-13
 - **Related:** ADR-0002, ADR-0004, ADR-0014, ADR-0017, ADR-0018; roadmap Phase 2
 
@@ -83,6 +83,7 @@ The legacy `GET /api/products` endpoint is removed.
     "applyConstraints": true,
     "audience": "novice",
     "applyPedagogy": true,
+    "model": null,
     "explain": false
   }
 }
@@ -93,6 +94,7 @@ The legacy `GET /api/products` endpoint is removed.
 - `options` are stage-specific tuning values. Stages ignore options that don't apply to them, and the trace lists the options each stage actually used.
 - `options.explain` (default `false`) adds the Postgres `EXPLAIN` plan to vector-search trace steps, to show whether the planner used the HNSW index ([ADR-0010](0010-vector-search-pgvector.md)).
 - `options.audience` is a lower-case string (`novice | enthusiast | expert`), not an enum, matching the audience vocabulary used by the UI content and prompts ([ADR-0017](0017-pedagogy-engine.md)).
+- `options.model` (default `null`, the configured model) names the LLM for Stages 6–7 as `provider/model`, e.g. `ollama/qwen3.6:35b` (added 2026-10-05 by [ADR-0019](0019-bring-your-own-model.md)). It never carries a key.
 - `options.applyPedagogy` (default `true`) is Stage 7's before/after toggle, like Stage 5's `expandSynonyms` and `applyConstraints`. With `false`, Stage 7 explains the same answer and evidence, for the same audience, with a plain baseline prompt instead of the pedagogy prompt ([ADR-0017](0017-pedagogy-engine.md)).
 
 **Validation (FluentValidation, one validator per endpoint):**

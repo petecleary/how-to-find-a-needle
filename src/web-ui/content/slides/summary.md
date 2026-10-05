@@ -2,4 +2,3 @@
 - **Words and meaning** are both evidence: use both.
 - **Similar is not compatible:** an ontology knows the difference.
 - **An LLM explains** what search found, and is only as good as its evidence.
-

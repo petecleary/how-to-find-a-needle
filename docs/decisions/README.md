@@ -38,5 +38,6 @@ New here? Read [ADR-0004](0004-pipeline-composition.md) for how the stages fit t
 | [0016](0016-rag-grounding-and-citations.md) | Stage 6 — RAG: streamed, grounded summary with citations | AI | Accepted |
 | [0017](0017-pedagogy-engine.md) | Stage 7 — Pedagogy engine, with a baseline toggle | AI | Accepted |
 | [0018](0018-scope-and-going-further.md) | Scope — seven stages, what the talk discusses, and what it leaves out | Scope | Accepted |
+| [0019](0019-bring-your-own-model.md) | Choose the model per request (bring your own model) | AI | Proposed |
 
 ADR numbers identify decisions, not stages ([ADR-0001](0001-record-architecture-decisions.md)).

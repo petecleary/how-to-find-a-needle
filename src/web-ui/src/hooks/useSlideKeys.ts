@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router';
 import { isTypingTarget } from '@/lib/keyboard';
 
 /**
- * ← / → (and Page Up / Page Down, which presentation clickers send) move through the talk or the slide deck. A key
- * another control already handled is left alone: the stage stepper and the tab lists use ← / → themselves when
- * focused, and call preventDefault, so moving between stages or tabs never also changes the talk step.
+ * ← / → (and Page Up / Page Down, which presentation clickers send) move through the slide deck. A key another
+ * control already handled is left alone: a control that uses ← / → itself calls preventDefault, so it never also
+ * changes the slide. Typing in a text box never moves the deck either.
  */
-export function useTalkKeys(nextPath: string | null, previousPath: string | null): void {
+export function useSlideKeys(nextPath: string | null, previousPath: string | null): void {
     const navigate = useNavigate();
 
     useEffect(() => {

@@ -12,9 +12,10 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 | `Pipeline/` | Shared types (`Candidate`, `StageResult`, `TraceStep`, `SqlFilterBuilder`) |
 | `Pipeline/{Technique}/` | One technique service + interface: `Structured/ Keyword/ Vector/ Fusion/ Ontology/ Rag/ Pedagogy/` |
 | `Embeddings/` | `ISearchEmbedder`, `NomicOnnxEmbeddingGenerator` |
-| `Llm/` | `LlmOptions`, `LlmClientFactory` (the only provider-specific code), `LlmChatOptions`, `LlmStreaming`, `LlmUnavailableException`, warm-up |
+| `Llm/` | `LlmOptions` (the default model), `LlmProviders` + `ModelRef`, `LlmModelRegistry` (a client per request, ADR-0019), `LlmSettingsStore`, `ISecretStore`, `LlmClientFactory`, `LlmChatOptions`, `LlmStreaming`, `LlmUnavailableException`, warm-up |
 | `Endpoints/Search/{Stage}/` | Thin FastEndpoints endpoint + validator |
 | `Endpoints/Demo/` | Golden queries, devices, taxonomy |
+| `Endpoints/Models/` | Providers, session keys, connection tests and the model list (ADR-0019) |
 | `Data/` | `init.sql` runner, catalog loader, `DatabaseSeeder` |
 | `assets/` | `data/` (catalog, ontology, `.rq`, embeddings, `init.sql`), `prompts/`, `models/` (gitignored) |
 
@@ -56,7 +57,7 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 - File-scoped namespaces. Nullable enabled; no `!` suppression without a comment saying why it's safe.
 - `async` all the way down; pass `ct` through everything. Cancellation stops LLM generation when the user switches stage.
 - Inject the pooled `NpgsqlDataSource` (with `UseVector()`); don't pass connection strings (replaces the scaffold pattern in Phase 1).
-- **DI lifetimes:** embedders, the ontology graph and the chat client are singletons (they load once). Search services are scoped or transient.
+- **DI lifetimes:** embedders, the ontology graph and the model registry are singletons (they load once). The chat client is built per request by the registry. Search services are scoped or transient.
 - Exceptions are for the unexpected. Expected "unavailable" states (missing model, LLM down) map to 503.
 - Structured logging with message templates, not string interpolation: `logger.LogInformation("Seeded {Count} products ({Inserted} inserted, …)", …)`. Match the log lines named in roadmap acceptance criteria.
 - Time trace steps with `Stopwatch`.
@@ -102,8 +103,9 @@ Composed stages call earlier services and **append** their own trace step after 
 
 ## LLM code (Stages 6–7)
 
-- Depend on `IChatClient` only. All provider differences live in `LlmClientFactory` ([ADR-0015](../../docs/decisions/0015-llm-hosting-and-client.md)).
-- Sampling is provider-specific: `Temperature = 0.1` for Ollama/OpenAI; **never send `temperature` to Anthropic**.
+- Depend on `IChatClient` only, resolved per request with `LlmModelRegistry.Resolve(request.Options.Model)` ([ADR-0019](../../docs/decisions/0019-bring-your-own-model.md)). All provider differences live in `Llm/` ([ADR-0015](../../docs/decisions/0015-llm-hosting-and-client.md)).
+- **Never return, log or trace a key.** Endpoints report a key's `KeySource` only.
+- Sampling is provider-specific: `Temperature = 0.1` for Ollama and the OpenAI-protocol providers; **never send `temperature` to Anthropic**.
 - No retries; 60 s timeout; output-token cap for a short summary.
 - Stream with `GetStreamingResponseAsync` as `meta` / `delta` / `final` / `done` / `error` events. Validate citations, sentinels and headings after completion ([ADR-0016](../../docs/decisions/0016-rag-grounding-and-citations.md), [ADR-0017](../../docs/decisions/0017-pedagogy-engine.md)).
 - Prompts are loaded from `assets/prompts/*.md`, and the trace records prompts, raw output and timings. **Never put an API key in the trace or logs.**

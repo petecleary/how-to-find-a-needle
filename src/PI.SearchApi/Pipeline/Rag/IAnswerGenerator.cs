@@ -1,4 +1,5 @@
 using PI.SearchApi.Contracts;
+using PI.SearchApi.Llm;
 
 namespace PI.SearchApi.Pipeline.Rag;
 
@@ -13,11 +14,13 @@ public interface IAnswerGenerator
     /// <summary>
     /// Streams only the answer section for evidence already built: <c>delta</c> events, then <c>final</c>.
     /// Stage 7 calls this before writing its explanation, so both stages' answers are generated identically.
+    /// <paramref name="model"/> is the request's resolved model (ADR-0019), so the caller decides which model answers.
     /// </summary>
     IAsyncEnumerable<AnswerEvent> StreamAnswerSectionAsync(
         string stage,
         string question,
         EvidenceSet evidence,
+        LlmCall model,
         AnswerSectionOutcome outcome,
         CancellationToken ct);
 }

@@ -10,7 +10,9 @@ The audience needs to see the *same query* produce different results as the pres
 
 **The UI replaces the slides.** Talk content, live demo, terminology and design decisions live in one place, so the talk and the demo can't drift apart, and learners who clone the repo get the whole talk as well as the code.
 
-**Amended 2026-10-01: the deck lives in the UI too.** A rehearsal audience found the talk steps too dense to follow: each stage step opens on the live stage screen, so the audience meets tabs, filters and results before the concept has been explained. The fix is a **slide deck inside the UI** (`/slides`): simple concept slides, several per stage for the stages with new vocabulary, with the demo in a second window that follows the current slide. The slides are still markdown in `content/`, pointing at the same golden queries, so the original reason for rejecting separate slides (drift) doesn't apply. `/talk` stays as the self-guided path for learners.
+**Amended 2026-10-01: the deck lives in the UI too.** A rehearsal audience found the talk steps too dense to follow: each stage step opens on the live stage screen, so the audience meets tabs, filters and results before the concept has been explained. The fix is a **slide deck inside the UI** (`/slides`): simple concept slides, several per stage for the stages with new vocabulary, with the demo in a second window that follows the current slide. The slides are still markdown in `content/`, pointing at the same golden queries, so the original reason for rejecting separate slides (drift) doesn't apply. ~~`/talk` stays as the self-guided path for learners.~~
+
+**Amended 2026-10-05: talk mode removed.** Pete removed *Start the talk* from Home and *Talk* from the header; the deck and the demo cover the live talk and learners reading along afterwards. `/talk`, `TalkPage`, `content/talk.json` + `talk/*.md` and their tests are deleted. The stage-seed logic the deck shares moved to `lib/stageSeed.ts`; the deck's controls and keys are now `SlideControls` and `useSlideKeys`. Lines below that describe talk mode are struck through.
 
 The frontend must be as readable as the backend: no black-box component libraries, and no heavy state management that learners would need to study first.
 
@@ -37,8 +39,8 @@ builder.AddViteApp("web-ui", "../web-ui")
 
 | Route | Page | Content |
 |---|---|---|
-| `/` | **Home** | Speaker details (from `speaker.md`), talk title and abstract, the thesis, the triad (Search → Ontology → Pedagogy), buttons: *Start the talk* and *Explore the demo* |
-| `/talk/:step/:tab?` | **Talk mode** | A linear sequence that replaces slides, driven by ←/→, **one position per step**. Intro and summary steps are full-width content and can sit anywhere in the order. **Stage steps show the live stage screen** with a preset golden query and preset options (e.g. Stage 5 toggles), landing on the step's `tab`; the letter keys move between tabs within the step |
+| `/` | **Home** | Speaker details (from `speaker.md`), talk title and abstract, the thesis, the triad (Search → Ontology → Pedagogy), buttons: *Present the slides* and *Explore the demo* |
+| ~~`/talk/:step/:tab?`~~ | ~~**Talk mode**~~ | **Removed 2026-10-05.** ~~A linear sequence that replaces slides, driven by ←/→, **one position per step**. Intro and summary steps are full-width content and can sit anywhere in the order. **Stage steps show the live stage screen** with a preset golden query and preset options (e.g. Stage 5 toggles), landing on the step's `tab`; the letter keys move between tabs within the step~~ |
 | `/slides/:slide?` | **Slides** | The presenter's deck: one full-screen concept slide per position, driven by ←/→. **D** opens (or focuses) the demo window for the current slide. No app header, so the slide fills the screen |
 | `/demo` | **Demo** | The free-exploration screen: the same stage screen, with a collapsible filter sidebar and every tab available. Opened from the deck (`?follow=1`), it **follows the slides**: each slide that names a demo loads its stage, golden query and options |
 | `/glossary` | **Glossary** | Searchable terms and acronyms, grouped by topic |
@@ -51,12 +53,12 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
 | File | Purpose |
 |---|---|
 | `speaker.md` | Name, title, bio, email, LinkedIn URL, photo path and LinkedIn QR code image path. **Placeholder values until Pete supplies them** |
-| `talk.json` + `talk/*.md` | Ordered talk steps: `{ id, kind: intro \| stage \| summary, title, file, stage?, goldenQuery?, options?, tab? }`. `tab` is the single tab a stage step lands on; it defaults to `how-it-works`, so the technique is explained before its results are argued about. A JSON manifest instead of front-matter avoids a parser dependency |
+| ~~`talk.json` + `talk/*.md`~~ | **Removed 2026-10-05**; the deck's `slides.json` + `slides/*.md` replace them |
 | `stages/{stage}.md` | One explanation per stage with fixed headings: *What it is · How it works · What to look for · Strength · Failure mode · Try this · Read the decision* |
 | `going-further/{stage}.md` | Free-form: where that stage's technique goes next. No file for `structured`, and a missing file is what makes the tab unavailable ([ADR-0018](0018-scope-and-going-further.md)) |
 | `glossary.json` | `[{ id, term, acronym?, definition, topic, seeAlso?, adr? }]`, e.g. BM25, FTS, tsvector, embedding, cosine distance, HNSW, RRF, dense/sparse, SKOS, RAG, ONNX, plus the going-further terms (chunking, re-ranking, cross-encoder, learned sparse, OWL, SHACL, knowledge graph) |
 
-- **A "Going further" talk step** follows the last stage step and comes before the summary. It is a `summary`-kind step with no live demo: one table of the topics that sit *around* the pipeline rather than inside one stage of it — before-retrieval work, telemetry, A/B testing, index freshness, personalisation and permissions. Each stage's own topics live in that stage's going-further tab ([ADR-0018](0018-scope-and-going-further.md)).
+- **A "Going further" slide** follows the last stage and comes before the summary, with no live demo: one table of the topics that sit *around* the pipeline rather than inside one stage of it — before-retrieval work, telemetry, A/B testing, index freshness, personalisation and permissions. Each stage's own topics live in that stage's going-further tab ([ADR-0018](0018-scope-and-going-further.md)).
 - **Inline terms:** in any markdown content, `[RRF](term:rrf)` renders as an underlined term with a hover card showing its definition and a link to the glossary. A custom `a` renderer in `react-markdown` does this, with no remark plugin. Trace notes from the API may use the same syntax.
 - **ADRs are read straight from the repo at build time.** `import.meta.glob` loads `docs/adr/*.md` as raw text (`server.fs.allow` includes the repo root), and links between ADRs are rewritten to `/decisions/:id`. There's no copy to drift and no API endpoint. Since Phase 5 the glob reads the public learner ADRs in `docs/decisions/`.
 
@@ -85,7 +87,7 @@ The talk-versus-demo split is agreed in principle and **validated with Pete in t
   - It appends `delta` text to the Answer tab and applies `final` citations and warnings.
   - `[PROD-…]` renders as a chip that jumps to that product in the Answer tab's evidence set. The same `AbortController` cancels it, and the Vite proxy passes `text/event-stream` through unbuffered.
 - **No global state library** (Redux, Zustand) and **no TanStack Query**. Plain React state is enough and easier to read.
-- The URL holds demo state, including the tab, audience and toggles (`/demo?stage=pedagogy&tab=answer&q=...&gq=GQ-03&audience=novice`), and talk position lives in the route (`/talk/stage-hybrid/results`), so the presenter can bookmark and the browser back button works.
+- The URL holds demo state, including the tab, audience and toggles (`/demo?stage=pedagogy&tab=answer&q=...&gq=GQ-03&audience=novice`), and the slide position lives in the route (`/slides/hybrid-rrf`), so the presenter can bookmark and the browser back button works.
 
 ### Stage screen: layout and components (architecture §5)
 
@@ -124,14 +126,14 @@ Demo / talk stage step
                         · ClassificationTable · RuleChecks · PromptView · JSON fallback
 ```
 
-- **Keyboard.** In slides mode ←/→ (and PageUp/PageDown, for clickers) move one slide and **D** opens the demo. In talk mode ←/→ move **one step** at a time, landing on that step's `tab` (How it works unless the step says otherwise). H, R, A, U and G jump to a tab in both modes, and a letter never changes where → leads. In the demo, ←/→ switch stages from the focused stepper (standard ARIA tablist behaviour).
-- **The stepper is a way through the talk.** In talk mode, choosing a stage moves the talk to that stage's step, so its caption, golden query and preset options arrive with it — not just the stage. In the demo it changes the stage in place, keeping the query and filters.
+- **Keyboard.** In slides mode ←/→ (and PageUp/PageDown, for clickers) move one slide and **D** opens the demo. H, R, A, U and G jump to a tab on the stage screen. In the demo, ←/→ switch stages from the focused stepper (standard ARIA tablist behaviour). ~~Talk mode's one-step-per-arrow rule~~ removed with talk mode.
+- **The stepper** changes the stage in place, keeping the query and filters. ~~In talk mode it moved to that stage's step.~~
 - **Honest labels on flagged items.** A flagged card shows "#2 before rules", from `signals.fusedRank`: the rank from Stage 5's own fusion, before the rules moved the item. It is not the standalone Hybrid stage's rank (the design mock-up's "was #2 in Hybrid" wording is replaced for that reason).
 
 - **Trace renderers** map the known `details` keys to purpose-built views, falling back to pretty-printed JSON ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 - **Filters come from the ontology.** The category tree comes from `GET /api/taxonomy`, and each spec filter from `GET /api/vocabularies`: its label, its values (with synonyms as hints) and the spec key to send ([ADR-0013](0013-domain-ontology-and-compatibility.md)). No category or spec value is hard-coded in the UI, so an edit to the TTL appears after re-running the AppHost and refreshing the page.
 - **Maths as text:** RRF formulas and distances are rendered as monospaced strings from the API. No KaTeX dependency.
-- **Presentation mode:** a global toggle that increases font size and hides non-essential controls, for projector readability. It is on by default in talk mode.
+- **Presentation mode:** a global toggle that increases font size and hides non-essential controls, for projector readability. It is on by default on the slides.
 - **No product images** (confirmed). Each taxonomy concept names a Lucide icon in the TTL (`ex:icon`), and a result row uses the icon of its first category.
 - **Stretch goal (not in scope):** a 2D projection plot of vector space for Stage 3.
 
@@ -165,12 +167,12 @@ The UI is branded **Pi & Mash** (Pete's company). Agreed on 2026-09-14 from a de
   - semantic landmarks and visible focus;
   - badges that use text as well as colour;
   - the stepper and the stage tabs as ARIA tablists;
-  - talk mode fully keyboard-operable;
+  - the slide deck fully keyboard-operable;
   - hover cards also open on focus;
   - text contrast of at least 4.5:1 in both themes (3:1 for large text).
 - **Tests (Vitest):**
   - `usePipelineSearch`; trace-renderer selection; talk navigation (→ walks a step's `tabs`, then the next step); Stage 5 result grouping.
-  - Content integrity: every `talk.json` step file exists, every `goldenQuery` id is in `golden-queries.json`, every `term:` link resolves to a glossary entry, every stage has an explanation file.
+  - Content integrity: every `slides.json` slide file exists, every `goldenQuery` id is in `golden-queries.json`, every `term:` link resolves to a glossary entry, every stage has an explanation file.
   - No end-to-end browser tests; golden queries are covered by the API integration tests.
   - Hook tests render with `@testing-library/react` (`renderHook`) in a `jsdom` environment, chosen per test file with `// @vitest-environment jsdom`. Everything else runs in Node. Both are dev dependencies only (added in Phase 3 step 4).
 

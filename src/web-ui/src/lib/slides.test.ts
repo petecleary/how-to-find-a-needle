@@ -20,7 +20,7 @@ import {
 } from './slides';
 import { isTabAvailable } from './stageTabs';
 import { isPipelineStage } from './stageGroup';
-import { isStageTab } from './talk';
+import { isStageTab } from './stageSeed';
 
 // JSON types each query's shape separately, so the API's contract type needs a cast through unknown.
 const goldenQueries = goldenQueriesJson as unknown as GoldenQuery[];

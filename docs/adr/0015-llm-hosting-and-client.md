@@ -2,7 +2,8 @@
 
 - **Status:** Accepted for Ollama (Phase 4, 2026-09-16): built, verified and the default model chosen by bake-off. The **Anthropic** provider is built and unit-tested but not yet run live, for want of an API key; **OpenAI** is wired up and tested in Phase 5.
 - **Date:** 2026-09-13 (amended 2026-09-15 at the start of Phase 4, agreed with Pete: settings live on the API, not forwarded by the AppHost; the Anthropic default is `claude-sonnet-5`; the bake-off is an opt-in integration test over the two installed Ollama models)
-- **Related:** ADR-0002, ADR-0016, ADR-0017; roadmap Phase 4
+- **Amended:** 2026-10-05 by [ADR-0019](0019-bring-your-own-model.md): the `Llm` section is now the **default** model, and a request can name another in `options.model`.
+- **Related:** ADR-0002, ADR-0016, ADR-0017, ADR-0019; roadmap Phase 4
 
 ## Context
 
@@ -27,12 +28,12 @@ The original design put LiteLLM in front of the providers. .NET's `Microsoft.Ext
 - An `Llm` section in the API's configuration: `Provider`, `Model`, `Endpoint` (Ollama only), `ApiKey`, `MaxOutputTokens` and `TimeoutSeconds`.
 - The non-secret values are defaults in the API's `appsettings.json`. The key is stored with `dotnet user-secrets` on `PI.SearchApi` and **never** committed. User secrets are one more configuration source, so the factory reads the key like any other setting. `Llm__Model`-style environment variables override both (the bake-off uses this).
 - The AppHost does **not** forward `Llm` settings as parameters: one obvious place to set them beats a second route through the dashboard.
-- The provider and model are fixed for a run (one `IChatClient`, built at startup). Changing them means restarting `aspire run`; they are never a per-request choice, so the request contract stays the same for every stage.
+- ~~The provider and model are fixed for a run (one `IChatClient`, built at startup).~~ **Amended by [ADR-0019](0019-bring-your-own-model.md):** the `Llm` section is the default; a request may name another model in `options.model`, and the client is built per request by `LlmModelRegistry`. The request contract is still the same for every stage.
 - There is no container and no `CommunityToolkit.Aspire.Hosting.Ollama`.
 
 ### Client (API)
 
-- **One `IChatClient` registered in DI**, built by a small `LlmClientFactory` that switches on `Provider`. This is the **only** provider-specific code; Stages 6–7 depend on `IChatClient` alone.
+- **One `IChatClient` per request** (originally one in DI; see [ADR-0019](0019-bring-your-own-model.md)), built by a small `LlmClientFactory` that switches on `Provider`. The factory, the provider catalogue and the per-provider options are the **only** provider-specific code; Stages 6–7 depend on `IChatClient` alone.
 - **Middleware pipeline** (`ChatClientBuilder`): `.UseOpenTelemetry()`, so prompts and timings appear in the Aspire dashboard; `.UseLogging()` in development.
 - **Streaming:** Stages 6–7 call `IChatClient.GetStreamingResponseAsync`, which is supported by every provider, and forward text chunks to the browser as Server-Sent Events ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 - **Markdown output, validated when complete.** The model writes markdown with inline `[PROD-…]` citations (and fixed headings in Stage 7). The API validates the finished text for every provider ([ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0017](0017-pedagogy-engine.md)). JSON-schema output isn't used, because it can't be shown progressively.

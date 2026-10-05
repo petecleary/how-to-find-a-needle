@@ -88,14 +88,21 @@ builder.Services.AddSingleton<DeviceFitFinder>();
 builder.Services.AddTransient<TargetDeviceResolver>();
 builder.Services.AddTransient<IOntologySearch, OntologySearch>();
 
-// --- LLM for Stages 6–7 (ADR-0015) --------------------------------------------
-// One IChatClient, built from the Llm settings (appsettings.json + the user-secret API key). It's a singleton
-// created on first use: a misconfigured or stopped LLM turns into a 503 on the AI stages, never a failed startup.
+// --- LLM for Stages 6–7 (ADR-0015, ADR-0019) ---------------------------------
+// The Llm section is the default model. The registry builds a client per request for the model the request names
+// (options.model), with the learner's saved base URLs (~/.needle/settings.json) and keys (configuration, or pasted
+// in the UI for this session). A misconfigured or stopped LLM is a 503 on the AI stages, never a failed startup.
 builder.Services.Configure<LlmOptions>(builder.Configuration.GetSection(LlmOptions.SectionName));
-builder.Services.AddSingleton<IChatClient>(services => LlmClientFactory.Create(
-    services.GetRequiredService<IOptions<LlmOptions>>().Value,
-    services.GetRequiredService<ILoggerFactory>(),
-    builder.Environment.IsDevelopment()));
+builder.Services.AddSingleton<LlmSettingsStore>();
+builder.Services.AddSingleton<ISecretStore, ConfigurationAndSessionSecretStore>();
+builder.Services.AddSingleton<LlmModelRegistry>();
+
+// Model lists are fetched live. The service defaults add retries to every HTTP client; this one opts out, because a
+// retry would make a provider that is down look slow instead of down. RemoveAllResilienceHandlers is marked
+// experimental (EXTEXP0001) but is the supported way to undo ConfigureHttpClientDefaults for one client.
+#pragma warning disable EXTEXP0001
+builder.Services.AddHttpClient(LlmModelRegistry.ModelListClientName).RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddHostedService<LlmWarmUpService>();

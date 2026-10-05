@@ -10,6 +10,8 @@ export function SignalBadges({ badges }: SignalBadgesProps) {
         return null;
     }
 
+    // Each technique keeps its own number on its own scale: a keyword rank, a cosine distance, an RRF sum. They are
+    // shown side by side, never compared directly, which is exactly why hybrid search fuses ranks, not scores.
     return (
         <ul className="flex flex-none flex-wrap items-center gap-1.5">
             {badges.map((badge) => (

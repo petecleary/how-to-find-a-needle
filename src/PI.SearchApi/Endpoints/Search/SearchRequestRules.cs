@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using FluentValidation;
 using PI.SearchApi.Contracts;
+using PI.SearchApi.Llm;
 using PI.SearchApi.Pipeline.Ontology;
 
 namespace PI.SearchApi.Endpoints.Search;
@@ -35,6 +36,13 @@ public static partial class SearchRequestRules
             .Must(a => Audiences.Contains(a))
             .WithMessage("'Audience' must be one of: novice, enthusiast, expert.")
             .When(r => r.Options is not null);
+
+        // A malformed model is the caller's mistake (400); a well-formed one that can't be used right now, such as a
+        // provider with no key, is the API's state (503 from the answer endpoint), so only the shape is checked here.
+        validator.RuleFor(r => r.Options.Model)
+            .Must(m => ModelRef.TryParse(m, out _))
+            .WithMessage($"'Model' must be provider/model, with a provider from: {string.Join(", ", LlmProviders.All)}.")
+            .When(r => r.Options?.Model is not null);
 
         // Categories must be taxonomy notations: a typo would otherwise silently match nothing.
         validator.RuleForEach(r => r.Filters.Categories)

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
     getBrands,
     getDemoDevices,
@@ -23,6 +23,7 @@ import { UnderTheHoodTab } from '@/components/UnderTheHoodTab';
 import { useAnswerStream } from '@/hooks/useAnswerStream';
 import { useApiData, type ApiData } from '@/hooks/useApiData';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useModelCatalogue } from '@/hooks/useModels';
 import { usePipelineSearch } from '@/hooks/usePipelineSearch';
 import {
     applyGoldenQuery,
@@ -32,7 +33,7 @@ import {
     type SearchState,
     type StageTab,
 } from '@/lib/searchState';
-import { stageLabel, stageNumber, type PipelineStage } from '@/lib/stageGroup';
+import { stageLabel, stageNumber } from '@/lib/stageGroup';
 import { isTabAvailable } from '@/lib/stageTabs';
 
 // Tailwind's `lg` breakpoint: from here the filters fit beside the results; below it they open as a drawer.
@@ -42,30 +43,13 @@ export interface StageScreenProps {
     state: SearchState;
     onStateChange: (next: SearchState) => void;
     goldenQueries: ApiData<GoldenQuery[]>;
-    /** The demo shows a sidebar when there is room; talk mode always uses the drawer, so results get the width. */
-    filterLayout: 'responsive' | 'drawer';
-    /** A line above the tabs: the talk step's caption. */
-    caption?: ReactNode;
-    /**
-     * What the stepper does. The demo changes the stage in place; talk mode jumps to that stage's step, so the
-     * caption, golden query and preset options change with it. Defaults to changing the stage in place.
-     */
-    onChooseStage?: (stage: PipelineStage) => void;
 }
 
 /**
- * The stage screen shared by the demo and talk mode (ADR-0014 § Stage screen): search bar, pipeline stepper and
- * the four tabs. The page owns the state (the URL in the demo, the talk step in talk mode); the same request goes
- * to whichever stage is selected.
+ * The demo's stage screen (ADR-0014 § Stage screen): search bar, pipeline stepper and the stage tabs. The page owns
+ * the state (the URL); the same request goes to whichever stage is selected, so stages can be compared directly.
  */
-export function StageScreen({
-    state,
-    onStateChange,
-    goldenQueries,
-    filterLayout,
-    caption,
-    onChooseStage,
-}: StageScreenProps) {
+export function StageScreen({ state, onStateChange, goldenQueries }: StageScreenProps) {
     const devices = useApiData(getDemoDevices);
     const brands = useApiData(getBrands);
     const taxonomy = useApiData(getTaxonomy);
@@ -73,7 +57,8 @@ export function StageScreen({
 
     // Whether the filters are showing is a layout preference, not a search input, so it isn't in the URL.
     const isWideScreen = useMediaQuery(sidebarMediaQuery);
-    const hasRoomForSidebar = filterLayout === 'responsive' && isWideScreen;
+    // A sidebar when the screen is wide enough; otherwise a drawer, so the results keep the width.
+    const hasRoomForSidebar = isWideScreen;
     // Closed at first, so the results get the full width on a 1280×720 projector; the Filters button opens it.
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -88,6 +73,8 @@ export function StageScreen({
     // The results and the answer are two requests with the same body, sent together: results never wait for the LLM.
     const search = usePipelineSearch(stage, request);
     const answerStream = useAnswerStream(stage, request);
+    // The model list is fetched only on the stages that use a model (ADR-0019).
+    const models = useModelCatalogue(isAnswerStage(stage));
 
     const update = useCallback(
         (change: Partial<SearchState>) => onStateChange({ ...state, ...change }),
@@ -172,11 +159,7 @@ export function StageScreen({
                         onChooseDevice={(productId) => updateInputs({ targetProductId: productId })}
                         onToggleFilters={handleToggleFilters}
                     />
-                    <PipelineStepper
-                        stage={stage}
-                        onChooseStage={onChooseStage ?? ((next) => update({ stage: next }))}
-                    />
-                    {caption}
+                    <PipelineStepper stage={stage} onChooseStage={(next) => update({ stage: next })} />
                     <StageTabs
                         stage={stage}
                         tab={tab}
@@ -189,6 +172,9 @@ export function StageScreen({
                                 applyConstraints={state.applyConstraints}
                                 audience={state.audience}
                                 applyPedagogy={state.applyPedagogy}
+                                model={state.model}
+                                modelCatalogue={models.catalogue}
+                                onManageModels={() => models.setSettingsOpen(true)}
                                 onRefreshAnswer={stage === 'rag' ? answerStream.rerun : undefined}
                                 onChange={update}
                             />

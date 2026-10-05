@@ -1,11 +1,11 @@
 import { Link, NavLink } from 'react-router';
 import { Logo } from '@/components/Logo';
+import { ModelSettingsButton } from '@/components/ModelSettingsButton';
 import { PresentationToggle } from '@/components/PresentationToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
 
 const pages = [
-    { to: '/talk', label: 'Talk' },
     { to: '/slides', label: 'Slides' },
     { to: '/demo', label: 'Demo' },
     { to: '/glossary', label: 'Glossary' },
@@ -29,8 +29,8 @@ function skipToContent() {
 }
 
 /**
- * The bar across the top of every page: logo and title (home), the talk position, the pages, and the
- * presentation and theme switches. In presentation mode the page links are hidden: the talk moves by keyboard.
+ * The bar across the top of every page: logo and title (home), the talk position, the pages, the models and keys
+ * sheet, and the presentation and theme switches. In presentation mode the page links are hidden: the talk moves by keyboard.
  */
 export function AppHeader({ position, wordmark = 'talk' }: AppHeaderProps) {
     return (
@@ -71,6 +71,7 @@ export function AppHeader({ position, wordmark = 'talk' }: AppHeaderProps) {
                     ))}
                 </ul>
             </nav>
+            <ModelSettingsButton />
             <PresentationToggle />
             <ThemeToggle />
         </header>

@@ -136,7 +136,7 @@ Check the "W" rating printed on your current charger.
 - The ontology does double duty: its labels shape the explanation's vocabulary as well as the search.
 - Streaming keeps a two-call stage responsive: the audience reads the answer while the explanation starts.
 - Parsing headings is more fragile than a schema. Warnings make any drift visible, and fixed markdown headings are easy for small local models to follow.
-- The pedagogy principles are an opinionated, short list, deliberately simple enough to explain in one talk step.
+- The pedagogy principles are an opinionated, short list, deliberately simple enough to explain on one slide.
 - Two prompt files to maintain, and the baseline must stay a fair one.
 
 ## Alternatives considered

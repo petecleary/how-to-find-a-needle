@@ -2,18 +2,18 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
 
-export interface TalkControlsProps {
+export interface SlideControlsProps {
     previousPath: string | null;
     nextPath: string | null;
-    /** Where the presenter is, e.g. "Step 5 of 9 · Results (2 of 3)". Announced to screen readers when it changes. */
+    /** Where the presenter is, e.g. "Slide 5 of 24 · Stage 2 of 7". Announced to screen readers when it changes. */
     label: string;
 }
 
-/** The bar along the bottom of talk mode: Previous and Next for a mouse or a clicker, and the position. */
-export function TalkControls({ previousPath, nextPath, label }: TalkControlsProps) {
+/** The bar along the bottom of the slide deck: Previous and Next for a mouse or a clicker, and the position. */
+export function SlideControls({ previousPath, nextPath, label }: SlideControlsProps) {
     return (
         <nav
-            aria-label="Talk steps"
+            aria-label="Slides"
             className="sticky bottom-0 z-10 flex items-center gap-3 border-t-2 bg-card px-6 py-2"
         >
             <StepLink path={previousPath} direction="previous" />

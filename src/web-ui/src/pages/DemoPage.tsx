@@ -73,12 +73,7 @@ export function DemoPage() {
                     </button>
                 </div>
             ) : null}
-            <StageScreen
-                state={state}
-                onStateChange={setState}
-                goldenQueries={goldenQueries}
-                filterLayout="responsive"
-            />
+            <StageScreen state={state} onStateChange={setState} goldenQueries={goldenQueries} />
         </div>
     );
 }

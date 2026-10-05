@@ -50,7 +50,7 @@ src/
         embeddings/              # nomic.jsonl, openai.jsonl: committed product vectors (ADR-0009)
       models/                    # downloaded ONNX models (gitignored, README committed)
   web-ui/                        # React + Vite: the talk, the demo, glossary and ADR pages (ADR-0014)
-    content/                     # speaker.md, talk.json + talk/*.md, stages/*.md, glossary.json
+    content/                     # home.md, speaker.md, slides.json + slides/*.md, stages/*.md, glossary.json
 tests/
   PI.SearchApi.Tests/            # fast unit tests, no Docker
   PI.SearchApi.IntegrationTests/ # Aspire.Hosting.Testing, golden queries

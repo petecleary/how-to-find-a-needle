@@ -1,4 +1,5 @@
 using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 using Xunit;
 
@@ -15,6 +16,10 @@ public sealed class AppHostFixture : IAsyncLifetime
 
     private DistributedApplication? _app;
 
+    // The API's model settings live in ~/.needle (ADR-0019). Tests use an empty folder of their own, so a
+    // developer's saved base URLs and enabled providers can't change what the tests see.
+    private readonly string _needleHome = Path.Combine(Path.GetTempPath(), "needle-tests-" + Guid.NewGuid().ToString("N"));
+
     public DistributedApplication App =>
         _app ?? throw new InvalidOperationException("The AppHost has not been started.");
 
@@ -26,6 +31,7 @@ public sealed class AppHostFixture : IAsyncLifetime
 
         var appHost = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.PI_AppHost>(cts.Token);
+        appHost.CreateResourceBuilder<ProjectResource>("searchapi").WithEnvironment("NEEDLE_HOME", _needleHome);
         _app = await appHost.BuildAsync(cts.Token);
         await _app.StartAsync(cts.Token);
 
@@ -38,6 +44,11 @@ public sealed class AppHostFixture : IAsyncLifetime
         if (_app is not null)
         {
             await _app.DisposeAsync();
+        }
+
+        if (Directory.Exists(_needleHome))
+        {
+            Directory.Delete(_needleHome, recursive: true);
         }
     }
 }

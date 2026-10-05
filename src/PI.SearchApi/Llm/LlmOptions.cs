@@ -1,24 +1,31 @@
 namespace PI.SearchApi.Llm;
 
 /// <summary>
-/// The <c>Llm</c> configuration section (ADR-0015). Non-secret defaults live in <c>appsettings.json</c>;
-/// <see cref="ApiKey"/> comes from <c>dotnet user-secrets</c>. The provider and model are fixed for a run:
-/// one <c>IChatClient</c> is built from these values, so Stages 6–7 never know which provider answers.
+/// The <c>Llm</c> configuration section (ADR-0015): the <b>default</b> model, used when a request doesn't name one
+/// in <c>options.model</c> (ADR-0019). Non-secret values live in <c>appsettings.json</c>; keys come from
+/// <c>dotnet user-secrets</c>. <see cref="LlmModelRegistry"/> also builds one of these per request, with the
+/// requested provider's address and key, so Stages 6–7 never know which provider answers.
 /// </summary>
 public sealed class LlmOptions
 {
     public const string SectionName = "Llm";
 
-    /// <summary><c>ollama</c>, <c>openai</c> or <c>anthropic</c> (see <see cref="LlmProviders"/>).</summary>
+    /// <summary>A provider ID from <see cref="LlmProviders"/>: <c>ollama</c>, <c>openai</c>, <c>anthropic</c>, <c>azure</c>, <c>google</c> or <c>compat</c>.</summary>
     public string Provider { get; set; } = LlmProviders.Ollama;
 
     /// <summary>The provider's model ID, e.g. <c>qwen3.6:35b</c> or <c>claude-sonnet-5</c>.</summary>
     public string Model { get; set; } = "";
 
-    /// <summary>Ollama only: the local server, e.g. <c>http://localhost:11434</c>. Its OpenAI-compatible API is under <c>/v1</c>.</summary>
+    /// <summary>
+    /// The provider's base URL. In configuration it is Ollama's address, e.g. <c>http://localhost:11434</c> (its
+    /// OpenAI-compatible API is under <c>/v1</c>); per request the registry sets it for whichever provider answers.
+    /// </summary>
     public string? Endpoint { get; set; }
 
-    /// <summary>OpenAI and Anthropic only. Set with <c>dotnet user-secrets</c>; never committed, logged or traced.</summary>
+    /// <summary>
+    /// The default provider's key, kept for ADR-0015 setups. Prefer the provider's own variable (e.g.
+    /// <c>ANTHROPIC_API_KEY</c>) in <c>dotnet user-secrets</c> (ADR-0019). Never committed, logged or traced.
+    /// </summary>
     public string? ApiKey { get; set; }
 
     /// <summary>A cap sized for a short summary or explanation, so a rambling model can't hold the demo up.</summary>

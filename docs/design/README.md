@@ -27,4 +27,4 @@ The visual design for the `web-ui`, agreed with Pete on 2026-09-14. The decision
 - **Logos.** Filled logo on light, outline logo on dark (`src/web-ui/assets/images/`).
 - **Stage tabs.** Each stage has *How it works · Results · Answer · Under the hood*. → steps through them in the talk; the presenter can jump to any tab when someone asks a question. Answer is disabled before Stage 6. *The screens draw Results first; the order above is the agreed one (confirmed 2026-09-15), and the screens were not redrawn for it.*
 - **Stage options sit on the tab row**, next to what they change: Stage 5's *Expand synonyms* / *Apply constraints*; the audience picker and Stage 7's *Apply pedagogy*.
-- **Filters** open from a *Filters* button in every search bar: a sidebar in the Demo, a drawer in talk mode. Every category and spec value comes from `/api/taxonomy` and `/api/vocabularies`.
+- **Filters** open from a *Filters* button in every search bar: a sidebar in the Demo on wide screens, a drawer on narrow ones. Every category and spec value comes from `/api/taxonomy` and `/api/vocabularies`.

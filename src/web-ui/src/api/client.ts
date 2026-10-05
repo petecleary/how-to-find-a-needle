@@ -20,6 +20,11 @@ export type ValidationProblemError = components['schemas']['ValidationProblemErr
 export type AnswerFinal = components['schemas']['AnswerFinal'];
 export type AnswerResponse = components['schemas']['AnswerResponse'];
 export type ExplanationStructure = components['schemas']['ExplanationStructure'];
+export type LlmProviderStatus = components['schemas']['LlmProviderStatus'];
+export type ModelCatalogue = components['schemas']['ModelCatalogue'];
+export type ProviderModels = components['schemas']['ProviderModels'];
+export type ModelInfo = components['schemas']['ModelInfo'];
+export type ConnectionTest = components['schemas']['ConnectionTest'];
 
 type SearchPath = Extract<keyof paths, `/api/search/${string}`>;
 
@@ -156,6 +161,51 @@ export function getBrands(signal?: AbortSignal): Promise<OkJson<'/api/brands', '
     return sendAsync('/api/brands', { signal });
 }
 
+// --- Bring your own model (ADR-0019) -------------------------------------------------------------
+// The API holds keys and saved settings; the browser only ever names a model. A key is sent once, to
+// `PUT /api/providers/{id}/key`, and is never read back.
+
+/** `GET /api/providers`: each provider's settings and where its key comes from (never the key). */
+export function getProviders(signal?: AbortSignal): Promise<LlmProviderStatus[]> {
+    return sendAsync('/api/providers', { signal });
+}
+
+/** `GET /api/models`: the default model and every enabled provider's models, listed live. */
+export function getModels(signal?: AbortSignal): Promise<ModelCatalogue> {
+    return sendAsync('/api/models', { signal });
+}
+
+/** `PUT /api/providers/{id}`: a null field keeps its value; an empty base URL returns to the default. */
+export function updateProvider(
+    id: string,
+    change: { enabled?: boolean; baseUrl?: string; extraModels?: string[] },
+): Promise<void> {
+    return sendWithoutBodyAsync(`/api/providers/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(change),
+    });
+}
+
+/** `PUT /api/providers/{id}/key`: the API holds the key in memory until it stops. */
+export function setProviderKey(id: string, key: string): Promise<void> {
+    return sendWithoutBodyAsync(`/api/providers/${encodeURIComponent(id)}/key`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key }),
+    });
+}
+
+/** `DELETE /api/providers/{id}/key`: forgets the session key; a configured key stays. */
+export function removeProviderKey(id: string): Promise<void> {
+    return sendWithoutBodyAsync(`/api/providers/${encodeURIComponent(id)}/key`, { method: 'DELETE' });
+}
+
+/** `POST /api/providers/{id}/test`: lists the provider's models now. A failed connection is `ok: false`, not an error. */
+export function testProvider(id: string): Promise<ConnectionTest> {
+    return sendAsync(`/api/providers/${encodeURIComponent(id)}/test`, { method: 'POST' });
+}
+
 // No retries: a failure should be visible, not quietly hidden (root CLAUDE.md, "No hidden magic").
 // An aborted request rejects with the browser's AbortError, which callers ignore when they cancelled it.
 async function sendAsync<Body>(path: string, init: RequestInit): Promise<Body> {
@@ -166,6 +216,15 @@ async function sendAsync<Body>(path: string, init: RequestInit): Promise<Body> {
     }
 
     return (await response.json()) as Body;
+}
+
+// For a 204: success has no body to read.
+async function sendWithoutBodyAsync(path: string, init: RequestInit): Promise<void> {
+    const response = await fetch(path, init);
+
+    if (!response.ok) {
+        throw await toApiError(response);
+    }
 }
 
 async function toApiError(response: Response): Promise<ApiError> {

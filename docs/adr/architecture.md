@@ -20,7 +20,7 @@ System context, backend architecture, search pipeline stages, API conventions an
 
 ### Scope
 
-Seven stages are built. Topics the talk discusses but doesn't build sit in a **"Going further" tab on each stage** (chunking, BGE-M3 and learned sparse retrieval, re-ranking, OWL / SHACL / knowledge graphs, RAG evaluation, adaptive tutoring), with a closing "Going further" talk step for the topics that belong to no single stage (query rewriting, telemetry, A/B testing, index freshness, personalisation). Agent protocols are out of scope. → [ADR-0018](0018-scope-and-going-further.md)
+Seven stages are built. Topics the talk discusses but doesn't build sit in a **"Going further" tab on each stage** (chunking, BGE-M3 and learned sparse retrieval, re-ranking, OWL / SHACL / knowledge graphs, RAG evaluation, adaptive tutoring), with a closing "Going further" slide for the topics that belong to no single stage (query rewriting, telemetry, A/B testing, index freshness, personalisation). Agent protocols are out of scope. → [ADR-0018](0018-scope-and-going-further.md)
 
 ---
 
@@ -60,7 +60,9 @@ src/
     Contracts/                    # SearchRequest, SearchResponse, ProductResult, DebugTrace
     Data/                         # DatabaseSeeder (schema, catalog upsert, embedding backfill), EmbeddingFile (jsonl)
     Embeddings/                   # ISearchEmbedder, NomicOnnxEmbeddingGenerator (ONNX Runtime)
-    Llm/                          # LlmOptions, LlmClientFactory (the one IChatClient), LlmChatOptions, LlmStreaming, warm-up
+    Llm/                          # LlmOptions (the default model), LlmProviders + ModelRef, LlmModelRegistry (a client per request),
+                                  # LlmSettingsStore (~/.needle/settings.json), ISecretStore (session keys), LlmClientFactory,
+                                  # LlmChatOptions, LlmStreaming, warm-up
     Pipeline/                     # shared types (Candidate, StageResult, TraceStep, SqlFilterBuilder, PromptLibrary) + one technique per folder
       Structured/  Keyword/  Vector/  Fusion/  Hybrid/  Ontology/  Rag/  Pedagogy/
     Endpoints/
@@ -78,8 +80,8 @@ src/
       models/                     # downloaded ONNX models (gitignored; README committed)
         nomic/                    # model_int8.onnx, tokenizer.json
 
-  web-ui/                         # React + Vite + TS + Tailwind + shadcn/ui; the talk itself (talk mode, and a slide deck with a demo that follows it)
-    content/                      # speaker.md, talk.json + talk/*.md, stages/*.md, going-further/*.md, glossary.json
+  web-ui/                         # React + Vite + TS + Tailwind + shadcn/ui; the talk itself (a slide deck with a demo that follows it)
+    content/                      # home.md, speaker.md, slides.json + slides/*.md, stages/*.md, going-further/*.md, glossary.json
     src/
       api/                        # schema.d.ts (openapi-typescript), client.ts, answerEvents.ts (hand-typed SSE events)
       components/                 # SearchBar, PipelineStepper, StageTabs, ResultRow, AnswerTab, trace renderers
@@ -102,8 +104,8 @@ tests/
 | Embeddings | `IEmbeddingGenerator` with a configured provider: local Nomic Embed v1.5 via ONNX Runtime (default, offline) or OpenAI `text-embedding-3-small` at 768d (tested later). Product vectors committed per provider in `assets/data/embeddings/*.jsonl`, regenerated with `Embeddings:Rebuild` | [0009](0009-local-embeddings-onnx-runtime.md) |
 | Fusion | Reciprocal Rank Fusion (k = 60), pure C# | [0011](0011-hybrid-search-rrf.md) |
 | Ontology | dotNetRDF (in-memory), hand-written Turtle: standard SKOS (taxonomy, synonyms, language-tagged labels, value vocabularies) plus a small class-level rule vocabulary beyond SKOS; SPARQL lookups; no instance data | [0013](0013-domain-ontology-and-compatibility.md) |
-| LLM (stages 6–7) | `Microsoft.Extensions.AI` `IChatClient`, provider set in config: existing local **Ollama** (OpenAI-compatible `/v1`), **OpenAI**, or **Anthropic** (official `Anthropic` .NET SDK). No containers, **no LiteLLM** | [0015](0015-llm-hosting-and-client.md) |
-| Frontend | React + Vite + TypeScript, Tailwind, shadcn/ui, Lucide, React Router, react-markdown; `openapi-typescript` types; Vite proxy (no CORS). Home, talk mode, a slide deck (`/slides`) with a demo window that follows it, demo, glossary and ADR pages; no external slides | [0014](0014-web-ui-architecture.md) |
+| LLM (stages 6–7) | `Microsoft.Extensions.AI` `IChatClient`, built per request. Default model in config; a request can name another in `options.model`. Providers: local **Ollama** (OpenAI-compatible `/v1`), **OpenAI**, **Anthropic** (official `Anthropic` .NET SDK), **Azure OpenAI**, **Google Gemini** and any **OpenAI-compatible** server. Keys from configuration or pasted in the UI for the session. No containers, **no LiteLLM** | [0015](0015-llm-hosting-and-client.md), [0019](0019-bring-your-own-model.md) |
+| Frontend | React + Vite + TypeScript, Tailwind, shadcn/ui, Lucide, React Router, react-markdown; `openapi-typescript` types; Vite proxy (no CORS). Home, a slide deck (`/slides`) with a demo window that follows it, demo, glossary and ADR pages; no external slides | [0014](0014-web-ui-architecture.md) |
 | Testing | xUnit unit tests + `Aspire.Hosting.Testing` golden-query integration tests (structural checks only for the LLM stages); Vitest for the UI's hooks, parsers, renderers and content | [0002](0002-solution-structure-and-orchestration.md) |
 | API docs | Scalar + `Microsoft.AspNetCore.OpenApi` | — |
 
@@ -111,7 +113,7 @@ tests/
 
 ## 4. API Conventions & Pipeline Stages
 
-All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 6–7 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices`, `GET /api/taxonomy` (the category tree), `GET /api/vocabularies` (the allowed spec values) and `GET /api/brands` (the catalogue's brands). Taxonomy and vocabularies are read from the ontology and brands from the catalogue, so the UI's filters are data. → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
+All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 6–7 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices`, `GET /api/taxonomy` (the category tree), `GET /api/vocabularies` (the allowed spec values) and `GET /api/brands` (the catalogue's brands). The models screen uses `GET /api/providers`, `GET /api/models` and a few `PUT`/`POST` routes to set base URLs, session keys and test connections ([ADR-0019](0019-bring-your-own-model.md)). Taxonomy and vocabularies are read from the ontology and brands from the catalogue, so the UI's filters are data. → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
 
 **Request:** `POST /api/search/{stage}`
 
@@ -122,7 +124,7 @@ All search stages use **POST** with a shared JSON request and response, so the U
   "pageSize": 10,
   "filters": { "brand": "Voltline", "categories": ["laptop-chargers"], "minPrice": 20, "maxPrice": 150, "specs": { "connector": "usb-c" } },
   "context": { "targetProductId": "PROD-0001" },
-  "options": { "candidateDepth": 50, "rrfK": 60, "keywordWeight": 1.0, "vectorWeight": 1.0, "expandSynonyms": true, "applyConstraints": true, "audience": "novice", "applyPedagogy": true }
+  "options": { "candidateDepth": 50, "rrfK": 60, "keywordWeight": 1.0, "vectorWeight": 1.0, "expandSynonyms": true, "applyConstraints": true, "audience": "novice", "applyPedagogy": true, "model": null }
 }
 ```
 
@@ -168,13 +170,13 @@ All search stages use **POST** with a shared JSON request and response, so the U
 | 6. RAG | `/api/search/rag` | Results as JSON immediately; `/answer` streams a markdown summary from a bounded evidence set (compatible + incompatible-with-reasons, concept definitions and labels), with `[PROD-…]` citations validated when complete. | 5 | [0016](0016-rag-grounding-and-citations.md) |
 | 7. Pedagogy | `/api/search/pedagogy` | Results as JSON immediately; `/answer` streams the Stage 6 summary, then an audience-aware explanation. Pedagogy on: fixed headings (decision → concepts → near miss → rule of thumb → next step), with words chosen from ontology labels for the audience. Toggle `applyPedagogy: false`: the same facts and audience through a plain baseline prompt, to show what the design adds. | 6 | [0017](0017-pedagogy-engine.md) |
 
-Every stage from 2 onwards has a **"Going further"** tab: where that technique goes next, in prose and glossary links. A closing **"Going further"** talk step follows Stage 7 with the topics that belong to no single stage ([ADR-0018](0018-scope-and-going-further.md)).
+Every stage from 2 onwards has a **"Going further"** tab: where that technique goes next, in prose and glossary links. A closing **"Going further"** slide follows Stage 7 with the topics that belong to no single stage ([ADR-0018](0018-scope-and-going-further.md)).
 
 ---
 
 ## 5. Frontend Layout
 
-The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a keyboard-driven talk mode for self-guided learners, a slide deck for the presenter (`/slides`, with the demo in a second window that follows the current slide over `BroadcastChannel`), the live demo, a glossary with inline term definitions, and the ADRs. The demo shows how the same query changes across the stages. It is branded Pi & Mash, in light and dark themes. → [ADR-0014](0014-web-ui-architecture.md), pictures in [docs/design](../design/README.md)
+The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a slide deck for the presenter (`/slides`, with the demo in a second window that follows the current slide over `BroadcastChannel`), the live demo, a glossary with inline term definitions, and the ADRs. The demo shows how the same query changes across the stages. It is branded Pi & Mash, in light and dark themes. → [ADR-0014](0014-web-ui-architecture.md), pictures in [docs/design](../design/README.md)
 
 ```text
 +------------------------------------------------------------------------------------------+
@@ -199,8 +201,8 @@ The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a 
 
 - **Fixed search state:** query, filters, device, audience, toggles and the tab persist across stage switches (and live in the URL).
 - **Stepper:** stages grouped by triad colour (purple Search, green Ontology, orange Pedagogy); click, or use ←/→ in the demo.
-- **Tabs:** How it works · Results · Answer (Stages 6–7) · Under the hood · Going further (Stages 2–7). In talk mode → moves one step, landing on the step's tab; H / R / A / U / G jump to a tab.
-- **Filters:** a Filters button in the search bar; a sidebar in the demo, a drawer in talk mode; every value comes from the ontology.
+- **Tabs:** How it works · Results · Answer (Stages 6–7) · Under the hood · Going further (Stages 2–7). H / R / A / U / G jump to a tab.
+- **Filters:** a Filters button in the search bar; a sidebar in the demo on wide screens, a drawer on narrow ones; every value comes from the ontology.
 - **Under the hood, per stage:**
   1. SQL + parameters + row count.
   2. Parsed tsquery, matched lexemes, "BM25-style" note.

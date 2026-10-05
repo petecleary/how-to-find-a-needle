@@ -20,7 +20,7 @@ export function PresentationProvider({ children }: PresentationProviderProps) {
     const [choice, setChoice] = useState(readStoredPresentation);
     const isPresentationMode = isPresentationOn(choice, pathname);
 
-    // Before the browser paints, so moving into talk mode never flashes at the smaller size.
+    // Before the browser paints, so opening the slides never flashes at the smaller size.
     useLayoutEffect(() => {
         document.documentElement.classList.toggle('presentation', isPresentationMode);
     }, [isPresentationMode]);

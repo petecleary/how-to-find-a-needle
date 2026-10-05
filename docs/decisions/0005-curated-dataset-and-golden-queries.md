@@ -66,7 +66,7 @@ A small C# console app: `dotnet run --project tools/PI.CatalogGenerator`.
 | GQ-08 | "charger for my Blackbird Aerobook 14" | **The device-name trap:** vector search ranks the laptop and a Blackbird sleeve above the chargers; the ontology treats the name as context |
 | GQ-09 | "65W USB-C charger", no device | **No device, still checked:** the ontology reads "USB-C" and "65W" as requirements, flags the barrel and 45W chargers, and says which laptops each charger fits |
 
-Golden queries do three jobs: they are the **integration tests**, the **UI presets**, and the **talk steps**.
+Golden queries do three jobs: they are the **integration tests**, the **UI presets**, and the **slides' demos**.
 
 GQ-03, GQ-05 and GQ-06 take the device from a "my device" picker (`context.targetProductId`) rather than naming it, so each isolates one failure. Naming the device is a failure of its own, and GQ-08 shows it.
 

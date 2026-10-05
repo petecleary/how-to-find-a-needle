@@ -27,7 +27,6 @@ ex:LaptopChargers a skos:Concept ; skos:broader ex:Chargers ;
     skos:prefLabel "Laptop chargers"@en .
 ```
 
-
 ## What to look for
 
 **GQ-03**: the 45W barrel charger was **#2 in Hybrid**. Here it is flagged, with the two checks it failed: its plug and its wattage.

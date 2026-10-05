@@ -2,7 +2,7 @@
 
 Repo-wide rules (teaching principles, commenting standard, vocabulary) are in the [root CLAUDE.md](../../CLAUDE.md). The decision is [ADR-0014](../../docs/decisions/0014-web-ui-architecture.md).
 
-**The UI is the talk.** It replaces external slides: home, talk mode, the presenter's slide deck (`/slides`, with a demo window that follows it), demo, glossary and ADR pages. It is an instrument for the experiment: same input, switchable technique, visible internals.
+**The UI is the talk.** It replaces external slides: home, the presenter's slide deck (`/slides`, with a demo window that follows it), demo, glossary and ADR pages. It is an instrument for the experiment: same input, switchable technique, visible internals.
 
 ## Stack and constraints
 
@@ -15,7 +15,7 @@ Repo-wide rules (teaching principles, commenting standard, vocabulary) are in th
 
 | Path | Holds |
 |---|---|
-| `content/` | `speaker.md`, `talk.json` + `talk/*.md`, `slides.json` + `slides/*.md`, `stages/{stage}.md`, `going-further/{stage}.md`, `glossary.json` |
+| `content/` | `home.md`, `speaker.md`, `slides.json` + `slides/*.md`, `stages/{stage}.md`, `going-further/{stage}.md`, `glossary.json` |
 | `src/api/schema.d.ts` | **Generated** by `npm run gen:api` while `aspire run` is running (it reads `http://localhost:5377/openapi/v1.json`). Never hand-edit; commit it |
 | `src/api/client.ts` | Small typed `fetch` wrapper: one function per endpoint; errors become `ApiError` with the ProblemDetails |
 | `src/api/answerEvents.ts` | Hand-typed SSE event shapes (OpenAPI can't describe them) |
@@ -63,7 +63,7 @@ Decided in [ADR-0014 § Visual design](../../docs/decisions/0014-web-ui-architec
 - API types come from `schema.d.ts`. Don't hand-duplicate DTOs. No `any`; use `unknown` and narrow.
 - Every request gets an `AbortController`; switching stage cancels the previous search and stream.
 - `usePipelineSearch` and `useAnswerStream` run **in parallel**. Results never wait for the LLM.
-- Demo state lives in the URL (`/demo?stage=hybrid&q=…&gq=GQ-03`); talk position lives in the route (`/talk/:step`).
+- Demo state lives in the URL (`/demo?stage=hybrid&q=…&gq=GQ-03`); the slide position lives in the route (`/slides/:slide`).
 - Tailwind classes in markup; no CSS-in-JS. Put conditional class logic in a small `cn()` helper.
 - Render maths and formulas as monospaced text from the API.
 - Trace renderers map known `details` keys to purpose-built views, falling back to pretty-printed JSON.
@@ -91,9 +91,9 @@ Trace renderers open with one line: `// RrfTable — shows each item's per-list 
 ## Accessibility and presentation
 
 - Semantic landmarks and visible focus. Badges use text as well as colour.
-- The stepper and the stage tabs are ARIA tablists. Talk mode is fully keyboard-operable: ←/→ move **one talk step**, landing on that step's tab; H / R / A / U / G jump to a tab, and a letter never changes where → leads. Hover cards also open on focus.
+- The stepper and the stage tabs are ARIA tablists. H / R / A / U / G jump to a tab on the stage screen. Hover cards also open on focus.
 - Text contrast ≥ 4.5:1 (3:1 for large text) in both themes.
-- Readable on a 1280×720 projector in presentation mode (on by default in talk and slides mode). The deck is keyboard-operable too: ←/→ and PageUp/PageDown move one slide, **D** opens the demo.
+- Readable on a 1280×720 projector in presentation mode (on by default on the slides). The deck is keyboard-operable too: ←/→ and PageUp/PageDown move one slide, **D** opens the demo.
 
 ## Checks
 

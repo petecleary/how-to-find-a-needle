@@ -10,6 +10,7 @@ const values: StageOptionValues = {
     applyConstraints: true,
     audience: 'novice',
     applyPedagogy: true,
+    model: null,
 };
 
 describe('StageOptions', () => {
@@ -54,5 +55,15 @@ describe('StageOptions', () => {
         expect(onRefreshAnswer).toHaveBeenCalledOnce();
         expect(screen.queryByRole('switch')).toBeNull();
         expect(screen.queryByRole('radio')).toBeNull();
+    });
+    it('offers the model on Stages 6 and 7 only', () => {
+        const { rerender } = render(<StageOptions stage="rag" {...values} onChange={vi.fn()} />);
+        expect(screen.getByRole('button', { name: 'Models and API keys' })).not.toBeNull();
+
+        rerender(<StageOptions stage="pedagogy" {...values} onChange={vi.fn()} />);
+        expect(screen.getByRole('button', { name: 'Models and API keys' })).not.toBeNull();
+
+        rerender(<StageOptions stage="hybrid" {...values} onChange={vi.fn()} />);
+        expect(screen.queryByRole('button', { name: 'Models and API keys' })).toBeNull();
     });
 });

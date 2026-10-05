@@ -157,6 +157,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The default model and the models each enabled provider offers, listed live */
+        get: operations["PISearchApiEndpointsModelsModelsEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** LLM providers, their settings and key sources (never the keys) */
+        get: operations["PISearchApiEndpointsModelsProvidersEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/providers/{id}/key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Hold a provider's API key for this session only (never saved or returned) */
+        put: operations["PISearchApiEndpointsModelsSetProviderKeyEndpoint"];
+        post?: never;
+        /** Forget a provider's session key */
+        delete: operations["PISearchApiEndpointsModelsRemoveProviderKeyEndpoint"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/providers/{id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test a provider's connection by listing its models */
+        post: operations["PISearchApiEndpointsModelsTestProviderEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/providers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a provider's base URL, extra models or whether the picker lists it */
+        put: operations["PISearchApiEndpointsModelsUpdateProviderEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/brands": {
         parameters: {
             query?: never;
@@ -293,6 +379,12 @@ export interface components {
         CompatibilityStatus: "NotEvaluated" | "Compatible" | "Incompatible" | "Unknown";
         /** @enum {unknown} */
         ConceptMatch: "InConcept" | "OutOfConcept" | "NoConcept" | null;
+        ConnectionTest: {
+            ok: boolean;
+            message: string;
+            /** Format: int32 */
+            models: number;
+        };
         DebugTrace: {
             steps: components["schemas"]["TraceStep"][];
         };
@@ -356,6 +448,34 @@ export interface components {
             filters: null | components["schemas"]["GoldenQueryFilters"];
             context: null | components["schemas"]["GoldenQueryContext"];
         };
+        /** @enum {unknown} */
+        KeySource: "None" | "Configuration" | "Session";
+        LlmProviderStatus: {
+            id: string;
+            name: string;
+            detail: string;
+            needsKey: boolean;
+            isLocal: boolean;
+            enabled: boolean;
+            keyVariable: null | string;
+            keySource: components["schemas"]["KeySource"];
+            defaultBaseUrl: null | string;
+            baseUrl: null | string;
+            extraModels: string[];
+        };
+        ModelCatalogue: {
+            default: string;
+            providers: components["schemas"]["ProviderModels"][];
+        };
+        ModelInfo: {
+            ref: string;
+            model: string;
+            isDefault: boolean;
+            tools?: null | boolean;
+            vision?: null | boolean;
+            /** Format: int32 */
+            contextLength?: null | number;
+        };
         ProblemDetails: {
             type?: null | string;
             title?: null | string;
@@ -376,6 +496,13 @@ export interface components {
             score?: null | number;
             signals: components["schemas"]["CandidateSignals"];
             compatibility: components["schemas"]["CompatibilityResult"];
+        };
+        ProviderModels: {
+            id: string;
+            name: string;
+            isLocal: boolean;
+            models: components["schemas"]["ModelInfo"][];
+            problem?: null | string;
         };
         RankBound: {
             /** Format: int32 */
@@ -408,6 +535,7 @@ export interface components {
             applyConstraints?: boolean;
             audience?: string;
             applyPedagogy?: boolean;
+            model?: null | string;
             explain?: boolean;
         };
         SearchRequest: {
@@ -434,6 +562,10 @@ export interface components {
             results: components["schemas"]["ProductResult"][];
             debugTrace: components["schemas"]["DebugTrace"];
         };
+        SetProviderKeyRequest: {
+            id?: string;
+            key?: string;
+        };
         TaxonomyNode: {
             notation: string;
             label: string;
@@ -455,6 +587,12 @@ export interface components {
             parameters?: null | Record<string, unknown>;
             details?: null | Record<string, unknown>;
             notes?: string[];
+        };
+        UpdateProviderRequest: {
+            id?: string;
+            enabled?: null | boolean;
+            baseUrl?: null | string;
+            extraModels?: null | string[];
         };
         ValidationProblem: {
             type: string;
@@ -850,6 +988,174 @@ export interface operations {
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
+            };
+        };
+    };
+    PISearchApiEndpointsModelsModelsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelCatalogue"];
+                };
+            };
+        };
+    };
+    PISearchApiEndpointsModelsProvidersEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmProviderStatus"][];
+                };
+            };
+        };
+    };
+    PISearchApiEndpointsModelsSetProviderKeyEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetProviderKeyRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PISearchApiEndpointsModelsRemoveProviderKeyEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PISearchApiEndpointsModelsTestProviderEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionTest"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PISearchApiEndpointsModelsUpdateProviderEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProviderRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

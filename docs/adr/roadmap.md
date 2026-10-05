@@ -654,6 +654,32 @@ A rehearsal audience found the talk steps too dense: each stage opens on the liv
 
 ---
 
+## Phase 7 — Bring your own model
+
+Learners who clone the repo have a different local model, or a key for a different provider, and want to compare answers without editing config and restarting ([ADR-0019](0019-bring-your-own-model.md), amending ADR-0015 and ADR-0003). The design is ported from the MOCA example app's ADR-0005, adapted to this repo's rules (no caching, no retries, same request for every stage). Built on the `byom/bring-your-own-model` branch.
+
+1. **ADRs first:** ADR-0019 (working and public copies); ADR-0015's "fixed for a run" and ADR-0003's `options` amended to point at it.
+2. **API:** the provider catalogue (six providers), `ModelRef`, `LlmSettingsStore` (`~/.needle/settings.json`), `ISecretStore` (session keys over configuration), `LlmModelRegistry` (a client per request, live model lists), `options.model` with validation, and the provider and model endpoints. Stages 6–7 resolve the model per request.
+3. **UI:** a model picker in the Stage 6–7 options (in the URL, never the key) and a *Models and API keys* sheet from the header.
+4. **Tests:** unit tests for parsing, key precedence, settings, resolution, chat options and trace; an integration test that names the model in the request; UI tests for the search state and the picker.
+
+### Acceptance criteria
+- A Stage 6 request with `options.model` naming an installed Ollama model answers with that model, and `meta` and the trace say so.
+- A request without `options.model` behaves exactly as before (golden queries, bake-off).
+- A key pasted in Settings works without a restart, is gone after a restart, and never appears in a response, the URL, a log, a trace or `~/.needle/settings.json`.
+- A provider with no key, or not running, gives a `503` with the fix; Stages 1–5 are unaffected.
+- `dotnet build` 0 warnings; unit, integration and UI checks pass.
+- Hosted providers are wired and unit-tested; which ones were run live is recorded here.
+
+### Verification (2026-10-05)
+- `dotnet build` 0 warnings; 316 unit tests pass; 55 integration tests pass (bake-off skipped, opt-in), including `GQ03_Rag_NamedModel_AnswersWithThatModel` live against Ollama.
+- Checked by hand against `aspire run`: `options.model = "ollama/qwen3:0.6b"` answered with that model and the trace showed it; the `compat` provider pointed at Ollama's `/v1` listed models and answered; a pasted session key was reported as `Session` and appeared in no response and not in `settings.json`; a provider without a key returned a `503` with the fix.
+- UI: 371 tests pass, lint and typecheck clean for the changed files. Not yet checked in a browser.
+- **Not run live:** OpenAI, Anthropic, Azure OpenAI, Gemini (no keys during the build). ADR-0019 stays Proposed until the UI is checked in a browser and Pete signs it off.
+- Found on `main`, unrelated: `src/web-ui/src/components/trace/FilterSummary.tsx` is unused and fails `tsc` (it imports a `FilterDetails` type that doesn't exist), so `npm run build` fails; and Prettier flags five content files and `SpeakerCard.tsx`.
+
+---
+
 ## Traceability
 
 | ADR | Phase(s) |
@@ -667,5 +693,7 @@ A rehearsal audience found the talk steps too dense: each stage opens on the liv
 | 0012 | — (Rejected by ADR-0018) |
 | 0013 | 1 (vocabulary), 2 (stage) |
 | 0014 | 3 (+ AI panels in 4, clean-up, copy review and acceptance in 5, slides mode in 6) |
-| 0015–0017 | 4 |
+| 0015 | 4 (+ amended by 0019 in 7) |
+| 0016–0017 | 4 |
 | 0018 | 0–2 (rework), 4 (pedagogy baseline), 5 (going-further content) |
+| 0019 | 7 |
