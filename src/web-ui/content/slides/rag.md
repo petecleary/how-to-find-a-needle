@@ -1,0 +1,4 @@
+- Search finds the best _N_ results; they go into the prompt.
+- The [LLM](term:llm) answers only from that [evidence](term:evidence-set), citing each source.
+- Results show straight away; the answer streams in after.
+- LLM output is untrusted: check every [citation](term:citation), and show warnings.

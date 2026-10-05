@@ -78,7 +78,7 @@ src/
       models/                     # downloaded ONNX models (gitignored; README committed)
         nomic/                    # model_int8.onnx, tokenizer.json
 
-  web-ui/                         # React + Vite + TS + Tailwind + shadcn/ui; the talk itself (no slides)
+  web-ui/                         # React + Vite + TS + Tailwind + shadcn/ui; the talk itself (talk mode, and a slide deck with a demo that follows it)
     content/                      # speaker.md, talk.json + talk/*.md, stages/*.md, going-further/*.md, glossary.json
     src/
       api/                        # schema.d.ts (openapi-typescript), client.ts, answerEvents.ts (hand-typed SSE events)
@@ -103,7 +103,7 @@ tests/
 | Fusion | Reciprocal Rank Fusion (k = 60), pure C# | [0011](0011-hybrid-search-rrf.md) |
 | Ontology | dotNetRDF (in-memory), hand-written Turtle: standard SKOS (taxonomy, synonyms, language-tagged labels, value vocabularies) plus a small class-level rule vocabulary beyond SKOS; SPARQL lookups; no instance data | [0013](0013-domain-ontology-and-compatibility.md) |
 | LLM (stages 6–7) | `Microsoft.Extensions.AI` `IChatClient`, provider set in config: existing local **Ollama** (OpenAI-compatible `/v1`), **OpenAI**, or **Anthropic** (official `Anthropic` .NET SDK). No containers, **no LiteLLM** | [0015](0015-llm-hosting-and-client.md) |
-| Frontend | React + Vite + TypeScript, Tailwind, shadcn/ui, Lucide, React Router, react-markdown; `openapi-typescript` types; Vite proxy (no CORS). Home, talk mode, demo, glossary and ADR pages **replace slides** | [0014](0014-web-ui-architecture.md) |
+| Frontend | React + Vite + TypeScript, Tailwind, shadcn/ui, Lucide, React Router, react-markdown; `openapi-typescript` types; Vite proxy (no CORS). Home, talk mode, a slide deck (`/slides`) with a demo window that follows it, demo, glossary and ADR pages; no external slides | [0014](0014-web-ui-architecture.md) |
 | Testing | xUnit unit tests + `Aspire.Hosting.Testing` golden-query integration tests (structural checks only for the LLM stages); Vitest for the UI's hooks, parsers, renderers and content | [0002](0002-solution-structure-and-orchestration.md) |
 | API docs | Scalar + `Microsoft.AspNetCore.OpenApi` | — |
 
@@ -174,7 +174,7 @@ Every stage from 2 onwards has a **"Going further"** tab: where that technique g
 
 ## 5. Frontend Layout
 
-The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a keyboard-driven talk mode that replaces slides, the live demo, a glossary with inline term definitions, and the ADRs. The demo shows how the same query changes across the stages. It is branded Pi & Mash, in light and dark themes. → [ADR-0014](0014-web-ui-architecture.md), pictures in [docs/design](../design/README.md)
+The `web-ui` **is the talk**. It has a home page (speaker, abstract, thesis), a keyboard-driven talk mode for self-guided learners, a slide deck for the presenter (`/slides`, with the demo in a second window that follows the current slide over `BroadcastChannel`), the live demo, a glossary with inline term definitions, and the ADRs. The demo shows how the same query changes across the stages. It is branded Pi & Mash, in light and dark themes. → [ADR-0014](0014-web-ui-architecture.md), pictures in [docs/design](../design/README.md)
 
 ```text
 +------------------------------------------------------------------------------------------+

@@ -1,0 +1,4 @@
+- Brand, voltage, price: a `WHERE` clause.
+- Exact attributes give exact answers. No ranking needed.
+- It knows nothing about the words in the search box.
+- Only as good as the attributes you store.

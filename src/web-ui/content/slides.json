@@ -1,0 +1,232 @@
+[
+  {
+    "id": "title",
+    "section": "intro",
+    "title": "How to Find a Needle",
+    "file": "slides/title.md",
+    "layout": "title"
+  },
+  {
+    "id": "the-triad",
+    "section": "intro",
+    "title": "Three questions and seven stages",
+    "file": "slides/the-triad.md"
+  },
+  {
+    "id": "structured",
+    "section": "structured",
+    "title": "Filters are exact",
+    "file": "slides/structured.md",
+    "demo": {
+      "stage": "structured",
+      "goldenQuery": "GQ-01",
+      "tab": "results"
+    }
+  },
+  {
+    "id": "keyword",
+    "section": "keyword",
+    "title": "Words, not meaning",
+    "file": "slides/keyword.md",
+    "demo": {
+      "stage": "keyword",
+      "goldenQuery": "GQ-02",
+      "tab": "results"
+    }
+  },
+  {
+    "id": "the-needle",
+    "section": "needle",
+    "title": "Let's find a fictional needle",
+    "file": "slides/the-needle.md"
+  },
+  {
+    "id": "vector-embeddings",
+    "section": "vector",
+    "title": "Meaning as numbers",
+    "file": "slides/vector-embeddings.md",
+    "demo": {
+      "stage": "vector",
+      "goldenQuery": "GQ-02",
+      "tab": "results"
+    }
+  },
+  {
+    "id": "vector-chunking",
+    "section": "vector",
+    "title": "What gets embedded: chunks",
+    "file": "slides/vector-chunking.md",
+    "demo": {
+      "stage": "vector",
+      "goldenQuery": "GQ-03",
+      "tab": "going-further"
+    }
+  },
+  {
+    "id": "vector-nearest",
+    "section": "vector",
+    "title": "Nearest neighbours",
+    "file": "slides/vector-nearest.md",
+    "demo": {
+      "stage": "vector",
+      "goldenQuery": "GQ-03",
+      "tab": "results"
+    }
+  },
+  {
+    "id": "hybrid-two-retrievers",
+    "section": "hybrid",
+    "title": "Get the best of both worlds",
+    "file": "slides/hybrid-two-retrievers.md",
+    "demo": {
+      "stage": "hybrid",
+      "goldenQuery": "GQ-04",
+      "tab": "results"
+    }
+  },
+  {
+    "id": "hybrid-rrf",
+    "section": "hybrid",
+    "title": "Rank the results to find the best match",
+    "file": "slides/hybrid-rrf.md",
+    "demo": {
+      "stage": "hybrid",
+      "goldenQuery": "GQ-04",
+      "tab": "under-the-hood"
+    }
+  },
+  {
+    "id": "ontology-domain",
+    "section": "ontology",
+    "title": "Search doesn't know your domain",
+    "file": "slides/ontology-domain.md",
+    "demo": {
+      "stage": "ontology",
+      "goldenQuery": "GQ-03",
+      "tab": "how-it-works",
+      "options": {
+        "expandSynonyms": true,
+        "applyConstraints": true
+      }
+    }
+  },
+  {
+    "id": "ontology-options",
+    "section": "ontology",
+    "title": "Ontologies: from light to heavy",
+    "file": "slides/ontology-options.md",
+    "demo": {
+      "stage": "ontology",
+      "goldenQuery": "GQ-03",
+      "tab": "under-the-hood",
+      "options": {
+        "expandSynonyms": true,
+        "applyConstraints": true
+      }
+    }
+  },
+  {
+    "id": "ontology-skos",
+    "section": "ontology",
+    "title": "SKOS: names, synonyms and hierarchy",
+    "file": "slides/ontology-skos.md",
+    "demo": {
+      "stage": "ontology",
+      "goldenQuery": "GQ-07",
+      "tab": "results",
+      "options": {
+        "expandSynonyms": true,
+        "applyConstraints": true
+      }
+    }
+  },
+  {
+    "id": "ontology-where",
+    "section": "ontology",
+    "title": "Where it runs: in code or the database",
+    "file": "slides/ontology-where.md",
+    "demo": {
+      "stage": "ontology",
+      "goldenQuery": "GQ-02",
+      "tab": "under-the-hood",
+      "options": {
+        "expandSynonyms": true,
+        "applyConstraints": true
+      }
+    }
+  },
+  {
+    "id": "ontology-clarity",
+    "section": "ontology",
+    "title": "Clarity for search and for the LLM",
+    "file": "slides/ontology-clarity.md",
+    "demo": {
+      "stage": "ontology",
+      "goldenQuery": "GQ-03",
+      "tab": "results",
+      "options": {
+        "expandSynonyms": true,
+        "applyConstraints": true
+      }
+    }
+  },
+  {
+    "id": "rag",
+    "section": "rag",
+    "title": "Retrieve, then generate",
+    "file": "slides/rag.md",
+    "demo": {
+      "stage": "rag",
+      "goldenQuery": "GQ-03",
+      "tab": "answer"
+    }
+  },
+  {
+    "id": "pedagogy-explain",
+    "section": "pedagogy",
+    "title": "Explain, don't just answer",
+    "file": "slides/pedagogy-explain.md",
+    "demo": {
+      "stage": "pedagogy",
+      "goldenQuery": "GQ-03",
+      "tab": "answer",
+      "options": {
+        "audience": "novice",
+        "applyPedagogy": false
+      }
+    }
+  },
+  {
+    "id": "pedagogy-audiences",
+    "section": "pedagogy",
+    "title": "Same facts, different audiences",
+    "file": "slides/pedagogy-audiences.md",
+    "demo": {
+      "stage": "pedagogy",
+      "goldenQuery": "GQ-03",
+      "tab": "answer",
+      "options": {
+        "audience": "expert",
+        "applyPedagogy": true
+      }
+    }
+  },
+  {
+    "id": "going-further",
+    "section": "going-further",
+    "title": "Going further",
+    "file": "slides/going-further.md",
+    "demo": {
+      "stage": "hybrid",
+      "goldenQuery": "GQ-04",
+      "tab": "going-further"
+    }
+  },
+  {
+    "id": "summary",
+    "section": "summary",
+    "title": "AI makes good search more important",
+    "file": "slides/summary.md",
+    "layout": "speaker"
+  }
+]

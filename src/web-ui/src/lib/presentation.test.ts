@@ -9,6 +9,12 @@ describe('isPresentationOn', () => {
         expect(isPresentationOn(null, '/talking-points')).toBe(false);
     });
 
+    it('is on for the slide deck too', () => {
+        expect(isPresentationOn(null, '/slides/hybrid-rrf')).toBe(true);
+        expect(isPresentationOn(null, '/slides')).toBe(true);
+        expect(isPresentationOn(null, '/slideshow')).toBe(false);
+    });
+
     it("follows the viewer's choice on every page once they make one", () => {
         expect(isPresentationOn('off', '/talk/intro')).toBe(false);
         expect(isPresentationOn('on', '/demo')).toBe(true);

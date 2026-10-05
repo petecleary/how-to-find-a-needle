@@ -1,0 +1,7 @@
+- **In the app:** load the vocabulary once, at start-up.
+    - Ingress: recognise terms, add synonyms and narrower concepts.
+    - Egress: classify results, check rules, add definitions for the LLM.
+- **In the database:** stitch native features together.
+    - Postgres: `ltree` hierarchy, `TEXT[]` synonyms, JSONB language labels.
+    - OpenSearch / Elasticsearch: synonym graphs, ingest and search pipelines.
+- **Trade-off:** one model in code, or three features kept in step.

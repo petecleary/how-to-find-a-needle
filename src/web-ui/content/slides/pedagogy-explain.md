@@ -1,0 +1,4 @@
+- A right answer isn't always an understood one.
+- A second [LLM](term:llm) call explains _why_, using the ontology's labels and definitions.
+- A structure: Decision, Concepts, Near miss, Rule of thumb, Next step.
+- Against a [baseline](term:baseline-explanation) prompt with the same facts, only the teaching design changes.

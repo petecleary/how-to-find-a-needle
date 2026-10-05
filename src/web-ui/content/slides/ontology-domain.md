@@ -1,0 +1,5 @@
+- Keyword search matches words. Vector search matches meaning.
+- Neither _knows_ that "power brick" and "cargador" both mean _charger_.
+- Neither knows what fits, what's allowed or what's required.
+- An [ontology](term:ontology) writes down what things are and how they relate.
+- One shared, versioned file that people, code and LLMs can read.

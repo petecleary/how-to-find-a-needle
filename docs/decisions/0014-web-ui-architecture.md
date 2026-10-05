@@ -10,6 +10,8 @@ The audience needs to watch the *same query* change as the presenter steps throu
 
 **The UI replaces the slides.** Talk content, live demo, glossary and these decisions live in one place, so the talk and the demo can't drift apart, and anyone who clones the repository gets the whole talk.
 
+A rehearsal changed one part of this. The talk steps opened each stage on the live stage screen, and the audience met tabs, filters and results before the concept had been explained. So the UI now also has a **slide deck** (`/slides`): simple concept slides, with the demo in a second window that follows the current slide. The slides are markdown in the same repository, pointing at the same golden queries, so they can't drift from the demo either.
+
 The frontend has to be as readable as the backend: no black-box component libraries, no state management to study first.
 
 ## Decision
@@ -26,7 +28,8 @@ The frontend has to be as readable as the backend: no black-box component librar
 |---|---|
 | `/` | **Home:** speaker, talk title, the thesis and the triad (Search → Ontology → Pedagogy) |
 | `/talk/:step/:tab?` | **Talk mode:** a linear sequence driven by ← and →, one position per step. Stage steps show the live stage screen with a golden query and preset options |
-| `/demo` | **Demo:** the same stage screen, with a filter sidebar and every tab |
+| `/slides/:slide?` | **Slides:** the presenter's deck, one full-screen concept slide per position. **D** opens the demo for the current slide |
+| `/demo` | **Demo:** the same stage screen, with a filter sidebar and every tab. Opened from the deck, it follows the slides |
 | `/glossary` | **Glossary:** searchable terms and acronyms |
 | `/decisions`, `/decisions/:id` | **Decisions:** these records, rendered |
 
@@ -76,13 +79,22 @@ Each stage has five tabs, so the presenter controls what the audience looks at, 
 - **Content steps** (`intro` and `summary` kinds) are full-width markdown with no demo. They can sit anywhere in the order, not only at the ends, so a turn in the argument can have a page of its own.
 - Changes the presenter makes during a step (a toggle, the query) last until the talk moves on; the next step starts from its own preset.
 
+### Slides mode: a deck and a demo that follows it
+
+`content/slides.json` lists the slides in order, and each slide's text is `content/slides/{id}.md`. A slide can name a **demo**: a stage, a golden query, preset options and a tab, the same fields as a talk step.
+
+- **Readable from the back row:** a short title and at most five short bullets. A content test enforces the limits; the detail lives in the stage explanations and these records.
+- **Several slides for Stages 3, 4, 5 and 7**, one each for Stages 1, 2 and 6: the first two techniques need no new vocabulary, and by Stage 6 the audience knows retrieval, so RAG adds only one step, the prompt.
+- **Two windows, one channel.** The deck posts the current slide on a `BroadcastChannel`, which lets two tabs of the same browser talk with no server. A demo window opened from the deck loads each slide's demo into its URL, so the back button steps through what was shown. A slide with no demo changes only the "Following" badge.
+- `/talk` stays: it's the self-guided path for anyone reading along after the talk.
+
 ### Visual design
 
 - **Brand colours carry the argument.** The three logo colours mark the triad: **purple** for Search (Stages 1–4), **green** for Ontology (Stage 5), **orange** for Pedagogy (Stages 6–7). RAG is orange, not purple: it retrieves nothing new, it decides what to say.
 - **Status colours are separate.** Compatible is green, **Incompatible is red, never orange** (orange means Pedagogy), Unknown is amber. Every badge has an icon *and* text.
 - **Light and dark themes** from CSS variables, following the system setting, with a toggle.
 - **Type:** Dosis for the logo and talk title only; **Atkinson Hyperlegible** for everything else, because l/I/1 and 0/O are distinct, which matters for product IDs on a projector; JetBrains Mono for SQL and formulas. All three are **self-hosted**, so the talk works without venue Wi-Fi.
-- **Presentation mode** enlarges text for a projector, and is on by default in talk mode.
+- **Presentation mode** enlarges text for a projector, and is on by default in talk and slides mode.
 
 ### Quality bar
 
@@ -102,7 +114,9 @@ Each stage has five tabs, so the presenter controls what the audience looks at, 
 
 | Option | Why not (for this repository) |
 |---|---|
-| Slides plus a separate demo | Content drifts, context-switching on stage, and learners don't get the talk |
+| Slides in PowerPoint or Keynote plus a separate demo | Content drifts, and learners don't get the talk. The deck lives in the UI instead |
+| Slides and demo in one window, toggled with a key | The presenter loses the slide while demoing, and a second screen can't show both |
+| `localStorage` events to keep the windows in step | Works, but a message becomes shared state that outlives the talk; `BroadcastChannel` says what it means |
 | MDX | Mixes code into content and adds build tooling |
 | Serve the decisions from an API endpoint | A backend job unrelated to search; a build-time import is simpler |
 | Next.js | Server rendering isn't needed; more concepts to learn |
@@ -120,5 +134,6 @@ Each stage has five tabs, so the presenter controls what the audience looks at, 
 - Put content in content files and behaviour in code, so each stays easy to change.
 - Explaining terms where they appear is pedagogy applied to the tool itself.
 - Generated API types keep the frontend and backend honest with each other.
+- **Explain, then show.** Rehearsal showed an audience follows a live screen far better after a simple slide has told it what to look for.
 - **Design with real data.** The design mock-ups, built from real API output, showed that at a page size of 10, Stage 5's flagged items weren't on page one.
 - **A page size is an assumption about your data.** "50 results is every candidate" was true with 60 products and false with 300. Growing the catalog is what exposed it.

@@ -40,7 +40,7 @@ The talk is deliberately practical and experimental: the same dataset is used th
 - **RDF/Turtle ontology** — a SKOS taxonomy of product categories, multilingual synonyms and class-level compatibility rules (e.g. "a laptop charger's connector must match the laptop's charging port"). It describes product *types*, never individual products.
 - **.NET Aspire AppHost** ([src/PI.AppHost](src/PI.AppHost)) to orchestrate the API, database, and dependencies locally.
 - **An LLM for Stages 6–7** through `Microsoft.Extensions.AI`'s `IChatClient`: a local [Ollama](https://ollama.com/) by default, or Claude with your own API key. Answers stream in, cite the products they use, and are checked when complete.
-- **A React web UI** ([src/web-ui](src/web-ui)) that is the talk itself (no slides): the audience sees the same query go through simple filtering → BM25-style keyword → vector → hybrid → ontology → RAG → pedagogy, with the trace behind every result.
+- **A React web UI** ([src/web-ui](src/web-ui)) that is the talk itself (a slide deck and a demo that follows it, no external slides): the audience sees the same query go through simple filtering → BM25-style keyword → vector → hybrid → ontology → RAG → pedagogy, with the trace behind every result.
 
 ## Dataset
 
@@ -94,6 +94,10 @@ Embeddings (nomic): 300 loaded from file, 0 embedded live, 0 missing (0 already 
 ```
 
 Product vectors come from the committed `assets/data/embeddings/nomic.jsonl`, so the first run takes seconds, not minutes. A second run logs `0 inserted, 0 updated, 0 deleted` and `(300 already current)`, and starts noticeably faster.
+
+**Present the talk**
+
+Open `/slides` (or **Present the slides** on Home) for the presenter's deck: ← and → move one slide, and **D** opens the demo in a second window. Put that window on the other screen: it follows the deck, loading each slide's stage and golden query, so you can switch to it when a slide says "watch this". `/talk` is the same talk as a self-guided walk through the live stage screens.
 
 **Try the search stages**
 

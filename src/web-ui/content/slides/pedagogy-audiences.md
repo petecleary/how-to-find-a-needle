@@ -1,0 +1,4 @@
+- **Novice:** everyday words, like "power brick".
+- **Enthusiast:** proper names, like USB-C Power Delivery.
+- **Expert:** spec terms, like `wattageW ≥ minChargerWattageW`.
+- The product and the reasons stay the same. The words change.

@@ -28,17 +28,24 @@ export interface TalkStepOptions {
     applyPedagogy?: boolean;
 }
 
-export interface TalkStep {
+/**
+ * What seeds a stage screen: a stage, a golden query, preset options and the tab to land on. A talk step and a
+ * slide's demo (lib/slides.ts) both name these, so the two start the stage screen in exactly the same way.
+ */
+export interface StageSeed {
+    stage?: string;
+    goldenQuery?: string;
+    options?: TalkStepOptions;
+    /** The one tab to land on. Defaults to How it works. */
+    tab?: string;
+}
+
+export interface TalkStep extends StageSeed {
     id: string;
     kind: TalkStepKind;
     title: string;
     /** Path under content/, e.g. "talk/intro.md". A stage step's file is the caption above its tabs. */
     file: string;
-    stage?: string;
-    goldenQuery?: string;
-    options?: TalkStepOptions;
-    /** The one tab a stage step lands on. Defaults to Results, or Answer in Stages 6–7. */
-    tab?: string;
 }
 
 // JSON types strings loosely, so the kinds and stages are checked at runtime by talk.test.ts instead.
@@ -81,15 +88,16 @@ export function isStageTab(value: string): value is StageTab {
  * the technique is explained before its results are argued about. Intro and summary steps have none.
  */
 export function stepTab(step: TalkStep): StageTab | null {
-    if (step.kind !== 'stage') {
-        return null;
-    }
+    return step.kind === 'stage' ? seedTab(step) : null;
+}
 
-    const stage = step.stage !== undefined && isPipelineStage(step.stage) ? step.stage : null;
+/** The tab a seed lands on: its own `tab` when that tab exists and the stage has it, or How it works. */
+export function seedTab(seed: StageSeed): StageTab {
+    const stage = seed.stage !== undefined && isPipelineStage(seed.stage) ? seed.stage : null;
 
-    if (step.tab !== undefined && isStageTab(step.tab)) {
-        if (stage === null || isTabAvailable(step.tab, stage)) {
-            return step.tab;
+    if (seed.tab !== undefined && isStageTab(seed.tab)) {
+        if (stage === null || isTabAvailable(seed.tab, stage)) {
+            return seed.tab;
         }
     }
 
@@ -141,13 +149,21 @@ export function talkStartPath(steps: readonly TalkStep[] = talkSteps): string {
  * queries have loaded, its golden query's query, device and filters.
  */
 export function talkStepState(step: TalkStep, preset: GoldenQuery | null): SearchState {
+    return seededState(step, preset);
+}
+
+/**
+ * The stage screen's starting state for any seed: its stage, its preset options, its tab and, when the golden
+ * query is given, that query's inputs. Everything else is the default.
+ */
+export function seededState(seed: StageSeed, preset: GoldenQuery | null): SearchState {
     const stage =
-        step.stage !== undefined && isPipelineStage(step.stage) ? step.stage : defaultSearchState.stage;
+        seed.stage !== undefined && isPipelineStage(seed.stage) ? seed.stage : defaultSearchState.stage;
     const state: SearchState = {
         ...defaultSearchState,
-        ...step.options,
+        ...seed.options,
         stage,
-        tab: stepTab(step) ?? defaultSearchState.tab,
+        tab: seedTab(seed),
     };
 
     return preset === null ? state : applyGoldenQuery(state, preset);

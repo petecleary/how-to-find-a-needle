@@ -1,0 +1,5 @@
+- An [embedding](term:embedding) model turns text into a list of numbers.
+- Text with similar meaning gets similar numbers.
+- "Power brick" lands near "laptop charger", with no shared words.
+- Local or hosted models; from hundreds to thousands of numbers.
+- Choose one model: vectors from different models can't be compared.

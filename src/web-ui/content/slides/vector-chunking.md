@@ -1,0 +1,8 @@
+- One vector per [chunk](term:chunking) of text, not per document.
+- Too big and the meaning blurs. Too small and context is lost.
+- The chunk is what search finds, and what gets cited.
+- A product record is one chunk. A manual is hundreds.
+- Common ways to split:
+    - Fixed size: every _n_ tokens. Simple, but cuts sentences.
+    - Overlapping windows: repeat a little across each cut.
+    - By structure: headings, sections, list items.
