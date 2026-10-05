@@ -39,7 +39,7 @@ The talk is deliberately practical and experimental: the same dataset is used th
 - **Local embeddings** — [Nomic](https://www.nomic.ai/) Embed Text v1.5 runs via ONNX Runtime, no external API calls required.
 - **RDF/Turtle ontology** — a SKOS taxonomy of product categories, multilingual synonyms and class-level compatibility rules (e.g. "a laptop charger's connector must match the laptop's charging port"). It describes product *types*, never individual products.
 - **.NET Aspire AppHost** ([src/PI.AppHost](src/PI.AppHost)) to orchestrate the API, database, and dependencies locally.
-- **An LLM for Stages 6–7** through `Microsoft.Extensions.AI`'s `IChatClient`: a local [Ollama](https://ollama.com/) by default, or Claude with your own API key. Answers stream in, cite the products they use, and are checked when complete.
+- **An LLM for Stages 6–7** through `Microsoft.Extensions.AI`'s `IChatClient`: a local [Ollama](https://ollama.com/) by default, or bring your own model (OpenAI, Claude, Azure OpenAI, Gemini or any OpenAI-compatible server) and switch between them in the UI. Answers stream in, cite the products they use, and are checked when complete.
 - **A React web UI** ([src/web-ui](src/web-ui)) that is the talk itself (a slide deck and a demo that follows it, no external slides): the audience sees the same query go through simple filtering → BM25-style keyword → vector → hybrid → ontology → RAG → pedagogy, with the trace behind every result.
 
 ## Dataset
@@ -54,7 +54,7 @@ The demo uses a single hand-curated, synthetic electronics catalog throughout �
 - [.NET Aspire CLI](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling)
 - [Node.js](https://nodejs.org/) 24 LTS, for the web UI (the version is pinned in `src/web-ui/.nvmrc`)
 - [Hugging Face CLI](https://huggingface.co/docs/huggingface_hub/guides/cli), to download the local embedding model
-- For Stages 6–7: [Ollama](https://ollama.com/), or an Anthropic API key
+- For Stages 6–7: [Ollama](https://ollama.com/), or an API key for a hosted provider
 
 **Download the embedding model**
 
@@ -64,7 +64,7 @@ Without the model, structured and keyword search (Stages 1–2) still work, and 
 
 **Set up the LLM (Stages 6–7)**
 
-RAG and pedagogy (Stages 6 and 7) need an LLM. The settings are the `Llm` section of [src/PI.SearchApi/appsettings.json](src/PI.SearchApi/appsettings.json). The default is a local Ollama:
+RAG and pedagogy (Stages 6 and 7) need an LLM. The **default model** is the `Llm` section of [src/PI.SearchApi/appsettings.json](src/PI.SearchApi/appsettings.json), a local Ollama:
 
 ```sh
 ollama pull qwen3.6:35b
@@ -72,13 +72,24 @@ ollama pull qwen3.6:35b
 
 A 35B model needs plenty of memory (the presenter's laptop has 64 GB). On lighter hardware, pull a smaller model and set `Llm:Model` to its name; smaller models follow the prompts less reliably, and the Answer tab shows the resulting warnings.
 
-To use Claude instead, store your key in user secrets (never in a file; hosted calls cost money), then set `"Provider": "anthropic"` and `"Model": "claude-sonnet-5"` in `appsettings.json`:
+**Bring your own model.** Stages 6 and 7 have a **Model** picker, and the key button beside it (also in the header) opens **Models and API keys**: turn providers on, set a base URL, paste a key and test the connection — no restart needed ([ADR-0019](docs/decisions/0019-bring-your-own-model.md)). The chosen model goes in the URL and the request as `options.model` (e.g. `anthropic/claude-sonnet-5`); the key never does.
+
+| Provider | Key |
+|---|---|
+| Ollama (default) | none |
+| OpenAI | `OPENAI_API_KEY` |
+| Anthropic (Claude) | `ANTHROPIC_API_KEY` |
+| Google Gemini | `GEMINI_API_KEY` |
+| Azure OpenAI | `AZURE_OPENAI_API_KEY`, plus your resource's base URL and deployment names |
+| OpenAI-compatible (LM Studio, vLLM, OpenRouter) | `OPENAI_COMPAT_API_KEY` (optional), plus the server's base URL |
+
+A key pasted in the UI is held by the API until it stops and is never saved. To keep one, use user secrets (never a file; hosted calls cost money):
 
 ```sh
-dotnet user-secrets set "Llm:ApiKey" "<your Anthropic API key>" --project src/PI.SearchApi
+dotnet user-secrets set "ANTHROPIC_API_KEY" "<your key>" --project src/PI.SearchApi
 ```
 
-The API builds its LLM client once, so restart `aspire run` after changing these settings. Without an LLM, Stages 6–7 still return their results, the Answer tab shows a `503` saying what to fix, and Stages 1–5 are unaffected.
+Base URLs and enabled providers are saved in `~/.needle/settings.json` (set `NEEDLE_HOME` to move it). Only Ollama has been run live; the hosted providers are wired up and unit-tested. Without an LLM, Stages 6–7 still return their results, the Answer tab shows a `503` saying what to fix, and Stages 1–5 are unaffected.
 
 **Run everything**
 
@@ -169,7 +180,7 @@ The next `aspire run` rebuilds the schema and re-seeds the catalog from scratch.
 | `aspire run` fails to find Postgres, or the container never becomes healthy | Start Docker Desktop (or your Docker daemon) first; Aspire orchestrates containers, it doesn't start Docker itself. |
 | `aspire: command not found` | Install the [.NET Aspire CLI](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling); it's separate from the .NET SDK. |
 | Stages 3–7 return `503 Service Unavailable` | The response's `detail` names the missing piece (usually the Nomic model or the LLM) and how to fix it. Stages 1–2 are unaffected either way. |
-| Stage 6 or 7's Answer tab shows a `503` | Ollama isn't running, or the model in `Llm:Model` hasn't been pulled. Run `ollama serve` and `ollama pull <model>`, then restart `aspire run` — the API builds its LLM client once, at startup. |
+| Stage 6 or 7's Answer tab shows a `503` | Ollama isn't running, or the model in `Llm:Model` hasn't been pulled. Run `ollama serve` and `ollama pull <model>`. For a hosted model, open **Models and API keys** and use **Test connection**: it says what is missing. |
 | The first Stage 6/7 answer is slow, then later ones are fast | A cold local model has to load into memory. Send one throwaway query to warm it up before you go on stage, or set a longer `keep_alive` in Ollama. |
 | `npm run gen:api` fails or returns an empty schema | It reads the API from `http://localhost:5377`, so `aspire run` must already be running. Node doesn't trust the ASP.NET Core development certificate, which is also why the Vite proxy sets `secure: false`. |
 | A product edit doesn't show up in search | Editing `products.json` only takes effect on the next `aspire run`: the seeder diffs by `content_hash` and nulls that product's embeddings, which are then re-embedded live (and logged) on that run. |
@@ -179,4 +190,4 @@ The next `aspire run` rebuilds the schema and re-seeds the catalog from scratch.
 
 ## Status
 
-All seven stages (structured → keyword → vector → hybrid → ontology → RAG → pedagogy) are built and rehearsed, in the API and the web UI, with a local Ollama model. OpenAI hosted embeddings/chat aren't built; Anthropic's provider is built and unit-tested but not run live — both are added on request rather than up front. See [docs/adr/roadmap.md](docs/adr/roadmap.md) for the build history.
+All seven stages (structured → keyword → vector → hybrid → ontology → RAG → pedagogy) are built and rehearsed, in the API and the web UI, with a local Ollama model. Hosted chat models (OpenAI, Anthropic, Azure OpenAI, Gemini, OpenAI-compatible) can be chosen per request ([ADR-0019](docs/decisions/0019-bring-your-own-model.md)); they are built and unit-tested, and the OpenAI-compatible path was checked against Ollama's `/v1`, but none has been run live against a hosted API. OpenAI hosted embeddings aren't built. See [docs/adr/roadmap.md](docs/adr/roadmap.md) for the build history.

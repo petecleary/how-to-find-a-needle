@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Area:** AI
-- **Related:** [ADR-0002](0002-solution-structure-and-orchestration.md), [ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0017](0017-pedagogy-engine.md)
+- **Related:** [ADR-0002](0002-solution-structure-and-orchestration.md), [ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0017](0017-pedagogy-engine.md), [ADR-0019](0019-bring-your-own-model.md) (choosing the model per request)
 
 ## Context
 
@@ -24,12 +24,12 @@ Stages 6 and 7 need an LLM. The presenter runs Ollama locally, so the talk works
 
 - An `Llm` section in the API's `appsettings.json`: `Provider`, `Model`, `Endpoint` (Ollama only), `MaxOutputTokens` (1,500) and `TimeoutSeconds` (60).
 - **The key never goes in a file.** Set it with `dotnet user-secrets` on `PI.SearchApi`; it is read like any other setting.
-- The provider and model are fixed for a run: one `IChatClient`, built at startup. Restart `aspire run` after changing them. They are never a per-request choice, so every stage keeps the same request contract.
+- These settings are the **default** model. A request can name another in `options.model`, and keys can be added from the UI without a restart ([ADR-0019](0019-bring-your-own-model.md)).
 - Aspire doesn't run or manage the LLM, and there is no container.
 
 ### The client
 
-- **One `IChatClient` in DI**, built by `LlmClientFactory`, which switches on `Provider`. **That factory and the per-provider options are the only provider-specific code**; Stages 6–7 depend on `IChatClient` alone.
+- **One `IChatClient` per request**, built by `LlmClientFactory`, which switches on `Provider` ([ADR-0019](0019-bring-your-own-model.md)). **That factory and the per-provider options are the only provider-specific code**; Stages 6–7 depend on `IChatClient` alone.
 - **Middleware:** OpenTelemetry, so prompts and timings appear in the Aspire dashboard, and logging in development.
 - **Streaming:** Stages 6–7 call `GetStreamingResponseAsync` and forward text chunks to the browser as Server-Sent Events ([ADR-0003](0003-search-api-contract-and-debug-trace.md)).
 - **Markdown out, validated when complete.** The model writes markdown with `[PROD-…]` citations, and the API checks the finished text ([ADR-0016](0016-rag-grounding-and-citations.md), [ADR-0017](0017-pedagogy-engine.md)). A JSON schema can't be shown as it streams.

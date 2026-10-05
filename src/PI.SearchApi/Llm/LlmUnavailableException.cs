@@ -19,19 +19,25 @@ public sealed class LlmUnavailableException(string message, Exception? innerExce
     /// <summary>The call took longer than Llm:TimeoutSeconds. There are no retries, so it fails visibly.</summary>
     public static LlmUnavailableException TimedOut(LlmOptions options, Exception innerException) =>
         new($"The {options.Provider} model '{options.Model}' didn't finish within {options.TimeoutSeconds} s (Llm:TimeoutSeconds). "
-            + (options.Provider == LlmProviders.Ollama ? "A large model on first use can be slow to load: try again, or choose a smaller Llm:Model." : "Try again, or choose a faster Llm:Model."),
+            + (options.Provider == LlmProviders.Ollama ? "A large model on first use can be slow to load: try again, or choose a smaller model." : "Try again, or choose a faster model."),
             innerException);
 
-    private static string HowToConfigure(LlmOptions options) => options.Provider switch
+    // Each provider's fix, naming both routes: the UI's panel for this session, or configuration for every run (ADR-0019).
+    private static string HowToConfigure(LlmOptions options) => LlmProviders.Find(options.Provider) switch
     {
-        LlmProviders.Ollama => "Set Llm:Endpoint (e.g. http://localhost:11434) and Llm:Model in appsettings.json.",
-        _ => $"Set the key with: dotnet user-secrets set \"Llm:ApiKey\" \"<your {options.Provider} key>\" --project src/PI.SearchApi",
+        null => $"Choose one of: {string.Join(", ", LlmProviders.All)}.",
+        { Id: LlmProviders.Ollama } => "Set Ollama's base URL in Models and API keys (or Llm:Endpoint), and choose a model you have pulled.",
+        { KeyVariable: { } variable, Name: var name } =>
+            $"Add your {name} key in Models and API keys (kept for this session), or set it for every run with: dotnet user-secrets set \"{variable}\" \"<your key>\" --project src/PI.SearchApi",
+        { Name: var name } => $"Check {name} in Models and API keys.",
     };
 
     private static string UnreachableGuidance(LlmOptions options) => options.Provider switch
     {
         LlmProviders.Ollama =>
             $"Is Ollama running at {options.Endpoint}? Start it with `ollama serve`, and make sure the model is pulled: `ollama pull {options.Model}`.",
-        _ => $"The {options.Provider} API couldn't be used with model '{options.Model}'. Check Llm:Model and that the Llm:ApiKey user secret is valid.",
+        LlmProviders.Compatible =>
+            $"Is the OpenAI-compatible server running at {options.Endpoint}, and does it serve '{options.Model}'?",
+        _ => $"The {options.Provider} API couldn't be used with model '{options.Model}'. Check the model name and that the key is valid (Test connection in Models and API keys).",
     };
 }

@@ -30,7 +30,7 @@ Supporting read-only endpoints feed the UI: `GET /api/demo/queries` (the golden 
   "options": {
     "candidateDepth": 50, "rrfK": 60, "keywordWeight": 1.0, "vectorWeight": 1.0,
     "expandSynonyms": true, "applyConstraints": true,
-    "audience": "novice", "applyPedagogy": true, "explain": false
+    "audience": "novice", "applyPedagogy": true, "model": null, "explain": false
   }
 }
 ```
@@ -38,6 +38,7 @@ Supporting read-only endpoints feed the UI: `GET /api/demo/queries` (the golden 
 - `filters` apply in **every** stage, and are the only input to Stage 1.
 - `context.targetProductId` is the device the shopper owns ("my laptop"). Stages 5–7 check compatibility against it.
 - `options` hold each stage's tuning knobs. A stage ignores the options that don't apply to it, and its trace lists the ones it used.
+- `options.model` names the LLM for Stages 6–7 as `provider/model`; `null` uses the configured default ([ADR-0019](0019-bring-your-own-model.md)). It never carries a key.
 - Requests are validated (page size 1–50, candidate depth 10–200, known categories and audiences), and a failure returns a `400` ProblemDetails naming each broken rule.
 
 ### The response

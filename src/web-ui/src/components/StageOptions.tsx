@@ -1,23 +1,30 @@
 import { RefreshCw } from 'lucide-react';
+import type { ModelCatalogue } from '@/api/client';
+import { ModelPicker } from '@/components/ModelPicker';
 import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Button } from '@/components/ui/button';
+import type { ApiData } from '@/hooks/useApiData';
 import { audiences, type SearchState } from '@/lib/searchState';
 import type { PipelineStage } from '@/lib/stageGroup';
 
 // StageOptions — a stage's before/after switches, on the tab row next to what they change. Stage 5 turns synonym
 // expansion and the domain rules on and off, so the audience sees what each one adds (ADR-0013). Stage 7 chooses the
 // audience and switches the pedagogy prompt for the baseline, which changes only the system prompt (ADR-0017).
+// Stages 6 and 7 choose the model, so two models can be compared on the same evidence (ADR-0019).
 
 export type StageOptionValues = Pick<
     SearchState,
-    'expandSynonyms' | 'applyConstraints' | 'audience' | 'applyPedagogy'
+    'expandSynonyms' | 'applyConstraints' | 'audience' | 'applyPedagogy' | 'model'
 >;
 
 export interface StageOptionsProps extends StageOptionValues {
     stage: PipelineStage;
     onChange: (change: Partial<StageOptionValues>) => void;
     onRefreshAnswer?: () => void;
+    /** Stages 6–7: the models to choose from; null until they are requested. */
+    modelCatalogue?: ApiData<ModelCatalogue> | null;
+    onManageModels?: () => void;
 }
 
 export function StageOptions({
@@ -26,8 +33,11 @@ export function StageOptions({
     applyConstraints,
     audience,
     applyPedagogy,
+    model,
     onChange,
     onRefreshAnswer,
+    modelCatalogue = null,
+    onManageModels = () => {},
 }: StageOptionsProps) {
     if (stage === 'ontology') {
         return (
@@ -53,19 +63,31 @@ export function StageOptions({
     }
 
     // Only Stage 7 reads the audience, so the picker appears only there (its trace lists the audience it used).
+    const modelPicker = (
+        <ModelPicker
+            catalogue={modelCatalogue}
+            value={model}
+            onChange={(next) => onChange({ model: next })}
+            onManage={onManageModels}
+        />
+    );
+
     if (stage === 'rag') {
         return (
-            <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                aria-label="Refresh answer"
-                title="Refresh answer"
-                onClick={onRefreshAnswer}
-                className="size-8 rounded-full border-2"
-            >
-                <RefreshCw aria-hidden="true" className="size-4" />
-            </Button>
+            <>
+                {modelPicker}
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    aria-label="Refresh answer"
+                    title="Refresh answer"
+                    onClick={onRefreshAnswer}
+                    className="size-8 rounded-full border-2"
+                >
+                    <RefreshCw aria-hidden="true" className="size-4" />
+                </Button>
+            </>
         );
     }
 
@@ -75,6 +97,7 @@ export function StageOptions({
 
     return (
         <>
+            {modelPicker}
             <div className="flex items-center gap-2">
                 <span id="audience-label" className="text-[15px] text-muted-foreground">
                     Audience

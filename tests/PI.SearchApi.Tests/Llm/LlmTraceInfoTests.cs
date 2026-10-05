@@ -29,4 +29,23 @@ public sealed class LlmTraceInfoTests
         Assert.Equal("None", trace.Settings["reasoningEffort"]);
         Assert.Equal(0, trace.Settings["retries"]);
     }
+
+    [Fact]
+    public void From_CompatibleServerWithKeyInTheUrl_ShowsOnlyTheHost()
+    {
+        // Some gateways take credentials in the query string: only the host reaches the trace (ADR-0019).
+        var options = new LlmOptions
+        {
+            Provider = LlmProviders.Compatible,
+            Model = "meta-llama/llama-3.1-8b",
+            Endpoint = "https://gateway.example.com/v1?api-key=secret-in-url",
+            ApiKey = "sk-compat-secret",
+        };
+
+        var json = JsonSerializer.Serialize(LlmTraceInfo.From(options, LlmChatOptions.For(options)));
+
+        Assert.Contains("gateway.example.com", json);
+        Assert.DoesNotContain("secret-in-url", json);
+        Assert.DoesNotContain("sk-compat-secret", json);
+    }
 }

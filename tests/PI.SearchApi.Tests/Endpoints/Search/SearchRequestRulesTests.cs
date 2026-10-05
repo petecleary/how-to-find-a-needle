@@ -93,6 +93,20 @@ public sealed class SearchRequestRulesTests
         Assert.Equal(expectedValid, CreateValidator().Validate(request).IsValid);
     }
 
+    [Theory]
+    [InlineData(null, true)] // the configured default
+    [InlineData("ollama/qwen3.6:35b", true)]
+    [InlineData("compat/meta-llama/llama-3.1-8b", true)]
+    [InlineData("qwen3.6:35b", false)]
+    [InlineData("litellm/gpt-5", false)]
+    public void Validate_Model_IsNullOrProviderSlashModel(string? model, bool expectedValid)
+    {
+        // Only the shape is checked: a provider without a key is a 503 from the answer endpoint, not a 400 (ADR-0019).
+        var request = Valid() with { Options = new SearchOptions { Model = model } };
+
+        Assert.Equal(expectedValid, CreateValidator().Validate(request).IsValid);
+    }
+
     [Fact]
     public void Validate_UnknownCategory_IsInvalid()
     {

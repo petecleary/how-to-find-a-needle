@@ -43,6 +43,11 @@ export interface SearchState {
     /** Stage 7 reads these; every stage's trace lists them (ADR-0017). */
     audience: Audience;
     applyPedagogy: boolean;
+    /**
+     * Stages 6–7: the LLM as `provider/model`, e.g. `ollama/qwen3.6:35b`; null uses the API's default (ADR-0019).
+     * It names a model, never a key, so it is safe in a shared URL.
+     */
+    model: string | null;
 }
 
 /**
@@ -66,12 +71,15 @@ export const defaultSearchState: SearchState = {
     applyConstraints: true,
     audience: 'novice',
     applyPedagogy: true,
+    model: null,
 };
 
 const specParamPrefix = 'spec.';
 // The same rule as the API's validator (SearchRequestRules.cs), so a hand-edited URL can't cause a 400.
 const specKeyPattern = /^[a-zA-Z][a-zA-Z0-9]*$/;
 const numberPattern = /^-?\d+(\.\d+)?$/;
+// provider/model with a lower-case provider ID; the API checks the provider is one it knows (a 400 otherwise).
+const modelPattern = /^[a-z]+\/.+$/;
 
 /** Reads the state from a URL's query string. Anything missing or unrecognised falls back to the default. */
 export function parseSearchState(params: URLSearchParams): SearchState {
@@ -92,6 +100,7 @@ export function parseSearchState(params: URLSearchParams): SearchState {
         applyConstraints: parseBoolean(params.get('applyConstraints'), defaultSearchState.applyConstraints),
         audience: oneOf(params.get('audience'), audiences, defaultSearchState.audience),
         applyPedagogy: parseBoolean(params.get('applyPedagogy'), defaultSearchState.applyPedagogy),
+        model: parseModel(params.get('model')),
     };
 }
 
@@ -123,6 +132,7 @@ export function serializeSearchState(state: SearchState): URLSearchParams {
     );
     setIfChanged(params, 'audience', state.audience, defaults.audience);
     setIfChanged(params, 'applyPedagogy', String(state.applyPedagogy), String(defaults.applyPedagogy));
+    setIfChanged(params, 'model', state.model ?? '', '');
 
     return params;
 }
@@ -152,6 +162,7 @@ export function toSearchRequest(state: SearchState): SearchRequest {
             applyConstraints: state.applyConstraints,
             audience: state.audience,
             applyPedagogy: state.applyPedagogy,
+            model: state.model,
         },
     };
 }
@@ -210,6 +221,10 @@ function parseBoolean(value: string | null, fallback: boolean): boolean {
     if (value === 'true') return true;
     if (value === 'false') return false;
     return fallback;
+}
+
+function parseModel(value: string | null): string | null {
+    return value !== null && modelPattern.test(value) ? value : null;
 }
 
 function parsePrice(value: string | null): number | null {

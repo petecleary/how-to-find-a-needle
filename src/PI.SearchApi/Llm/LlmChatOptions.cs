@@ -27,7 +27,11 @@ public static class LlmChatOptions
                 break;
 
             case LlmProviders.OpenAI:
-                // Tested late (roadmap Phase 5): reasoning settings depend on the model the learner picks.
+            case LlmProviders.Azure:
+            case LlmProviders.Google:
+            case LlmProviders.Compatible:
+                // The OpenAI protocol's providers (ADR-0019). Reasoning settings depend on the model the learner picks,
+                // and some reasoning models reject a temperature: the 503's message then names the setting.
                 chatOptions.Temperature = OpenAICompatibleTemperature;
                 break;
 

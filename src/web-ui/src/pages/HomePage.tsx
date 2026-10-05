@@ -65,16 +65,10 @@ export function HomePage() {
 
                     <div className="flex flex-wrap gap-3">
                         <Link
-                            to={talkStartPath()}
+                            to={slidesStartPath()}
                             className="flex items-center gap-2 rounded-full bg-ontology px-6 py-3 text-xl font-bold text-on-ontology hover:opacity-90"
                         >
-                            Start the talk <ArrowRight aria-hidden="true" className="size-5" />
-                        </Link>
-                        <Link
-                            to={slidesStartPath()}
-                            className="rounded-full border-2 border-ontology px-6 py-3 text-xl font-bold text-ontology-ink hover:bg-ontology-tint"
-                        >
-                            Present the slides
+                            Present the slides <ArrowRight aria-hidden="true" className="size-5" />
                         </Link>
                         <Link
                             to="/demo"

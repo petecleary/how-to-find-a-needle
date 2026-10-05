@@ -36,6 +36,12 @@ public sealed record SearchOptions
     /// </summary>
     public bool ApplyPedagogy { get; init; } = true;
 
+    /// <summary>
+    /// Stages 6–7: the LLM to answer with, as <c>provider/model</c>, e.g. <c>ollama/qwen3.6:35b</c> or
+    /// <c>anthropic/claude-sonnet-5</c>. Null uses the configured default. It names a model, never a key (ADR-0019).
+    /// </summary>
+    public string? Model { get; init; }
+
     /// <summary>Adds Postgres's EXPLAIN plan to vector trace steps (ADR-0010).</summary>
     public bool Explain { get; init; }
 }

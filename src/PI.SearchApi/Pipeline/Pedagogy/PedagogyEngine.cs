@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Options;
 using PI.SearchApi.Contracts;
 using PI.SearchApi.Llm;
 using PI.SearchApi.Pipeline.Rag;
@@ -22,8 +21,7 @@ namespace PI.SearchApi.Pipeline.Pedagogy;
 public sealed class PedagogyEngine(
     IRagSearch ragSearch,
     IAnswerGenerator answerGenerator,
-    IChatClient chatClient,
-    IOptions<LlmOptions> llmOptions,
+    LlmModelRegistry models,
     PedagogyPromptBuilder promptBuilder) : IPedagogyEngine
 {
     private const string Stage = "pedagogy";
@@ -32,7 +30,9 @@ public sealed class PedagogyEngine(
     {
         using var activity = PipelineTelemetry.Source.StartActivity("Stage 7: pedagogy answer and explanation");
         var start = Stopwatch.GetTimestamp();
-        var options = llmOptions.Value;
+
+        // One model for both calls, so the answer and its explanation come from the same model (ADR-0019).
+        var model = models.Resolve(request.Options.Model);
         var applyPedagogy = request.Options.ApplyPedagogy;
         var audience = request.Options.Audience;
 
@@ -42,8 +42,8 @@ public sealed class PedagogyEngine(
         yield return AnswerEvent.Meta(new AnswerMeta
         {
             Stage = Stage,
-            Provider = options.Provider,
-            Model = options.Model,
+            Provider = model.Options.Provider,
+            Model = model.Options.Model,
             Evidence = evidence.ProductIds,
         });
 
@@ -51,7 +51,7 @@ public sealed class PedagogyEngine(
         var answer = new AnswerSectionOutcome();
         double? timeToFirstTokenMs = null;
 
-        await foreach (var answerEvent in answerGenerator.StreamAnswerSectionAsync(Stage, request.Query, evidence, answer, ct))
+        await foreach (var answerEvent in answerGenerator.StreamAnswerSectionAsync(Stage, request.Query, evidence, model, answer, ct))
         {
             if (answerEvent.Name == AnswerEvent.DeltaName)
             {
@@ -67,8 +67,7 @@ public sealed class PedagogyEngine(
 
         // 2. The explanation, built on the validated answer. It starts only after the answer's final event.
         var explanation = new AnswerSectionOutcome();
-        var chatOptions = LlmChatOptions.For(options);
-        var llm = LlmTraceInfo.From(options, chatOptions);
+        var llm = LlmTraceInfo.From(model.Options, model.ChatOptions);
 
         var promptStart = Stopwatch.GetTimestamp();
         var prompt = promptBuilder.Build(request.Query, audience, applyPedagogy, evidence, answerFinal.Markdown);
@@ -80,7 +79,7 @@ public sealed class PedagogyEngine(
             new(ChatRole.User, prompt.UserPrompt),
         ];
 
-        await foreach (var chunk in LlmStreaming.StreamTextAsync(chatClient, messages, chatOptions, options, explanation.Generation, ct))
+        await foreach (var chunk in LlmStreaming.StreamTextAsync(model.Client, messages, model.ChatOptions, model.Options, explanation.Generation, ct))
         {
             yield return AnswerEvent.Delta(AnswerSections.Explanation, chunk);
         }

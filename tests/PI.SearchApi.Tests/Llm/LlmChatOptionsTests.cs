@@ -25,10 +25,14 @@ public sealed class LlmChatOptionsTests
         Assert.Equal(ReasoningEffort.None, chatOptions.Reasoning?.Effort);
     }
 
-    [Fact]
-    public void For_OpenAI_UsesLowTemperatureAndLeavesReasoningToTheModel()
+    [Theory]
+    [InlineData(LlmProviders.OpenAI)]
+    [InlineData(LlmProviders.Azure)]
+    [InlineData(LlmProviders.Google)]
+    [InlineData(LlmProviders.Compatible)]
+    public void For_OpenAIProtocolProvider_UsesLowTemperatureAndLeavesReasoningToTheModel(string provider)
     {
-        var chatOptions = LlmChatOptions.For(new LlmOptions { Provider = LlmProviders.OpenAI, Model = "a-model" });
+        var chatOptions = LlmChatOptions.For(new LlmOptions { Provider = provider, Model = "a-model" });
 
         Assert.Equal(0.1f, chatOptions.Temperature);
         Assert.Null(chatOptions.Reasoning);
@@ -38,6 +42,9 @@ public sealed class LlmChatOptionsTests
     [InlineData(LlmProviders.Ollama)]
     [InlineData(LlmProviders.OpenAI)]
     [InlineData(LlmProviders.Anthropic)]
+    [InlineData(LlmProviders.Azure)]
+    [InlineData(LlmProviders.Google)]
+    [InlineData(LlmProviders.Compatible)]
     public void For_AnyProvider_CapsOutputTokens(string provider)
     {
         var chatOptions = LlmChatOptions.For(new LlmOptions { Provider = provider, Model = "m", MaxOutputTokens = 1234 });

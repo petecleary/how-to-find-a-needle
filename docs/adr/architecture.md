@@ -60,7 +60,9 @@ src/
     Contracts/                    # SearchRequest, SearchResponse, ProductResult, DebugTrace
     Data/                         # DatabaseSeeder (schema, catalog upsert, embedding backfill), EmbeddingFile (jsonl)
     Embeddings/                   # ISearchEmbedder, NomicOnnxEmbeddingGenerator (ONNX Runtime)
-    Llm/                          # LlmOptions, LlmClientFactory (the one IChatClient), LlmChatOptions, LlmStreaming, warm-up
+    Llm/                          # LlmOptions (the default model), LlmProviders + ModelRef, LlmModelRegistry (a client per request),
+                                  # LlmSettingsStore (~/.needle/settings.json), ISecretStore (session keys), LlmClientFactory,
+                                  # LlmChatOptions, LlmStreaming, warm-up
     Pipeline/                     # shared types (Candidate, StageResult, TraceStep, SqlFilterBuilder, PromptLibrary) + one technique per folder
       Structured/  Keyword/  Vector/  Fusion/  Hybrid/  Ontology/  Rag/  Pedagogy/
     Endpoints/
@@ -102,7 +104,7 @@ tests/
 | Embeddings | `IEmbeddingGenerator` with a configured provider: local Nomic Embed v1.5 via ONNX Runtime (default, offline) or OpenAI `text-embedding-3-small` at 768d (tested later). Product vectors committed per provider in `assets/data/embeddings/*.jsonl`, regenerated with `Embeddings:Rebuild` | [0009](0009-local-embeddings-onnx-runtime.md) |
 | Fusion | Reciprocal Rank Fusion (k = 60), pure C# | [0011](0011-hybrid-search-rrf.md) |
 | Ontology | dotNetRDF (in-memory), hand-written Turtle: standard SKOS (taxonomy, synonyms, language-tagged labels, value vocabularies) plus a small class-level rule vocabulary beyond SKOS; SPARQL lookups; no instance data | [0013](0013-domain-ontology-and-compatibility.md) |
-| LLM (stages 6–7) | `Microsoft.Extensions.AI` `IChatClient`, provider set in config: existing local **Ollama** (OpenAI-compatible `/v1`), **OpenAI**, or **Anthropic** (official `Anthropic` .NET SDK). No containers, **no LiteLLM** | [0015](0015-llm-hosting-and-client.md) |
+| LLM (stages 6–7) | `Microsoft.Extensions.AI` `IChatClient`, built per request. Default model in config; a request can name another in `options.model`. Providers: local **Ollama** (OpenAI-compatible `/v1`), **OpenAI**, **Anthropic** (official `Anthropic` .NET SDK), **Azure OpenAI**, **Google Gemini** and any **OpenAI-compatible** server. Keys from configuration or pasted in the UI for the session. No containers, **no LiteLLM** | [0015](0015-llm-hosting-and-client.md), [0019](0019-bring-your-own-model.md) |
 | Frontend | React + Vite + TypeScript, Tailwind, shadcn/ui, Lucide, React Router, react-markdown; `openapi-typescript` types; Vite proxy (no CORS). Home, talk mode, a slide deck (`/slides`) with a demo window that follows it, demo, glossary and ADR pages; no external slides | [0014](0014-web-ui-architecture.md) |
 | Testing | xUnit unit tests + `Aspire.Hosting.Testing` golden-query integration tests (structural checks only for the LLM stages); Vitest for the UI's hooks, parsers, renderers and content | [0002](0002-solution-structure-and-orchestration.md) |
 | API docs | Scalar + `Microsoft.AspNetCore.OpenApi` | — |
@@ -111,7 +113,7 @@ tests/
 
 ## 4. API Conventions & Pipeline Stages
 
-All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 6–7 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices`, `GET /api/taxonomy` (the category tree), `GET /api/vocabularies` (the allowed spec values) and `GET /api/brands` (the catalogue's brands). Taxonomy and vocabularies are read from the ontology and brands from the catalogue, so the UI's filters are data. → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
+All search stages use **POST** with a shared JSON request and response, so the UI can switch stages with the same query. Stages 6–7 add a second request, sent at the same time: `POST /api/search/{rag|pedagogy}/answer` streams the LLM's markdown summary as Server-Sent Events, shown above the results like an AI overview. This replaces the legacy `GET /api/products`. Supporting read endpoints for the UI are `GET /api/demo/queries`, `GET /api/demo/devices`, `GET /api/taxonomy` (the category tree), `GET /api/vocabularies` (the allowed spec values) and `GET /api/brands` (the catalogue's brands). The models screen uses `GET /api/providers`, `GET /api/models` and a few `PUT`/`POST` routes to set base URLs, session keys and test connections ([ADR-0019](0019-bring-your-own-model.md)). Taxonomy and vocabularies are read from the ontology and brands from the catalogue, so the UI's filters are data. → [ADR-0003](0003-search-api-contract-and-debug-trace.md)
 
 **Request:** `POST /api/search/{stage}`
 
@@ -122,7 +124,7 @@ All search stages use **POST** with a shared JSON request and response, so the U
   "pageSize": 10,
   "filters": { "brand": "Voltline", "categories": ["laptop-chargers"], "minPrice": 20, "maxPrice": 150, "specs": { "connector": "usb-c" } },
   "context": { "targetProductId": "PROD-0001" },
-  "options": { "candidateDepth": 50, "rrfK": 60, "keywordWeight": 1.0, "vectorWeight": 1.0, "expandSynonyms": true, "applyConstraints": true, "audience": "novice", "applyPedagogy": true }
+  "options": { "candidateDepth": 50, "rrfK": 60, "keywordWeight": 1.0, "vectorWeight": 1.0, "expandSynonyms": true, "applyConstraints": true, "audience": "novice", "applyPedagogy": true, "model": null }
 }
 ```
 

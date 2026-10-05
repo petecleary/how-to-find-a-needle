@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Options;
 using PI.SearchApi.Contracts;
 using PI.SearchApi.Llm;
 
@@ -19,8 +18,7 @@ namespace PI.SearchApi.Pipeline.Rag;
 // Decision: docs/decisions/0016-rag-grounding-and-citations.md
 public sealed class AnswerGenerator(
     IRagSearch ragSearch,
-    IChatClient chatClient,
-    IOptions<LlmOptions> llmOptions,
+    LlmModelRegistry models,
     PromptLibrary prompts) : IAnswerGenerator
 {
     public const string SystemPromptFile = "rag-system.md";
@@ -30,7 +28,10 @@ public sealed class AnswerGenerator(
     {
         using var activity = PipelineTelemetry.Source.StartActivity("Stage 6: RAG answer");
         var start = Stopwatch.GetTimestamp();
-        var options = llmOptions.Value;
+
+        // The model the request names, or the configured default (ADR-0019). Resolved before retrieval, so a model
+        // that can't be used (no key, unknown provider) fails fast with a 503 and its fix.
+        var llm = models.Resolve(request.Options.Model);
 
         // The answer endpoint is stateless: it re-runs retrieval (tens of milliseconds) to get the same evidence.
         var retrieval = await ragSearch.SearchAsync(request, "rag", ct);
@@ -38,15 +39,15 @@ public sealed class AnswerGenerator(
         yield return AnswerEvent.Meta(new AnswerMeta
         {
             Stage = "rag",
-            Provider = options.Provider,
-            Model = options.Model,
+            Provider = llm.Options.Provider,
+            Model = llm.Options.Model,
             Evidence = retrieval.Evidence.ProductIds,
         });
 
         var outcome = new AnswerSectionOutcome();
         double? timeToFirstTokenMs = null;
 
-        await foreach (var answerEvent in StreamAnswerSectionAsync("rag", request.Query, retrieval.Evidence, outcome, ct))
+        await foreach (var answerEvent in StreamAnswerSectionAsync("rag", request.Query, retrieval.Evidence, llm, outcome, ct))
         {
             // Measured from the start of the request, including retrieval: the wait the audience actually sees.
             if (answerEvent.Name == AnswerEvent.DeltaName)
@@ -69,12 +70,11 @@ public sealed class AnswerGenerator(
         string stage,
         string question,
         EvidenceSet evidence,
+        LlmCall model,
         AnswerSectionOutcome outcome,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        var options = llmOptions.Value;
-        var chatOptions = LlmChatOptions.For(options);
-        var llm = LlmTraceInfo.From(options, chatOptions);
+        var llm = LlmTraceInfo.From(model.Options, model.ChatOptions);
 
         var promptStart = Stopwatch.GetTimestamp();
         var systemPrompt = prompts.Get(SystemPromptFile);
@@ -89,7 +89,7 @@ public sealed class AnswerGenerator(
             new(ChatRole.User, userPrompt),
         ];
 
-        await foreach (var chunk in LlmStreaming.StreamTextAsync(chatClient, messages, chatOptions, options, outcome.Generation, ct))
+        await foreach (var chunk in LlmStreaming.StreamTextAsync(model.Client, messages, model.ChatOptions, model.Options, outcome.Generation, ct))
         {
             yield return AnswerEvent.Delta(AnswerSections.Answer, chunk);
         }

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
+import { ModelsProvider } from '@/components/ModelsProvider';
 import { PresentationProvider } from '@/components/PresentationProvider';
 import { slidesStartPath } from '@/lib/slides';
 import { talkStartPath } from '@/lib/talk';
@@ -25,20 +26,22 @@ const DecisionPage = lazy(() =>
 export function App() {
     return (
         <PresentationProvider>
-            <Suspense fallback={<p className="px-6 py-8 text-muted-foreground">Loading…</p>}>
-                <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/talk" element={<Navigate to={talkStartPath()} replace />} />
-                    <Route path="/talk/:step/:tab?" element={<TalkPage />} />
-                    <Route path="/slides" element={<Navigate to={slidesStartPath()} replace />} />
-                    <Route path="/slides/:slide" element={<SlidesPage />} />
-                    <Route path="/demo" element={<DemoPage />} />
-                    <Route path="/glossary" element={<GlossaryPage />} />
-                    <Route path="/decisions" element={<DecisionsPage />} />
-                    <Route path="/decisions/:id" element={<DecisionPage />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </Suspense>
+            <ModelsProvider>
+                <Suspense fallback={<p className="px-6 py-8 text-muted-foreground">Loading…</p>}>
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/talk" element={<Navigate to={talkStartPath()} replace />} />
+                        <Route path="/talk/:step/:tab?" element={<TalkPage />} />
+                        <Route path="/slides" element={<Navigate to={slidesStartPath()} replace />} />
+                        <Route path="/slides/:slide" element={<SlidesPage />} />
+                        <Route path="/demo" element={<DemoPage />} />
+                        <Route path="/glossary" element={<GlossaryPage />} />
+                        <Route path="/decisions" element={<DecisionsPage />} />
+                        <Route path="/decisions/:id" element={<DecisionPage />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </Suspense>
+            </ModelsProvider>
         </PresentationProvider>
     );
 }

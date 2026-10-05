@@ -23,6 +23,7 @@ import { UnderTheHoodTab } from '@/components/UnderTheHoodTab';
 import { useAnswerStream } from '@/hooks/useAnswerStream';
 import { useApiData, type ApiData } from '@/hooks/useApiData';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useModelCatalogue } from '@/hooks/useModels';
 import { usePipelineSearch } from '@/hooks/usePipelineSearch';
 import {
     applyGoldenQuery,
@@ -88,6 +89,8 @@ export function StageScreen({
     // The results and the answer are two requests with the same body, sent together: results never wait for the LLM.
     const search = usePipelineSearch(stage, request);
     const answerStream = useAnswerStream(stage, request);
+    // The model list is fetched only on the stages that use a model (ADR-0019).
+    const models = useModelCatalogue(isAnswerStage(stage));
 
     const update = useCallback(
         (change: Partial<SearchState>) => onStateChange({ ...state, ...change }),
@@ -189,6 +192,9 @@ export function StageScreen({
                                 applyConstraints={state.applyConstraints}
                                 audience={state.audience}
                                 applyPedagogy={state.applyPedagogy}
+                                model={state.model}
+                                modelCatalogue={models.catalogue}
+                                onManageModels={() => models.setSettingsOpen(true)}
                                 onRefreshAnswer={stage === 'rag' ? answerStream.rerun : undefined}
                                 onChange={update}
                             />

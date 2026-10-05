@@ -25,9 +25,8 @@ public sealed record LlmTraceInfo(
             ["retries"] = 0,
         });
 
-    // Only Ollama has a configurable endpoint; hosted providers use their SDK's default address.
+    // Only the host: enough to tell "my laptop" from "api.anthropic.com" or an Azure resource (ADR-0019), without
+    // the path or query string, which some gateways use for credentials.
     private static string? EndpointHostOf(LlmOptions options) =>
-        options.Provider == LlmProviders.Ollama && Uri.TryCreate(options.Endpoint, UriKind.Absolute, out var uri)
-            ? uri.Authority
-            : null;
+        Uri.TryCreate(options.Endpoint, UriKind.Absolute, out var uri) ? uri.Authority : null;
 }
