@@ -3,6 +3,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { decisions } from '@/lib/decisions';
 import { cn } from '@/lib/utils';
 
+// Status colours reuse the compatibility tokens (green accepted, red rejected), never the triad's brand colours.
 const statusClasses: Record<string, string> = {
     Accepted: 'bg-compatible-tint text-compatible-ink',
     Rejected: 'bg-incompatible-tint text-incompatible-ink',

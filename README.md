@@ -42,11 +42,63 @@ The talk is deliberately practical and experimental: the same dataset is used th
 - **An LLM for Stages 6–7** through `Microsoft.Extensions.AI`'s `IChatClient`: a local [Ollama](https://ollama.com/) by default, or bring your own model (OpenAI, Claude, Azure OpenAI, Gemini or any OpenAI-compatible server) and switch between them in the UI. Answers stream in, cite the products they use, and are checked when complete.
 - **A React web UI** ([src/web-ui](src/web-ui)) that is the talk itself (a slide deck and a demo that follows it, no external slides): the audience sees the same query go through simple filtering → BM25-style keyword → vector → hybrid → ontology → RAG → pedagogy, with the trace behind every result.
 
+## How to learn from this repo
+
+The code is written to be read. Every pipeline service opens with a header saying **what** the technique does, its **strength**, its **failure mode** and the **decision** record behind it, and the inline comments explain the search, ML and ontology ideas at the line where they happen. The comments assume you know C#, TypeScript and web APIs, but not search.
+
+**A suggested path:**
+
+1. **Run it** (see [Getting started](#getting-started)) and open the demo (`/demo`) in the web UI.
+2. **Load a golden query** from the picker in the search bar — start with *GQ-03 Similarity is not compatibility* — and step through Stages 1–7 with the stepper. The query, device and filters stay the same; only the technique changes.
+3. On each stage, read **How it works**, compare the **Results**, then open **Under the hood** to see the exact SQL, parameters, scores and rule checks that produced them.
+4. **Read the code for that stage** (table below), then its **decision record**, which explains why it was built that way and what was rejected.
+5. **Change something and watch the trace**: a synonym in the ontology, a product's wording, the RRF weights, a prompt, the model. The tests tell you if you broke a talk moment.
+
+| Stage | Try | Read the code | Decision |
+|---|---|---|---|
+| 1 Structured | GQ-01 | [`StructuredSearch.cs`](src/PI.SearchApi/Pipeline/Structured/StructuredSearch.cs), [`SqlFilterBuilder.cs`](src/PI.SearchApi/Pipeline/SqlFilterBuilder.cs) | [ADR-0007](docs/decisions/0007-structured-search.md) |
+| 2 Keyword | GQ-04, GQ-02 | [`KeywordSearch.cs`](src/PI.SearchApi/Pipeline/Keyword/KeywordSearch.cs), [`TsQueryBuilder.cs`](src/PI.SearchApi/Pipeline/Keyword/TsQueryBuilder.cs) | [ADR-0008](docs/decisions/0008-keyword-search-bm25-style.md) |
+| 3 Vector | GQ-02, GQ-08 | [`VectorSearch.cs`](src/PI.SearchApi/Pipeline/Vector/VectorSearch.cs), [`Embeddings/`](src/PI.SearchApi/Embeddings) | [ADR-0009](docs/decisions/0009-local-embeddings-onnx-runtime.md), [ADR-0010](docs/decisions/0010-vector-search-pgvector.md) |
+| 4 Hybrid | GQ-04 | [`HybridSearch.cs`](src/PI.SearchApi/Pipeline/Hybrid/HybridSearch.cs), [`ReciprocalRankFusion.cs`](src/PI.SearchApi/Pipeline/Fusion/ReciprocalRankFusion.cs) | [ADR-0011](docs/decisions/0011-hybrid-search-rrf.md) |
+| 5 Ontology | GQ-03, GQ-05, GQ-06, GQ-07, GQ-09 | [`OntologySearch.cs`](src/PI.SearchApi/Pipeline/Ontology/OntologySearch.cs), [`CompatibilityEvaluator.cs`](src/PI.SearchApi/Pipeline/Ontology/CompatibilityEvaluator.cs), [`domain-ontology.ttl`](src/PI.SearchApi/assets/data/domain-ontology.ttl) | [ADR-0013](docs/decisions/0013-domain-ontology-and-compatibility.md) |
+| 6 RAG | GQ-03 | [`EvidenceSetBuilder.cs`](src/PI.SearchApi/Pipeline/Rag/EvidenceSetBuilder.cs), [`AnswerGenerator.cs`](src/PI.SearchApi/Pipeline/Rag/AnswerGenerator.cs), [`rag-system.md`](src/PI.SearchApi/assets/prompts/rag-system.md) | [ADR-0016](docs/decisions/0016-rag-grounding-and-citations.md) |
+| 7 Pedagogy | GQ-03 (flip *Apply pedagogy*) | [`PedagogyEngine.cs`](src/PI.SearchApi/Pipeline/Pedagogy/PedagogyEngine.cs), [`pedagogy-system.md`](src/PI.SearchApi/assets/prompts/pedagogy-system.md) | [ADR-0017](docs/decisions/0017-pedagogy-engine.md) |
+
+Cross-cutting decisions worth reading early: [ADR-0003](docs/decisions/0003-search-api-contract-and-debug-trace.md) (one request and response for every stage, and the trace), [ADR-0004](docs/decisions/0004-pipeline-composition.md) (how later stages reuse earlier ones), [ADR-0005](docs/decisions/0005-curated-dataset-and-golden-queries.md) (the dataset and golden queries) and [ADR-0019](docs/decisions/0019-bring-your-own-model.md) (choosing the LLM per request). The web UI renders all of them on its **Decisions** page, and the **Glossary** page explains every term.
+
+### Follow one request
+
+1. The browser sends `POST /api/search/hybrid` (the same body for every stage) to the Vite dev server, which proxies `/api` to the API — [`vite.config.ts`](src/web-ui/vite.config.ts).
+2. A thin endpoint validates the request and calls one pipeline service — [`Endpoints/Search/`](src/PI.SearchApi/Endpoints/Search).
+3. The service runs its technique, often by calling earlier stages (hybrid calls keyword and vector, then fuses them), and appends a **trace step** with the exact SQL and its parameters — [`Pipeline/`](src/PI.SearchApi/Pipeline).
+4. The endpoint pages the candidates once and returns results plus `debugTrace`. The UI's **Under the hood** tab renders each trace step with a purpose-built view — [`components/trace/`](src/web-ui/src/components/trace).
+5. On Stages 6–7 the UI sends a second request with the same body to `/answer`, which streams the LLM's text as Server-Sent Events, so results never wait for the model.
+
+### Repository map
+
+| Path | What it holds | Guide |
+|---|---|---|
+| [`src/PI.AppHost`](src/PI.AppHost) | .NET Aspire: starts Postgres + pgvector, the API and the web UI with one command | — |
+| [`src/PI.SearchApi`](src/PI.SearchApi) | The search pipeline: endpoints, stage services, embeddings, LLM providers, data seeding | [README](src/PI.SearchApi/README.md) |
+| [`src/PI.SearchApi/assets`](src/PI.SearchApi/assets) | The catalogue, ontology, SPARQL queries, golden queries, committed embeddings and LLM prompts | [models README](src/PI.SearchApi/assets/models/README.md) |
+| [`src/web-ui`](src/web-ui) | React UI: home, slide deck, demo, glossary and decisions; talk content in `content/` | [README](src/web-ui/README.md) |
+| [`tests`](tests) | Unit tests, golden-query integration tests and the opt-in model bake-off | [README](tests/README.md) |
+| [`tools/PI.CatalogGenerator`](tools/PI.CatalogGenerator) | Generates the 240 "distractor" products that make the catalogue realistic | — |
+| [`docs/decisions`](docs/decisions) | The decision records (ADRs): why each part is built the way it is | [README](docs/decisions/README.md) |
+| [`docs/design`](docs/design) | The UI's visual design reference | [README](docs/design/README.md) |
+
 ## Dataset
 
 The demo uses a single hand-curated, synthetic electronics catalog throughout — 300 products under fictional brands: 60 hand-written, the rest generated by `tools/PI.CatalogGenerator` (*Blackbird* laptops, *Voltline* chargers, *Kestrel* SSDs and memory, *Brakk* and *Tornio* power tools) — so every search technique can be compared on the same data and queries. Products are written to create specific moments: near-miss chargers that look right but aren't, a cordless phone battery that fools keyword search, chargers a shopper would call a "power brick". See [src/PI.SearchApi/assets/data](src/PI.SearchApi/assets/data): `products.json` (the catalog), `domain-ontology.ttl` (the taxonomy, synonyms and compatibility rules — it never names a product) and `golden-queries.json` (the talk moments, used as both integration tests and UI presets).
 
 ## Getting started
+
+**Get the code**
+
+```sh
+git clone https://github.com/petecleary/how-to-find-a-needle.git
+cd how-to-find-a-needle
+```
 
 **Prerequisites**
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
@@ -97,7 +149,7 @@ Base URLs and enabled providers are saved in `~/.needle/settings.json` (set `NEE
 aspire run
 ```
 
-(or press F5 in VS Code / Visual Studio on the "Aspire: Launch default AppHost" configuration). This starts Postgres, the API and the web UI; open the `web-ui` resource's URL from the Aspire dashboard to see the talk and the demo. On first run, watch the `searchapi` resource's logs in the Aspire dashboard for:
+(or press F5 in VS Code / Visual Studio on the "Aspire: Launch default AppHost" configuration). This starts Postgres, the API and the web UI, and installs the web UI's npm packages on first run; open the `web-ui` resource's URL from the Aspire dashboard to see the talk and the demo. On first run, watch the `searchapi` resource's logs in the Aspire dashboard for:
 
 ```
 Seeded 300 products (300 inserted, 0 updated, 0 deleted)
@@ -108,7 +160,7 @@ Product vectors come from the committed `assets/data/embeddings/nomic.jsonl`, so
 
 **Present the talk**
 
-Open `/slides` (or **Present the slides** on Home) for the presenter's deck: ← and → move one slide, and **D** opens the demo in a second window. Put that window on the other screen: it follows the deck, loading each slide's stage and golden query, so you can switch to it when a slide says "watch this". `/talk` is the same talk as a self-guided walk through the live stage screens.
+Open `/slides` (or **Present the slides** on Home) for the presenter's deck: ← and → move one slide, and **D** opens the demo in a second window. Put that window on the other screen: it follows the deck, loading each slide's stage and golden query, so you can switch to it when a slide says "watch this". Reading along on your own? Open the deck and the demo side by side: every slide's demo is an ordinary `/demo` URL you can bookmark.
 
 **Try the search stages**
 
@@ -140,10 +192,12 @@ dotnet test tests/PI.SearchApi.IntegrationTests    # needs Docker running
 
 cd src/web-ui
 npm ci
-npm run typecheck && npm run lint && npm test && npm run build
+npm run format:check && npm run typecheck && npm run lint && npm test && npm run build
 ```
 
-The integration tests run the golden queries against each stage. Vector, hybrid and ontology tests skip, with a message, if the Nomic model isn't downloaded; the Stage 6–7 tests skip if the LLM isn't available. They check answers structurally (what was cited, whether the explanation's structure holds), never their wording.
+These are the same checks CI runs ([.github/workflows/ci.yml](.github/workflows/ci.yml)), except the integration tests, which need Docker and the models. More detail on what each layer tests is in [tests/README.md](tests/README.md).
+
+The integration tests start the whole AppHost and run the golden queries against each stage. Vector, hybrid and ontology tests skip, with a message, if the Nomic model isn't downloaded; the Stage 6–7 tests skip if the LLM isn't available. They check answers structurally (what was cited, whether the explanation's structure holds), never their wording.
 
 The model bake-off, which compares local models for Stages 6–7, is opt-in because it runs for a long time. It writes a report to `tests/PI.SearchApi.IntegrationTests/TestResults/`:
 

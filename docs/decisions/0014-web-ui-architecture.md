@@ -10,7 +10,7 @@ The audience needs to watch the *same query* change as the presenter steps throu
 
 **The UI replaces the slides.** Talk content, live demo, glossary and these decisions live in one place, so the talk and the demo can't drift apart, and anyone who clones the repository gets the whole talk.
 
-A rehearsal changed one part of this. The talk steps opened each stage on the live stage screen, and the audience met tabs, filters and results before the concept had been explained. So the UI now also has a **slide deck** (`/slides`): simple concept slides, with the demo in a second window that follows the current slide. The slides are markdown in the same repository, pointing at the same golden queries, so they can't drift from the demo either.
+A rehearsal changed one part of this. The first design was a *talk mode*: a sequence of steps that opened each stage on the live stage screen, so the audience met tabs, filters and results before the concept had been explained. It was replaced by a **slide deck** (`/slides`): simple concept slides, with the demo in a second window that follows the current slide. The slides are markdown in the same repository, pointing at the same golden queries, so they can't drift from the demo either. Talk mode has been removed; the deck and the demo cover both the live talk and anyone reading along afterwards.
 
 The frontend has to be as readable as the backend: no black-box component libraries, no state management to study first.
 
@@ -27,7 +27,6 @@ The frontend has to be as readable as the backend: no black-box component librar
 | Route | Page |
 |---|---|
 | `/` | **Home:** speaker, talk title, the thesis and the triad (Search → Ontology → Pedagogy) |
-| `/talk/:step/:tab?` | **Talk mode:** a linear sequence driven by ← and →, one position per step. Stage steps show the live stage screen with a golden query and preset options |
 | `/slides/:slide?` | **Slides:** the presenter's deck, one full-screen concept slide per position. **D** opens the demo for the current slide |
 | `/demo` | **Demo:** the same stage screen, with a filter sidebar and every tab. Opened from the deck, it follows the slides |
 | `/glossary` | **Glossary:** searchable terms and acronyms |
@@ -35,11 +34,11 @@ The frontend has to be as readable as the backend: no black-box component librar
 
 ### Content is markdown, not React
 
-`src/web-ui/content/` holds `talk.json` and `talk/*.md` (the talk steps), `stages/*.md` (one explanation per stage, with fixed headings: *What it is · How it works · What to look for · Strength · Failure mode · Try this · Read the decision*), `going-further/*.md`, `glossary.json` and `speaker.md`.
+`src/web-ui/content/` holds `home.md`, `slides.json` and `slides/*.md` (the deck), `stages/*.md` (one explanation per stage, with fixed headings: *What it is · How it works · What to look for · Strength · Failure mode · Try this · Read the decision*), `going-further/*.md`, `glossary.json` and `speaker.md`.
 
 - **Inline glossary terms:** `[RRF](term:rrf)` renders as an underlined term with a hover card, through a custom link renderer, with no plugin.
 - **`going-further/{stage}.md` is free-form**, unlike a stage explanation: each stage's horizon needs a different shape. There is no file for `structured`, and a missing file is what makes the tab unavailable, so absence needs no special case in code.
-- **A "Going further" step** after Stage 7 maps the topics that sit around the pipeline rather than inside one stage of it ([ADR-0018](0018-scope-and-going-further.md)).
+- **A "Going further" slide** after Stage 7 maps the topics that sit around the pipeline rather than inside one stage of it ([ADR-0018](0018-scope-and-going-further.md)).
 - **These decisions are read from `docs/decisions/` at build time** with `import.meta.glob`. Links between records become links between pages. There is no copy to drift and no API endpoint.
 
 ### Data flow
@@ -69,24 +68,19 @@ Each stage has five tabs, so the presenter controls what the audience looks at, 
 - **Filters come from the ontology:** categories from `GET /api/taxonomy`, spec values from `GET /api/vocabularies`. Nothing is hard-coded, so a Turtle edit appears in the filters after a restart.
 - **Honest labels:** a flagged card says "#2 before rules", Stage 5's own fused rank, not the standalone hybrid stage's rank.
 
-### Talk mode: one position per step
+### Moving through the stages
 
-`content/talk.json` lists the steps in order. **← and → move one step**, and a stage step declares the single `tab` it lands on; the letter keys move between tabs within a step. A talk is a sequence of arguments, not of panels, so the arrow keys should change the argument. Tab-by-tab arrows made the presenter count keypresses to reach the next stage, and pressing a letter left the count wrong.
-
-- **Each stage is one position**, seeded with its golden query and options. Stage 7 lands on its baseline, and the presenter flips **Apply pedagogy** and then the audience live: fewer positions, and the audience watches one thing change on screen rather than between screens.
-- **Every stage opens on How it works**, in the demo as well as the talk: the technique is explained before its results are argued about. A step can name another tab, and the letter keys are always a keypress away.
-- **The stepper moves the talk.** Choosing a stage in talk mode goes to that stage's step, so its caption, golden query and preset options arrive with the stage. In the demo it changes the stage in place, keeping the query and the filters — that is the demo's whole argument: same input, switchable technique.
-- **Content steps** (`intro` and `summary` kinds) are full-width markdown with no demo. They can sit anywhere in the order, not only at the ends, so a turn in the argument can have a page of its own.
-- Changes the presenter makes during a step (a toggle, the query) last until the talk moves on; the next step starts from its own preset.
+- **Every stage opens on How it works**: the technique is explained before its results are argued about. The letter keys (H, R, A, U, G) jump between tabs.
+- **The stepper changes the stage in place**, keeping the query and the filters. That is the demo's whole argument: same input, switchable technique.
 
 ### Slides mode: a deck and a demo that follows it
 
-`content/slides.json` lists the slides in order, and each slide's text is `content/slides/{id}.md`. A slide can name a **demo**: a stage, a golden query, preset options and a tab, the same fields as a talk step.
+`content/slides.json` lists the slides in order, and each slide's text is `content/slides/{id}.md`. A slide can name a **demo**: a stage, a golden query, preset options and a tab.
 
 - **Readable from the back row:** a short title and at most five short bullets. A content test enforces the limits; the detail lives in the stage explanations and these records.
 - **Several slides for Stages 3, 4, 5 and 7**, one each for Stages 1, 2 and 6: the first two techniques need no new vocabulary, and by Stage 6 the audience knows retrieval, so RAG adds only one step, the prompt.
 - **Two windows, one channel.** The deck posts the current slide on a `BroadcastChannel`, which lets two tabs of the same browser talk with no server. A demo window opened from the deck loads each slide's demo into its URL, so the back button steps through what was shown. A slide with no demo changes only the "Following" badge.
-- `/talk` stays: it's the self-guided path for anyone reading along after the talk.
+- **Reading along afterwards:** open the deck and the demo side by side; every slide's demo is an ordinary `/demo` URL, so it can be bookmarked and shared.
 
 ### Visual design
 
@@ -94,19 +88,19 @@ Each stage has five tabs, so the presenter controls what the audience looks at, 
 - **Status colours are separate.** Compatible is green, **Incompatible is red, never orange** (orange means Pedagogy), Unknown is amber. Every badge has an icon *and* text.
 - **Light and dark themes** from CSS variables, following the system setting, with a toggle.
 - **Type:** Dosis for the logo and talk title only; **Atkinson Hyperlegible** for everything else, because l/I/1 and 0/O are distinct, which matters for product IDs on a projector; JetBrains Mono for SQL and formulas. All three are **self-hosted**, so the talk works without venue Wi-Fi.
-- **Presentation mode** enlarges text for a projector, and is on by default in talk and slides mode.
+- **Presentation mode** enlarges text for a projector, and is on by default on the slides.
 
 ### Quality bar
 
 - `npm run typecheck`, `lint` and `build` must pass; Prettier formats everything.
-- Accessibility: landmarks and visible focus, text as well as colour on badges, ARIA tablists for the stepper and tabs, a fully keyboard-driven talk (← and → move between steps; H, R, A, U and G jump to a tab), text contrast of at least 4.5:1 in both themes.
-- **Vitest** tests the hooks, trace-renderer choice, talk navigation, Stage 5 grouping and **content integrity**: every talk file exists, every golden query and glossary term resolves, and no link between these records is broken. Golden-query behaviour is tested against the real API, not in the browser.
+- Accessibility: landmarks and visible focus, text as well as colour on badges, ARIA tablists for the stepper and tabs, a fully keyboard-driven deck (← and → move between slides; H, R, A, U and G jump to a tab in the demo), text contrast of at least 4.5:1 in both themes.
+- **Vitest** tests the hooks, trace-renderer choice, slide navigation, Stage 5 grouping and **content integrity**: every slide file exists, every golden query and glossary term resolves, and no link between these records is broken. Golden-query behaviour is tested against the real API, not in the browser.
 
 ## Consequences
 
 - One `aspire run` gives the talk, the demo, the glossary and the decisions.
 - **Rehearsing the talk is testing the product:** a broken stage shows up in rehearsal.
-- Writing content is real work: talk steps, stage explanations and glossary entries.
+- Writing content is real work: slides, stage explanations and glossary entries.
 - The UI runs on the Vite dev server only; a production build and hosting are out of scope.
 - Tabs cost a few keypresses per stage, and let each view use large type.
 

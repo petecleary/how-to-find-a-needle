@@ -24,7 +24,11 @@ public sealed class RagSearchEndpoint(IRagSearch search) : Endpoint<SearchReques
     {
         var start = System.Diagnostics.Stopwatch.GetTimestamp();
 
+        // Results and the answer are two requests with the same body, sent together by the UI: the results come back
+        // in milliseconds, and the slower LLM text streams separately from /answer, so results never wait for the model.
         var result = await search.SearchAsync(req, "rag", ct);
+
+        // Retrieve deep, page late: the service worked over candidateDepth items; the mapper pages them once, here.
 
         await Send.OkAsync(SearchResponseMapper.ToResponse("rag", req, result.Result, PipelineTelemetry.ElapsedMs(start)), ct);
     }

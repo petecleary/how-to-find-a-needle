@@ -10,7 +10,7 @@ import {
     triadGroups,
     type PipelineStage,
 } from './stageGroup';
-import { seededState, type StageSeed } from './talk';
+import { seededState, type StageSeed } from './stageSeed';
 
 // The presenter's slide deck (ADR-0014 § Slides mode). content/slides.json lists the slides in order; each has
 // a markdown file, and a slide can name a demo: the stage, golden query, options and tab the demo window should

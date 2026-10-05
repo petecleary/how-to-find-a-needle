@@ -5,11 +5,11 @@ import { getGoldenQueries } from '@/api/client';
 import { Logo } from '@/components/Logo';
 import { Markdown } from '@/components/Markdown';
 import { SpeakerCard } from '@/components/SpeakerCard';
-import { TalkControls } from '@/components/TalkControls';
+import { SlideControls } from '@/components/SlideControls';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useApiData } from '@/hooks/useApiData';
 import { useBroadcastSlide } from '@/hooks/useBroadcastSlide';
-import { useTalkKeys } from '@/hooks/useTalkKeys';
+import { useSlideKeys } from '@/hooks/useSlideKeys';
 import { isTypingTarget } from '@/lib/keyboard';
 import {
     findSlide,
@@ -53,7 +53,10 @@ export function SlidesPage() {
     const next = slide === null ? null : nextSlide(slide.id);
     const previous = slide === null ? null : previousSlide(slide.id);
 
-    useTalkKeys(next === null ? null : slidePath(next.id), previous === null ? null : slidePath(previous.id));
+    useSlideKeys(
+        next === null ? null : slidePath(next.id),
+        previous === null ? null : slidePath(previous.id),
+    );
     useBroadcastSlide(slide?.id ?? null);
 
     // The golden query's preset fills the demo's query and device. Until the API has answered, the demo opens
@@ -101,7 +104,7 @@ export function SlidesPage() {
                 <ThemeToggle />
             </header>
             <SlideContent key={slide.id} slide={slide} />
-            <TalkControls
+            <SlideControls
                 previousPath={previous === null ? null : slidePath(previous.id)}
                 nextPath={next === null ? null : slidePath(next.id)}
                 label={`Slide ${slideIndex + 1} of ${slides.length}`}

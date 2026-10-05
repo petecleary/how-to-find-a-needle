@@ -8,7 +8,6 @@ import { SpeakerCard } from '@/components/SpeakerCard';
 import { speaker } from '@/lib/speakerProfile';
 import { pipelineStages, triadGroupClasses, triadGroups } from '@/lib/stageGroup';
 import { slidesStartPath } from '@/lib/slides';
-import { talkStartPath } from '@/lib/talk';
 import { cn } from '@/lib/utils';
 
 /** `/`: the talk's title, its thesis and the triad, the way in to the talk, the slides or the demo, and the speaker. */
@@ -29,6 +28,8 @@ export function HomePage() {
                     </p>
                     <Markdown className="max-w-2xl text-2xl">{homeMarkdown}</Markdown>
 
+                    {/* The talk's three questions, in its colours: purple Search, green Ontology, orange Pedagogy.
+                        The labels and questions come from lib/stageGroup.ts, the same source the stepper uses. */}
                     <ol aria-label="The triad" className="flex flex-wrap items-center gap-x-4 gap-y-3">
                         {triadGroups.map(({ group, label, question }, index) => {
                             const colours = triadGroupClasses(group);
@@ -63,6 +64,7 @@ export function HomePage() {
                         })}
                     </ol>
 
+                    {/* Two ways in: the deck for presenting (its demo window follows it), the demo for exploring alone. */}
                     <div className="flex flex-wrap gap-3">
                         <Link
                             to={slidesStartPath()}

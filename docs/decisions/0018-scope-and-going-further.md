@@ -61,7 +61,7 @@ The closing page carries what sits *around* the pipeline rather than inside one 
 | Keeping it fresh | Indexing pipelines, re-embedding, ontology versioning | Every structure the talk builds has to be rebuilt when the model or the catalogue moves |
 | Who is asking | Personalisation and permission-aware search | Relevance depends on the person, and results must never include what they may not see |
 
-In talk mode this page comes after Stage 7 and before the summary. It is a map, not a second talk: one table, a sentence per row.
+In the slide deck this page comes after Stage 7 and before the summary. It is a map, not a second talk: one table, a sentence per row.
 
 ### Out of scope: agent protocols
 

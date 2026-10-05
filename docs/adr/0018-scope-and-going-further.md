@@ -72,7 +72,7 @@ Topics fall into three tiers: **built**, **discussed** and **out of scope**. A d
 | Keeping it fresh | Indexing pipelines, re-embedding, ontology versioning | Every structure the talk builds has to be rebuilt when the model or the catalogue moves ([ADR-0006](0006-database-schema-and-seeding.md)) |
 | Who is asking | Personalisation and permission-aware search | Relevance depends on the person, and results must never include what they may not see |
 
-- In talk mode the page comes after Stage 7 and before the summary ([ADR-0014](0014-web-ui-architecture.md)).
+- In the slide deck the page comes after Stage 7 and before the summary ([ADR-0014](0014-web-ui-architecture.md)).
 - It is a map, not a second talk: one page, one table, a sentence per row.
 
 ### 4. Out of scope, and not mentioned

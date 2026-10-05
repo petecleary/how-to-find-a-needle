@@ -16,7 +16,6 @@ import {
 } from './content';
 
 // Content integrity (ADR-0014 § Quality bar): the talk's text is data, so these tests are its compiler.
-// talk.json's checks (step files, tabs values) arrive with talk mode in roadmap Phase 3 step 10.
 
 // The decision records on disk. Only the file names are read, not the files.
 const adrFileIds = Object.keys(import.meta.glob('../../../../docs/decisions/*.md')).map((path) =>

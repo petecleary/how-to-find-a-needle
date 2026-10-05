@@ -9,8 +9,8 @@ export interface FilterDrawerProps {
 }
 
 /**
- * The filters as a drawer over the page, opened from the Filters button: used in talk mode, where the
- * results need the full width, and on screens too narrow for the sidebar (ADR-0014).
+ * The filters as a drawer over the page, opened from the Filters button: used on screens too narrow for the
+ * sidebar, so the results keep the full width (ADR-0014).
  */
 export function FilterDrawer({ isOpen, onOpenChange, children }: FilterDrawerProps) {
     return (

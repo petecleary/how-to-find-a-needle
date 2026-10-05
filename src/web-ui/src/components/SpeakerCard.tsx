@@ -60,7 +60,7 @@ export function SpeakerCard({ speaker }: SpeakerCardProps) {
                         </a>
                     </li>
                 )}
-            </ul>   
+            </ul>
 
             <div className="flex items-center justify-center gap-4 pt-4">
                 {speaker.linkedInQrCodeUrl === null ? (

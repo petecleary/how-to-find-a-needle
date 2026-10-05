@@ -3,13 +3,11 @@ import { Navigate, Route, Routes } from 'react-router';
 import { ModelsProvider } from '@/components/ModelsProvider';
 import { PresentationProvider } from '@/components/PresentationProvider';
 import { slidesStartPath } from '@/lib/slides';
-import { talkStartPath } from '@/lib/talk';
 import { DemoPage } from '@/pages/DemoPage';
 import { HomePage } from '@/pages/HomePage';
 import { SlidesPage } from '@/pages/SlidesPage';
-import { TalkPage } from '@/pages/TalkPage';
 
-// The reading pages load on first visit. They carry every ADR's text, which the talk and the demo don't need,
+// The reading pages load on first visit. They carry every ADR's text, which the slides and the demo don't need,
 // so the page the audience sees first stays small.
 const GlossaryPage = lazy(() =>
     import('@/pages/GlossaryPage').then((module) => ({ default: module.GlossaryPage })),
@@ -21,7 +19,7 @@ const DecisionPage = lazy(() =>
     import('@/pages/DecisionPage').then((module) => ({ default: module.DecisionPage })),
 );
 
-// The pages (ADR-0014 § Pages and routes). Talk and slide positions live in the route; the demo's state in the
+// The pages (ADR-0014 § Pages and routes). The slide position lives in the route; the demo's state in the
 // query string.
 export function App() {
     return (
@@ -30,8 +28,6 @@ export function App() {
                 <Suspense fallback={<p className="px-6 py-8 text-muted-foreground">Loading…</p>}>
                     <Routes>
                         <Route path="/" element={<HomePage />} />
-                        <Route path="/talk" element={<Navigate to={talkStartPath()} replace />} />
-                        <Route path="/talk/:step/:tab?" element={<TalkPage />} />
                         <Route path="/slides" element={<Navigate to={slidesStartPath()} replace />} />
                         <Route path="/slides/:slide" element={<SlidesPage />} />
                         <Route path="/demo" element={<DemoPage />} />
