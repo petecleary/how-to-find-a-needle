@@ -10,7 +10,7 @@ The trade is familiar: inference you didn't write is inference you have to debug
 
 OWL describes meaning; [SHACL](term:shacl) validates **shapes**. "Every laptop has exactly one `chargingPort`, from this vocabulary." "Every charger states a wattage in watts." Run it over the catalogue and you get a report of what's missing, before a shopper finds out by getting the wrong answer.
 
-This is where our compatibility rules would grow next, and it is the closest thing in the ontology world to a test suite.
+This is where our compatibility rules would grow next, and it is the closest thing in the ontology world to a test suite. A shape can check a model's output, too: in an [agent loop](term:agent-loop), it is how you would validate a proposed tool call before it runs. The RAG stage's _Going further_ tab follows that idea through.
 
 ### Knowledge graphs and graph databases
 

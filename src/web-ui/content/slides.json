@@ -182,6 +182,21 @@
     }
   },
   {
+    "id": "agent-loop",
+    "section": "agents",
+    "title": "When the model acts",
+    "file": "slides/agent-loop.md",
+    "demo": {
+      "stage": "ontology",
+      "goldenQuery": "GQ-03",
+      "tab": "results",
+      "options": {
+        "expandSynonyms": true,
+        "applyConstraints": true
+      }
+    }
+  },
+  {
     "id": "pedagogy-explain",
     "section": "pedagogy",
     "title": "Explain, don't just answer",

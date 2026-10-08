@@ -1,7 +1,7 @@
 # ADR-0018: Scope — seven stages, what the talk discusses, and what it leaves out
 
 - **Status:** Accepted
-- **Date:** 2026-09-14 (amended 2026-09-18: a going-further tab per stage, and the closing step keeps only the cross-cutting topics, agreed with Pete; accepted 2026-09-19 at Phase 5 sign-off)
+- **Date:** 2026-09-14 (amended 2026-09-18: a going-further tab per stage, and the closing step keeps only the cross-cutting topics, agreed with Pete; accepted 2026-09-19 at Phase 5 sign-off; amended 2026-10-08: the agent-loop interlude slide between Stages 6 and 7, agreed with Pete)
 - **Related:** ADR-0001, ADR-0003, ADR-0004, ADR-0005, ADR-0006, ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0013, ADR-0014, ADR-0016, ADR-0017; roadmap Phases 0–5
 
 ## Context
@@ -57,7 +57,7 @@ Topics fall into three tiers: **built**, **discussed** and **out of scope**. A d
 | 3 Vector | Choosing an embedding model; chunking: fixed-size, sliding window, structure- and layout-aware; multilingual and learned-sparse models such as BGE-M3; the vector landscape — dedicated databases, index choices, filtering at scale | [ADR-0010](0010-vector-search-pgvector.md), [ADR-0012](0012-bge-m3-dense-and-sparse.md) |
 | 4 Hybrid | Re-ranking: cross-encoders and late interaction (ColBERT); normalising scores instead of fusing ranks; off-the-shelf hybrid search | [ADR-0011](0011-hybrid-search-rrf.md) |
 | 5 Ontology | OWL and reasoners; SHACL; knowledge graphs and graph databases | [ADR-0013](0013-domain-ontology-and-compatibility.md) |
-| 6 RAG | RAG metrics: context recall, faithfulness, answer relevance (e.g. RAGAS, TruLens); verifying citations; letting a model choose what to retrieve | [ADR-0016](0016-rag-grounding-and-citations.md) |
+| 6 RAG | RAG metrics: context recall, faithfulness, answer relevance (e.g. RAGAS, TruLens); verifying citations; letting a model choose what to retrieve; the ontology as a contract on each edge of an agent loop | [ADR-0016](0016-rag-grounding-and-citations.md) |
 | 7 Pedagogy | Adaptive, multi-turn tutoring; personalising with chat and user history; judging an explanation | [ADR-0017](0017-pedagogy-engine.md) |
 
 **The closing page.** What sits *around* the pipeline rather than inside one stage of it.
@@ -75,9 +75,17 @@ Topics fall into three tiers: **built**, **discussed** and **out of scope**. A d
 - In the slide deck the page comes after Stage 7 and before the summary ([ADR-0014](0014-web-ui-architecture.md)).
 - It is a map, not a second talk: one page, one table, a sentence per row.
 
+### Discussed, not built: an interlude between Stages 6 and 7
+
+One slide, *When the model acts*, sits between RAG and Pedagogy in the deck, in its own `agents` section, as the needle slide does between Stages 2 and 3. RAG is where the model first speaks, so it is where the audience asks what happens when the model acts.
+
+- **What it says:** in an agent loop the model proposes each tool call, a search or an action, and the ontology checks it before it runs. Every edge is a contract, written once in the ontology's vocabulary, and a rejected call goes back to the model with its reasons.
+- **What it shows:** no new demo. The demo window returns to Stage 5 on GQ-03, where the 45W barrel charger is flagged: the same rule that would reject an `addToBasket` call for it.
+- **What it isn't:** an eighth stage. There is no endpoint, tool, agent or code; the detail lives in the RAG stage's going-further tab. The speaker hands back to Stage 7 with one line: our model doesn't act; it explains.
+
 ### 4. Out of scope, and not mentioned
 
-- **Agent protocols (MCP, A2A, AG-UI / A2UI).** They standardise how agents, tools and user interfaces talk to each other. That is system integration. It doesn't answer any of the triad's questions (what is relevant, how is it related, how should I explain it). The repo already rejects letting the model decide what to retrieve ([ADR-0016](0016-rag-grounding-and-citations.md)). They appear nowhere in the code, content, glossary or talk.
+- **Agent protocols (MCP, A2A, AG-UI / A2UI).** They standardise how agents, tools and user interfaces talk to each other. That is system integration. It doesn't answer any of the triad's questions (what is relevant, how is it related, how should I explain it). The repo already rejects letting the model decide what to retrieve ([ADR-0016](0016-rag-grounding-and-citations.md)). The agent *loop* is discussed (the interlude above) because the ontology's place in it answers the triad's second question; the protocols that connect agents are not. They appear nowhere in the code, content, glossary or talk.
 
 ## Consequences
 
@@ -101,6 +109,8 @@ Topics fall into three tiers: **built**, **discussed** and **out of scope**. A d
 | Remove BGE-M3 but keep the old numbers (a gap at 5) | In a finished repo, learners would see Stage 6 follow Stage 4 with no explanation |
 | Build a cross-encoder re-ranking stage instead | Another model, and it improves relevance, which Stage 4 already teaches; it doesn't advance the triad |
 | Include agent protocols in the going-further step | Off-thesis; spends talk time on integration standards rather than search, structure or explanation |
+| Agent loops as an eighth stage | Needs an endpoint and a model that chooses its own calls, which [ADR-0016](0016-rag-grounding-and-citations.md) rejects; the point is the ontology's role, which one slide makes |
+| Agent loops only in the RAG going-further tab, no slide | The talk would stop at the model speaking, and miss the strongest case for the thesis: the more a model can do, the more the ontology matters |
 | No going-further step | Learners leave without knowing where the techniques they didn't see fit |
 | One flat going-further table, after Stage 7 (the original decision) | A question asked during Stage 3 can't be answered by a page that comes twenty minutes later |
 | A going-further tab on every stage, Stage 1 included | Padding. Nothing beyond SQL earns a panel, and an empty tab teaches that the tab is empty |

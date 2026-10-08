@@ -20,7 +20,7 @@ System context, backend architecture, search pipeline stages, API conventions an
 
 ### Scope
 
-Seven stages are built. Topics the talk discusses but doesn't build sit in a **"Going further" tab on each stage** (chunking, BGE-M3 and learned sparse retrieval, re-ranking, OWL / SHACL / knowledge graphs, RAG evaluation, adaptive tutoring), with a closing "Going further" slide for the topics that belong to no single stage (query rewriting, telemetry, A/B testing, index freshness, personalisation). Agent protocols are out of scope. → [ADR-0018](0018-scope-and-going-further.md)
+Seven stages are built. Topics the talk discusses but doesn't build sit in a **"Going further" tab on each stage** (chunking, BGE-M3 and learned sparse retrieval, re-ranking, OWL / SHACL / knowledge graphs, RAG evaluation, adaptive tutoring), with a closing "Going further" slide for the topics that belong to no single stage (query rewriting, telemetry, A/B testing, index freshness, personalisation). One interlude slide between Stages 6 and 7 discusses the ontology as a contract on each edge of an agent loop. Agent protocols are out of scope. → [ADR-0018](0018-scope-and-going-further.md)
 
 ---
 

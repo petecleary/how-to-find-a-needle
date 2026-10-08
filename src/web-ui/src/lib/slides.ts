@@ -18,10 +18,13 @@ import { seededState, type StageSeed } from './stageSeed';
 //
 // The position lives in the route, /slides/:slide, so a bookmark reopens the same slide and Back walks back.
 
-/** A stage slug, or one of the talk's non-stage sections. It sets the slide's colour and its position label. */
-export type SlideSection = PipelineStage | 'intro' | 'needle' | 'going-further' | 'summary';
+/**
+ * A stage slug, or one of the talk's non-stage sections. It sets the slide's colour and its position label.
+ * `agents` is the interlude between Stages 6 and 7: discussed, not built (ADR-0018).
+ */
+export type SlideSection = PipelineStage | 'intro' | 'needle' | 'agents' | 'going-further' | 'summary';
 
-const otherSections = ['intro', 'needle', 'going-further', 'summary'] as const;
+const otherSections = ['intro', 'needle', 'agents', 'going-further', 'summary'] as const;
 
 /** `title` is the deck's opening slide: the talk title in Dosis, beside the speaker card. `speaker` adds the speaker card. */
 export type SlideLayout = 'title' | 'speaker';
@@ -110,6 +113,7 @@ export function slideSectionLabel(slide: Slide): string {
     const labels: Record<string, string> = {
         intro: 'Introduction',
         needle: 'The needle',
+        agents: 'Interlude · Agent loops',
         'going-further': 'Going further',
         summary: 'Summary',
     };

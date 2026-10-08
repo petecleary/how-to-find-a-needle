@@ -337,6 +337,14 @@
     "seeAlso": ["ontology"]
   },
   {
+    "id": "agent-loop",
+    "term": "Agent loop",
+    "definition": "A loop in which an LLM proposes the next tool call (a search to run, or an action to take), code runs it, and the result goes back to the model until it is done. Each hand-off is a place to check the call against the ontology's rules before it runs. Discussed in the talk, not built.",
+    "topic": "Going further",
+    "seeAlso": ["domain-rule", "shacl", "llm"],
+    "adr": "0018-scope-and-going-further"
+  },
+  {
     "id": "colbert",
     "term": "Late interaction",
     "definition": "Embedding every token separately and matching token against token at query time, as ColBERT does. Keeps some of a cross-encoder's precision at closer to a bi-encoder's cost. Discussed in the talk, not built.",

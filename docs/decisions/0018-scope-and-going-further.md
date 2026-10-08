@@ -44,7 +44,7 @@ A discussed topic belongs where the question about it gets asked. Someone asks a
 | 3 Vector | Choosing an embedding model; chunking: fixed-size, sliding window, structure- and layout-aware; multilingual and learned-sparse models such as BGE-M3; the vector landscape — dedicated databases, index choices, filtering at scale |
 | 4 Hybrid | Re-ranking with cross-encoders and late interaction (ColBERT); normalising scores instead of fusing ranks; off-the-shelf hybrid search |
 | 5 Ontology | OWL and reasoners; SHACL; knowledge graphs and graph databases |
-| 6 RAG | RAG metrics: context recall, faithfulness, answer relevance; verifying citations; letting a model choose what to retrieve |
+| 6 RAG | RAG metrics: context recall, faithfulness, answer relevance; verifying citations; letting a model choose what to retrieve; the ontology as a contract on each edge of an agent loop |
 | 7 Pedagogy | Adaptive, multi-turn tutoring; personalising with chat and user history; judging an explanation |
 
 ### Discussed, not built: the closing "Going further" page
@@ -63,9 +63,17 @@ The closing page carries what sits *around* the pipeline rather than inside one 
 
 In the slide deck this page comes after Stage 7 and before the summary. It is a map, not a second talk: one table, a sentence per row.
 
+### Discussed, not built: an interlude between Stages 6 and 7
+
+One slide, *When the model acts*, sits between RAG and Pedagogy in the deck, in its own `agents` section, as the needle slide does between Stages 2 and 3. RAG is where the model first speaks, so it is where the audience asks what happens when the model acts.
+
+- **What it says:** in an agent loop the model proposes each tool call, a search or an action, and the ontology checks it before it runs. Every edge is a contract, written once in the ontology's vocabulary, and a rejected call goes back to the model with its reasons.
+- **What it shows:** no new demo. The demo window returns to Stage 5 on GQ-03, where the 45W barrel charger is flagged: the same rule that would reject an `addToBasket` call for it.
+- **What it isn't:** an eighth stage. There is no endpoint, tool, agent or code; the detail lives in the RAG stage's going-further tab. The speaker hands back to Stage 7 with one line: our model doesn't act; it explains.
+
 ### Out of scope: agent protocols
 
-MCP, A2A and AG-UI standardise how agents, tools and user interfaces talk to each other. That is system integration, and it answers none of the talk's three questions. The repository also rejects letting a model decide what to retrieve ([ADR-0016](0016-rag-grounding-and-citations.md)). They appear nowhere in the code, content or glossary.
+MCP, A2A and AG-UI standardise how agents, tools and user interfaces talk to each other. That is system integration, and it answers none of the talk's three questions. The repository also rejects letting a model decide what to retrieve ([ADR-0016](0016-rag-grounding-and-citations.md)). The agent *loop* is discussed (above) because the ontology's place in it is on-thesis; the protocols that connect agents are not. They appear nowhere in the code, content or glossary.
 
 ## Consequences
 
@@ -82,6 +90,8 @@ MCP, A2A and AG-UI standardise how agents, tools and user interfaces talk to eac
 | Keep BGE-M3 as an optional, last stage | A conditional tab and a second model, for lessons the talk tells in a sentence |
 | A cross-encoder re-ranking stage | Another model, improving relevance, which Stage 4 already teaches |
 | Include agent protocols in the going-further step | Off-thesis; spends talk time on integration standards rather than search, structure or explanation |
+| Agent loops as an eighth stage | Needs an endpoint and a model that chooses its own calls, which [ADR-0016](0016-rag-grounding-and-citations.md) rejects; the point is the ontology's role, which one slide makes |
+| Agent loops only in the RAG going-further tab, no slide | The talk would stop at the model speaking, and miss the strongest case for the thesis: the more a model can do, the more the ontology matters |
 | No going-further step | Learners leave without knowing where the techniques they didn't see fit |
 | One flat going-further table, after Stage 7 | A question asked during Stage 3 can't be answered by a page that comes twenty minutes later |
 | A going-further tab on every stage, Stage 1 included | Padding. Nothing beyond SQL earns a panel, and an empty tab teaches that the tab is empty |

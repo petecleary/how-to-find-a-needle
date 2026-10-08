@@ -21,3 +21,22 @@ We check that `[PROD-0042]` exists in the evidence. A stricter system checks tha
 Agentic retrieval gives the model tools and lets it decide what to search for, and how many times. It reaches answers a single retrieval pass cannot.
 
 We reject it here, deliberately. This talk's argument is that retrieval quality is the thing that matters, and a model that chooses its own evidence makes retrieval unobservable — you can no longer point at a trace and say _this_ is why that product appeared ([ADR-0016 · RAG, grounding and citations](adr:0016-rag-grounding-and-citations)). Build the retrieval you can inspect first; then decide whether a model should be allowed to drive it.
+
+### If a model does drive: every edge is a contract
+
+In an [agent loop](term:agent-loop) the model doesn't only answer; it proposes the next step. Each step is a tool call: JSON naming a tool and its arguments. Some tools read — run a search. Some act — add to a basket, raise a refund. Code runs the call, the result goes back to the model, and the loop goes round until the model says it is done.
+
+Turn the loop on its side and it is a chain: plan → call → result → plan → call. Our pipeline is already one — retrieval → ontology → evidence set → LLM → citation check — and every arrow is a hand-off. Each hand-off is a place to check. Instead of one guardrail around the whole model, put a contract on every edge.
+
+The ontology is the language those contracts are written in. In Stage 5 it guards what the model _sees_: a charger that fails a [domain rule](term:domain-rule) reaches the evidence set flagged, never as a match. In an agent loop the same rule guards what the model _does_:
+
+```text
+Model proposes:   addToBasket { product: PROD-0014, forDevice: PROD-0001 }
+Ontology checks:  connector  has: barrel-5.5mm  needs: usb-c   ✗
+                  wattageW   has: 45            needs: ≥ 65    ✗
+Result:           rejected, with reasons — sent back to the model, which plans again
+```
+
+Write the rule once, in the ontology's vocabulary, and any engine can enforce it: our C# checks today, a [SHACL](term:shacl) shape on the call's JSON tomorrow. The model proposes; the rules decide. A rejected call isn't hidden either: its reasons become the model's next observation, and they belong in the trace, just as Stage 5's flagged candidates stay on screen.
+
+Pairing a probabilistic model with explicit rules like this is often called _neuro-symbolic_ AI. The framing of "every edge is a contract" is from Dr. C's [Why agentic systems need ontologies](https://www.youtube.com/watch?v=4Z4ie_MQOTw). It doesn't change the decision above — build the retrieval you can inspect first — but if a model is ever allowed to act, the ontology is what keeps each step inspectable ([ADR-0018 · Scope](adr:0018-scope-and-going-further)).
