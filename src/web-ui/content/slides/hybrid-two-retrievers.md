@@ -1,3 +1,4 @@
 - **Keyword:** exact words, but misses synonyms.
 - **Vector:** meaning, but misses exact words.
-- Run both in parallel, and keep what each is good at.
+- **Filters** can apply to both, in the same call
+- Run in parallel, and keep what each is good at.
